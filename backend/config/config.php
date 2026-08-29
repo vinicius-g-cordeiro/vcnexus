@@ -1,7 +1,6 @@
 <?php 
-/**
- * @file index.php
- * @brief Entrypoint for the backend
+/** 
+* @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com><https://github.com/vinicius-g-cordeiro>
  * @version 1.0
  * @date 2026/08/29
