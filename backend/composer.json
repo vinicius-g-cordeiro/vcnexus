@@ -1,0 +1,11 @@
+{
+  "name": "vinicius-g-cordeiro/backend",
+  "type": "project",
+  "description": "Backend for the project",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.1",
+    "ext-pdo": "*",
+    "ext-json": "*"
+  }
+}
