@@ -16,7 +16,8 @@ use App\Shared\Connection;
 use App\Shared\Validator;
 
 class Service {
-    function __construct(protected ?Connection $connection = null,protected ?Model $model = null,protected ?Validator $validator= null){
-
+    
+    function __construct(protected readonly ?Connection $connection = null,protected readonly ?Model $model = null,protected readonly ?Validator $validator= null){
+        
     }
 }

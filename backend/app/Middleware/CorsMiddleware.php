@@ -11,16 +11,17 @@ declare(strict_types=1);
 
 namespace App\Middleware;
 
+use App\Shared\Interfaces\MiddlewareInterface;
 use App\Shared\Request;
 use App\Shared\Response;
 
-class CorsMiddleware {
+class CorsMiddleware implements MiddlewareInterface {
 
-    public static function handle(Request $request, callable $next) : Response {
+    public function handle(Request $request, callable $next) : Response {
+        header('Access-Control-Allow-Origin: ' . getenv('APP_HOST') . ':5173');
+        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, QUERY');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization');
         $response = $next($request);
-        $response->withHeader('Access-Control-Allow-Origin', '*');
-        $response->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, QUERY');
-        $response->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         return $response;
     }
 }

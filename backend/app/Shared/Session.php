@@ -15,13 +15,15 @@ require_once __DIR__ . '/../../vendor/adodb/adodb-php/session/adodb-session2.php
 require_once __DIR__ . '/../../vendor/adodb/adodb-php/adodb-exceptions.inc.php';
 use ADODB_Session;
 use App\Shared\Connection;
+use App\Shared\Notification;
 
 #[\AllowDynamicProperties]
 class Session {
 
     public static ?Session $instance = null;
 
-    protected ?object $notifications = null;
+    /** @var Notification[] */
+    protected ?array $notifications = null;
 
     protected bool $sessionStarted = false;
     
@@ -54,27 +56,21 @@ class Session {
         return (!isset($_SESSION[$key]));
     }
 
-    function notification(string $key = '', string $value = '') : object|null {
-        if($this->notifications === null){
-            $this->notifications = new \stdClass();
-        }
-        
-        if($key === ''){
-            return $this->notifications;
-        }
-
-        if($value === ''){
-            return $this->notifications->{$key} ?? null;
-        }
-
-        if($key !== '' && $value !== ''){
-            $this->notifications->{$key} = $value;
-        }
-
-        return $this->notifications->{$key};
+    function addNotification(?Notification $notification) : void {
+        $this->notifications[$notification->type][$notification->UUID] = $notification;
+        $_SESSION['notifications'] = $this->notifications;
     }
 
-    
+    function removeNotification(?string $notificationUUID) : void {
+        if(!isset($notificationUUID)) return;
+        unset($this->notifications[$notificationUUID]);
+        $_SESSION['notifications'] = $this->notifications;
+    }
+
+    function getNotifications() : ?object {
+        return $_SESSION['notifications'] ?? null;
+    }
+
     function init() : bool {
         if(session_status() === PHP_SESSION_NONE){
             

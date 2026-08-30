@@ -8,3 +8,11 @@
  */
 
 declare(strict_types=1);
+
+namespace App\Shared\Interfaces;
+
+use App\Shared\Request;
+
+interface MiddlewareInterface {
+    public function handle(Request $request, callable $next) : mixed;    
+}

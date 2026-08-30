@@ -8,3 +8,18 @@
  */
 
 declare(strict_types=1);
+
+namespace App\Service;
+
+use App\Service\Service;
+use App\Model\Model;
+use App\Shared\Connection;
+use App\Shared\Validator;
+
+final class UserService extends Service {
+    function __construct(protected readonly ?Connection $connection = null,protected readonly ?Model $model = null,protected readonly ?Validator $validator= null){
+        parent::__construct($connection, $model, $validator);
+    }
+
+
+}
