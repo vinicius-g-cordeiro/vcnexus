@@ -13,7 +13,6 @@ namespace App\Middleware;
 
 use App\Shared\Interfaces\MiddlewareInterface;
 use App\Shared\Request;
-use App\Shared\Response;
 class LoggingMiddleware implements MiddlewareInterface {
 
     public function handle(Request $request, callable $next) : mixed {
@@ -27,7 +26,7 @@ class LoggingMiddleware implements MiddlewareInterface {
 
         $durationMs = round((microtime(true) - $start) * 1000,2);
         error_log(sprintf('[%s] %s %s (%s ms)',date('c'), $request->method, $request->path,$durationMs));
-        Response::log(file: 'info', message: sprintf('[%s] %s %s (%s ms)',date('c'), $request->method, $request->path,$durationMs));
+        // Response::log(file: 'info', message: sprintf('[%s] %s %s (%s ms)',date('c'), $request->method, $request->path,$durationMs));
 
         return $result;
     }

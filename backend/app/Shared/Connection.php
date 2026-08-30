@@ -13,6 +13,7 @@ namespace App\Shared;
 
 use ADOConnection;
 use ADODB_Exception;
+use Symfony\Component\VarDumper\VarDumper;
 
 #[\AllowDynamicProperties]
 class Connection {
@@ -20,12 +21,15 @@ class Connection {
     protected ?ADOConnection  $connection = null;
     public static ?Connection $instance = null;
 
-    function __construct(?Connection $previousConnection = null){
-        $this->init($previousConnection);
+    function __construct($dbConnection = null){
+        if($this->connection == null){
+            $this->init();
+        }
+        
     }
 
     function init(?ADOConnection $dbConnection = null) {
-        if($dbConnection == null && (!isset($this->connection) || $this->connection == null)){
+        if(isset($dbConnection, $this->connection) === false){
             try{
                 $connection = ADONewConnection(getenv("DB_DRIVER"));
                 $passwd = trim(file_get_contents(getenv("DB_PASSWORD")));
@@ -45,17 +49,12 @@ class Connection {
 
             $this->connection = $connection;
         }else{
-            // Using pooled connection
             $this->connection = $dbConnection;
         }
-
-        
     }
 
     static function close() : void {
-        self::$connection = null;
-        self::$instance = null;
-        
+        self::$connection->Close();
     }
 
     static function getInstance(): Connection {
@@ -66,10 +65,6 @@ class Connection {
     }
 
     function getConnection() : ADOConnection {
-        if(self::$instance == null){
-            self::$instance = new Connection();
-        }
-
         return $this->connection;
     }
 

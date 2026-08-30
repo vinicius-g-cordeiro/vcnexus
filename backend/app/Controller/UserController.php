@@ -16,21 +16,24 @@ use App\Shared\Response;
 use App\Shared\Request;
 use App\Service\UserService;
 use App\Shared\Attributes\RateLimit;
-
+use App\Model\Model;
+use App\Shared\Connection;
+use App\Shared\Session;
 #[Route('GET', '/users/')]
 class UserController extends Controller
 {
 
+    
     protected ?UserService $service = null; 
-    public function __construct(){
-
+    public function __construct(protected ?Connection $dbConnection = null){
+        parent::__construct($dbConnection);
     }
 
     #[Route('GET', '/list/')]
-    #[RateLimit(maxAttempts: 5, decaySeconds: 60)]
     public function index(?Request $request) : void {
-        Response::json(message: 'Placeholder index', status: true, code: 200, data: object());
+        $model = new Model($this->dbConnection);
 
+        $model->createTable();
     }
 
     #[Route('GET', '/{id}/')]

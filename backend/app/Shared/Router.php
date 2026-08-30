@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace App\Shared;
 
+
 use App\Shared\Response;
 use App\Shared\Attributes\Route as RouteAttribute;
 use App\Shared\Attributes\Middleware as MiddlewareAttribute;
@@ -46,8 +47,9 @@ final class Router {
     /** @var class-string[] */
     private array $globalMiddlewares = [];
 
-    function __construct(private readonly ?RateLimiterInterface $rateLimiter = new FileRateLimiter()) {
+    protected ?Connection $connection = null;
 
+    function __construct(private readonly ?RateLimiterInterface $rateLimiter = new FileRateLimiter()) {
     }
 
     /**
@@ -165,6 +167,7 @@ final class Router {
             $controllerInstance = new $route['controller']();
             $args = $route['injectsRequest'] ? [$request, ...$request->routeParams] : [...$request->routeParams];
 
+            
             return $controllerInstance->{$route['action']}(...$args);
         };
 

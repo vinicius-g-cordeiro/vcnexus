@@ -12,17 +12,13 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Shared\Request;
-use App\Shared\Connection;
 use App\Shared\Session;
+use App\Shared\Connection;
 
 
 class Controller { 
-    public function __construct(protected readonly ?Request $request = null, protected readonly ?Connection $connection = null, protected readonly ?Session $session = null ) {
-        $this->session = Session::getInstance();
-        if(!empty($this->request)) {
-            $this->request->initialize();
-        }
-
+    public function __construct(protected ?Connection $dbConnection = null, protected readonly ?Request $request = null, protected readonly ?Session $session = null ) {
+        
     }
 }
 
