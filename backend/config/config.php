@@ -9,3 +9,9 @@
 
 declare(strict_types=1);
 
+return [
+    'BASE_URL' => 'http://localhost:80',  
+    'BASE_DIR' => __DIR__ . '/../',
+    'LOG_DIR' => __DIR__ . '/../storage/logs',
+    'UPLOAD_DIR' => __DIR__ . '/../storage/uploads',
+];
