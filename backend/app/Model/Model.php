@@ -8,3 +8,13 @@
  */
 
 declare(strict_types=1);
+
+namespace App\Model;
+
+use App\Shared\Connection;
+
+class Model extends Connection {
+    function __construct(protected ?Connection $connection = null){
+        parent::__construct($connection);
+    }
+}

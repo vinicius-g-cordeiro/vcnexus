@@ -8,3 +8,11 @@
  */
 
 declare(strict_types=1);
+
+namespace App\Shared;
+
+class Validator {
+    function __construct() {
+        
+    }
+}

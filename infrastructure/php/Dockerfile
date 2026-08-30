@@ -53,6 +53,7 @@ COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions
 COPY --from=builder /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
 COPY --from=builder /usr/local/bin/composer /usr/local/bin/composer
 
+
 RUN addgroup -g 1000 www && \
     adduser -D -u 1000 -G www www
 
@@ -61,6 +62,7 @@ RUN mkdir -p /var/www/storage /var/www/bootstrap/cache && \
 
 RUN mkdir -p /run/secrets && \
     chown -R www:www /run/secrets
+
 
 USER www
 

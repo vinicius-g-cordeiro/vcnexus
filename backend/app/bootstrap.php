@@ -11,3 +11,14 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL ^ E_DEPRECATED);
+
+// Always check the CORS
+require_once __DIR__ . '/Middleware/CorsMiddleware.php';
+
+header('Access-Control-Allow-Origin: ' . getenv('APP_HOST') . ':5173');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, QUERY');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+

@@ -8,3 +8,15 @@
  */
 
 declare(strict_types=1);
+
+namespace App\Service;
+
+use App\Model\Model;
+use App\Shared\Connection;
+use App\Shared\Validator;
+
+class Service {
+    function __construct(protected ?Connection $connection = null,protected ?Model $model = null,protected ?Validator $validator= null){
+
+    }
+}

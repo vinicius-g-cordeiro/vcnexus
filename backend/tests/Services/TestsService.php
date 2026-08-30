@@ -8,3 +8,16 @@
  */
 
 declare(strict_types=1);
+
+namespace Tests\Services;
+
+use App\Service\Service;
+
+class TestsService extends Service {
+    function __construct() {
+        parent::__construct();
+    }
+
+    
+
+}
