@@ -68,9 +68,10 @@ final class Response{
         header('Content-Type: text/plain');
         header('Accept: text/plain');
         http_response_code($status);
-        file_put_contents('../logs/'.$file.'.log', mb_strtoupper($file) . ' - ' . date('Y-m-d H:i:s') . ' - ' . $message . "\r\n", FILE_APPEND);
-
-        /// @todo add log error to a monitoring framework such as Grafana, Datadog, etc so we have observability
+        // file_put_contents(__DIR__ . '/../../storage/logs/'.$file.'.log', mb_strtoupper($file) . ' - ' . date('Y-m-d H:i:s') . ' - ' . $message . "\r\n", FILE_APPEND);
+        $handler = fopen('/../../storage/logs/'.$file.'.log', 'w+');
+        fwrite($handler, $message . "\r\n");
+        fclose($handler);
     }
 
     function withHeader(string $key, string $value) : void {

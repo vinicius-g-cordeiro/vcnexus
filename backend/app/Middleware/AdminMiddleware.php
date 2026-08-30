@@ -8,3 +8,16 @@
  */
 
 declare(strict_types=1);
+
+namespace App\Middleware;
+
+use App\Shared\Interfaces\MiddlewareInterface;
+use App\Shared\Request;
+
+class AdminMiddleware implements MiddlewareInterface
+{
+    public function handle(Request $request, callable $next): mixed{
+        /// @todo implement admin middleware
+        return $next($request);
+    }
+}
