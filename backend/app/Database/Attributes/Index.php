@@ -9,8 +9,12 @@
 
 declare(strict_types=1);
 
-namespace App\Database\Schema;
+namespace App\Database\Attributes;
 
+
+use Attribute;
+
+#[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
 final class Index {
     /** @var object{unique: bool, columns: array<string>, condition: array<string[column], string[value]>}  */
     /**

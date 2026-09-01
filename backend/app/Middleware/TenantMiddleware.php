@@ -16,8 +16,10 @@ use App\Shared\Request;
 
 final class TenantMiddleware implements MiddlewareInterface
 {
+
     public function handle(Request $request, callable $next): mixed
     {
+    
         return $next($request);
     }
 }

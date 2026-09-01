@@ -36,8 +36,9 @@ class Connection {
                 $connection->PConnect(getenv("DB_HOST"), getenv("DB_USERNAME"), $passwd, getenv("DB_DATABASE"));
                 $connection->SetFetchMode(ADODB_FETCH_ASSOC);
                 $connection->SetCharSet('utf8');
+                $connection->enableLastInsertID(true);
 
-                $connection->autoCommit = true;
+                $connection->autoCommit = false;
                 
             } catch (ADODB_Exception $e) {
                 Response::log(file: 'errors', message: $e->getMessage(), status: 500, success: false);

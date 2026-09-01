@@ -22,11 +22,6 @@ final class Response{
             header($key . ': ' . $value);
         }
 
-        if(is_array($data)){
-            $data = array_map('json_encode', $data);
-        } else {
-            $data = json_encode($data, JSON_UNESCAPED_UNICODE);
-        }
 
         echo json_encode(object(message : $message, status : $status, code : $code, data : $data ), JSON_UNESCAPED_UNICODE);
 
@@ -64,14 +59,11 @@ final class Response{
     }
 
 
-    public static function log(?string $file = 'errors', ?string $message = '', ?int $status = 500, ?bool $success = false, ?object $data = null) : void {
+    public static function log(?string $file = 'error', ?string $message = '', ?int $status = 500, ?bool $success = false, ?object $data = null) : void {
         header('Content-Type: text/plain');
         header('Accept: text/plain');
         http_response_code($status);
-        // file_put_contents(__DIR__ . '/../../storage/logs/'.$file.'.log', mb_strtoupper($file) . ' - ' . date('Y-m-d H:i:s') . ' - ' . $message . "\r\n", FILE_APPEND);
-        $handler = fopen('/../../storage/logs/'.$file.'.log', 'w+');
-        fwrite($handler, $message . "\r\n");
-        fclose($handler);
+        file_put_contents(__DIR__ . '/../../storage/logs/'.$file.'.log', mb_strtoupper($file) . ' - ' . date('Y-m-d H:i:s') . ' - ' . $message . "\r\n", FILE_APPEND);
     }
 
     function withHeader(string $key, string $value) : void {

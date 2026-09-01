@@ -9,8 +9,11 @@
 
 declare(strict_types=1);
 
-namespace App\Database\Schema;
+namespace App\Database\Attributes;
 
+use Attribute;
+
+#[Attribute(Attribute::TARGET_PROPERTY)]
 final class Column {
     public bool $modified = false;
     public mixed $value = null {
@@ -20,7 +23,8 @@ final class Column {
         }
     }
 
-    function __construct(public readonly string $name, public readonly string $type, public readonly mixed $default = null, public readonly bool $isNull = false, public readonly string $comment = '', public readonly string|object $index = '') { 
+    function __construct(public readonly string $type, public readonly mixed $default = null, public readonly bool $nullable = false, public readonly string $comment = '', public readonly bool $bIsUnique = false, public readonly bool $inherit = true) { 
+        
     }
 }
 

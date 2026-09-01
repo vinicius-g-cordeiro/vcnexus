@@ -9,10 +9,14 @@
 
 declare(strict_types=1);
 
-namespace App\Shared;
+namespace App\Model;
 
-class Validator {
-    function __construct() {
-        
+use App\Database\Schema\TenantSchema;
+
+
+final class TenantModel extends Model {
+
+    function __construct($dbConnection = null){
+        parent::__construct($dbConnection, new TenantSchema());
     }
 }

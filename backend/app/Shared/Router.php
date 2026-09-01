@@ -125,9 +125,6 @@ final class Router {
                 $pathMatchedWrongMethod = true;
                 continue;
             }
-
-            
-
             $params = [];
             foreach($route['paramNames'] as $name) {
                 $params[$name] = $matches[$name] ?? null;
@@ -183,7 +180,9 @@ final class Router {
     }
 
     function resolveMiddlewareClasses(array $attributes) : array {
-        return array_map(static fn(ReflectionAttribute $attribute) : string => $attribute->newInstance()->class, $attributes);
+        return array_map(static function(ReflectionAttribute $attribute) : string {
+            return $attribute->newInstance()->class;
+        },$attributes);
     }
 
     function resolveRateLimit(array $attributes) : ?RateLimitAttribute {

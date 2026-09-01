@@ -11,15 +11,20 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Model\UserModel;
 use App\Service\Service;
-use App\Model\Model;
 use App\Shared\Connection;
-use App\Shared\Validator;
 
 final class UserService extends Service {
-    function __construct(protected readonly ?Connection $connection = null,protected readonly ?Model $model = null,protected readonly ?Validator $validator= null){
-        parent::__construct($connection, $model, $validator);
+    function __construct(protected ?Connection $connection = null){
+        parent::__construct($connection, new UserModel($connection));
     }
 
-
+    public function list(?object $parameters = null) : object|array|bool {
+        $response = null;
+        $parameters ??= $this->request->params();
+        
+        $response = $this->model->list($parameters);
+        return $response;
+    }
 }

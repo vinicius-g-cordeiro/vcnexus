@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/bootstrap.php';
 
+use App\Controller\AuthController;
 use App\Controller\Controller;
 use App\Controller\UserController;
 use App\Shared\Request;
@@ -20,10 +21,12 @@ $router = new Router();
 $router->addGlobalMiddleware(LoggingMiddleware::class);
 
 $router->registerControllers([
-    UserController::class
+    UserController::class,
+    Controller::class,
+    AuthController::class
 ]);
 
 $request = Request::instance();
 
 
-$router->dispatch($request->fromGlobals());
+$router->dispatch($request);

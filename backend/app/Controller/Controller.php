@@ -14,11 +14,20 @@ namespace App\Controller;
 use App\Shared\Request;
 use App\Shared\Session;
 use App\Shared\Connection;
-
+use App\Service\Service;
+use App\Shared\Attributes\Route;
 
 class Controller { 
-    public function __construct(protected ?Connection $dbConnection = null, protected readonly ?Request $request = null, protected readonly ?Session $session = null ) {
+
+    protected ?Service $service = null;
+    public function __construct(protected ?Connection $dbConnection = null, public ?Request $request = null, protected ?Session $session = null ) {
         
+    }
+
+    #[Route('GET', '/health-check')]
+    public function verifyConnections() : void {
+        $this->service = new Service($this->dbConnection);
+        $this->service->verifyHealth();
     }
 }
 
