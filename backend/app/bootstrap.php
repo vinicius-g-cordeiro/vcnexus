@@ -22,3 +22,4 @@ header('Access-Control-Allow-Origin: ' . getenv('APP_HOST') . ':5173');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, QUERY');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
+

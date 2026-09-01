@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Users;
+namespace App\DTOs\Authentication;
 
 use App\DTOs\DTOInterface;
 

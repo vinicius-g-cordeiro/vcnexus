@@ -39,7 +39,8 @@ final class ForeignKeyConstraint extends Constraint
         public readonly array $columns = [],
         public readonly bool $actionOnUpdate = false,
         public readonly bool $actionOnDelete = false,
-        public readonly string $deleteAction = ''
+        public readonly string $deleteAction = '',
+        public readonly bool $deferred = true,
     ) {
 
     }

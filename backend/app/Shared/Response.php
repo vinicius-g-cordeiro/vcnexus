@@ -14,7 +14,8 @@ namespace App\Shared;
 use App\Shared\Notification;
 
 final class Response{
-    public static function json(?string $message = '', bool $status = true, int $code = 200, object|array $data = [], array $headers = [], bool $bShouldExit = true) : void {
+
+    public static function json(?string $message = '', bool $status = true, int $code = 200, object|array $data = [], array $headers = [], bool $bShouldExit = true) : Response {
         header('Content-Type: application/json');
         http_response_code($code);
 
@@ -26,6 +27,8 @@ final class Response{
         echo json_encode(object(message : $message, status : $status, code : $code, data : $data ), JSON_UNESCAPED_UNICODE);
 
         if($bShouldExit) exit(0);
+
+        return static::self;
     }
 
     public static function file(string $file) : void {

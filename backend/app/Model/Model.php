@@ -17,13 +17,20 @@ use App\Database\Schema\Schema;
 use App\DTOs\DTOInterface;
 use App\Exceptions\AppExceptionHandler;
 use App\Shared\Connection;
+use App\Shared\Session;
+use DateTimeZone;
+use DateTime;
 
 class Model extends Connection
 {
     private ?PostgreSQLSchemaCompiler $sqlCompiler = null;
+
+    private ?Session $session = null;
+
     function __construct($dbConnection = null, public ?Schema $schema = null, ) {
         parent::__construct($dbConnection);
         $this->sqlCompiler = new PostgreSQLSchemaCompiler($dbConnection, $schema);
+        $this->session = Session::getInstance();
         if ($this->doesTableExists() === false) {
             $this->sqlCompiler->createTable();
         }
@@ -78,6 +85,9 @@ class Model extends Connection
             if ($key == 'id') {
                 continue;
             }
+
+            if($value == null){ continue; }
+
             if ($key == 'password' && password_needs_rehash($value, CRYPT_SHA512, ['cost' => 12])) {
                 $fields['password'] = password_hash($value, CRYPT_SHA512, ['cost' => 12]);
                 continue;
@@ -87,8 +97,6 @@ class Model extends Connection
                 $fields['password_confirmation'] = password_hash($value, CRYPT_SHA512, ['cost' => 12]);
                 continue;
             }
-
-            if($value == null){ continue; }
 
             if ($value == 'on' || $value == '1') {
                 $fields[$key] = 1;
@@ -106,10 +114,20 @@ class Model extends Connection
             $fields[$key] = $value;
         }
 
+                
+        if (isset($this->session->get('user')->id, $dataTransferObject->created_by, $dataTransferObject->created_at)) {
+            $date = new DateTime('now', new DateTimeZone('UTC'));
+            $fields['created_by'] = $this->session->get('user')->id;
+            $fields['created_at'] = $date->getTimestamp();
+            $fields['created_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
+        }
+
 
         $this->getConnection()->AutoExecute($this->schema->table, $fields, 'INSERT');
     
-        return object(insertedID : $this->getConnection()->Insert_ID()) ?: false;
+
+        $tenant_id = (object)$this->getConnection()->GetRow('SELECT tenant_id FROM ' . $this->schema->table . ' WHERE id = ?', [$this->getConnection()->Insert_ID()]);
+        return object(insertID : $this->getConnection()->Insert_ID(), tenant_id: $tenant_id->tenant_id) ?: false;
     }
 
 
@@ -121,6 +139,10 @@ class Model extends Connection
             if ($key == 'id') {
                 continue;
             }
+
+
+            if($value == null){ continue; }
+
             if ($key == 'password' && $value !== null && trim($value) !== '' && password_needs_rehash($value, CRYPT_SHA512, ['cost' => 12])) {
                 $fields['password'] = password_hash($value, CRYPT_SHA512, ['cost' => 6]);
                 continue;
@@ -130,11 +152,24 @@ class Model extends Connection
                 $fields[$key] = 1;
                 continue;
             }
+
+            if (is_array($value)) {
+                $fields[$key] = '{' . implode(',', array_map(
+                    fn(string $val) => '"' . str_replace('"', '\"', $val) . '"',
+                    $value
+                )) . '}';
+                
+                continue;
+            }
             $fields[$key] = $value;
         }
 
-        if (isset($_SESSION['user'], $_SESSION['user']->id)) {
-            $fields['updated_by'] = $_SESSION['user']->id;
+        
+        if (isset($this->session->get('user')->id)) {
+            $date = new DateTime('now', new DateTimeZone('UTC'));
+            $fields['updated_by'] = $this->session->get('user')->id;
+            $fields['updated_at'] = $date->getTimestamp();
+            $fields['updated_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
         }
 
         if(empty($where)){

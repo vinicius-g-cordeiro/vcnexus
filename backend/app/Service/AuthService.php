@@ -11,26 +11,34 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\DTOs\Authentication\AuthLoginDTO;
+use App\DTOs\Users\UsernameRegistrationDTO;
 use App\Exceptions\AppExceptionHandler;
 use App\Model\UserModel;
+use App\Model\UsernameModel;
 use App\Service\Service;
 use App\Shared\Connection;
 use App\Model\Model;
 use App\Shared\Session;
-use App\DTOs\Users\UserRegistrationDTO;
+use App\DTOs\Authentication\UserRegistrationDTO;
+use DateTimeZone;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 
 class AuthService extends Service
 {
+    /**
+     * @var UserModel
+     */
+    protected ?Model $model = null;
     function __construct(protected ?Connection $connection = null)
     {
         parent::__construct($connection, new UserModel($connection), Session::getInstance());
 
     }
 
-    function store(UserRegistrationDTO $userRegistrationDTO): object|false|null
+    function store(UserRegistrationDTO $userRegistrationDTO): object|null
     {
         $response = null;
 
@@ -90,11 +98,58 @@ class AuthService extends Service
             throw new AppExceptionHandler(implode('##,##', $errors), 400, null);
         }
 
+        $usernameModel = new UsernameModel($this->connection);
+        $response = $this->transaction(function () use ($userRegistrationDTO, $usernameModel) {
+            $response =  $this->model->store($userRegistrationDTO);
+            if($response !== false){
+                $this->transaction(function () use ($userRegistrationDTO, $response, $usernameModel) {
 
-        $response = $this->transaction(function () use ($userRegistrationDTO) {
-            return $this->model->store($userRegistrationDTO);
+                    return $usernameModel->store(new UsernameRegistrationDTO($userRegistrationDTO->username, $response->insertID, $response->tenant_id));
+                });
+            }
+
+            return $response;
         });
 
-        return $response;
+        return $response === false ? null : $response;
+    }
+
+    public function login(AuthLoginDTO $authLoginDTO) : object|null {
+        $response = null;
+
+        
+        // Validate 
+        $assert = new Assert\Collection(fields: [
+            'login' => new Assert\NotBlank(message: 'Login is required!'),
+            'password' => new Assert\NotBlank(message: 'Password is required and cannot be blank'),
+        ], allowMissingFields: false, allowExtraFields: true);
+
+        $violations = $this->validator->validate((array) $authLoginDTO, [$assert]);
+
+        if ($violations->count() > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[] = $violation->getMessage();
+            }
+
+            // This should handle the notification to the user, using the session notification method
+            throw new AppExceptionHandler(implode('##,##', $errors), 400, null);
+        }
+
+
+        $response = $this->transaction(function () use ($authLoginDTO) {
+            $result = $this->model->login($authLoginDTO);
+            $this->session->set('user', $result);
+
+            $date = new \DateTime('now', new DateTimeZone('UTC'));
+
+            $dateLocal = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
+            $res = $this->model->update(new AuthLoginDTO(login: $result->email, id: (int)$result->id, last_login: (string)$date->getTimestamp(),last_login_local: (string)$dateLocal, last_ip: $_SERVER['REMOTE_ADDR'], last_agent: $_SERVER['HTTP_USER_AGENT'] ), ('id = ' . $result->id));
+            
+        });
+        dd($this->session->get('user'));
+
+
+        return $response === false ? null : $response;
     }
 }

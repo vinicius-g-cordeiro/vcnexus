@@ -13,13 +13,12 @@ namespace App\DTOs\Users;
 
 use App\DTOs\DTOInterface;
 
-final readonly class UserListingDTO implements DTOInterface
+final readonly class UsernameRegistrationDTO implements DTOInterface
 {
-
-
-    public function __construct(public readonly string $name, public readonly ?string $surname = '', public readonly string $lastname, public readonly string $uuid, public readonly string $username, public readonly string $email)
-    {
+    public function __construct(
+        public readonly string $username,
+        public readonly ?string $user_id,
+        public readonly ?string $tenant_id,
+    ) {
     }
-
-
 }

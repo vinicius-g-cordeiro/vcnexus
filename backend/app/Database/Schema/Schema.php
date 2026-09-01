@@ -35,11 +35,20 @@ class Schema {
     #[Column(type: 'TIMESTAMP',default: 'CURRENT_TIMESTAMP', nullable: false, comment: 'Created date when the record was set on the database, should never be null')]
     public ?int $created_at = 0;
 
+    #[Column(type: 'TIMESTAMP WITH TIME ZONE',default: 'CURRENT_TIMESTAMP', nullable: false, comment: 'Created date when the record was set on the database, should never be null')]
+    public ?int $created_at_local = 0;
+
     #[Column(type: 'TIMESTAMP',default: null, nullable: true, comment: '')]
     public  ?string $updated_at = null;
+    
+    #[Column(type: 'TIMESTAMP WITH TIME ZONE',default: null, nullable: true, comment: '')]
+    public  ?string $updated_at_local = null;
 
     #[Column(type: 'TIMESTAMP',default: null, nullable: true, comment: '')]
     public ?string $deleted_at = null;
+
+    #[Column(type: 'TIMESTAMP WITH TIME ZONE',default: null, nullable: true, comment: '')]
+    public ?string $deleted_at_local = null;
 
     #[Column(type: 'BIGINT',default: 1, nullable: false, comment: '')]
     public ?int $created_by = 1;

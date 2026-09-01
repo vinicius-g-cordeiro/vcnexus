@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Exceptions\AppExceptionHandler;
+use App\Service\UsernameService;
 use App\Shared\Attributes\Route;
 use App\Shared\Response;
 use App\Shared\Request;
@@ -30,6 +31,7 @@ class UserController extends Controller
     protected ?Service $service = null; 
     public function __construct(protected ?Connection $dbConnection = null){
         parent::__construct($dbConnection);
+        $this->request = Request::instance();
         $this->service = new UserService($dbConnection);
     }
 
@@ -77,5 +79,18 @@ class UserController extends Controller
     public function block(string $id) : void {
         
     }
+
+    #[Route('GET', '/usernames/')]
+    public function getUsername() : void {
+        $usernameService = new UsernameService($this->dbConnection);
+        try{
+            $params = $this->request->params();
+            $response = $usernameService->list($params);
+            Response::json(code: 200, status:true, data: $response);
+        }catch(Exception $err){
+            Response::json($err->getMessage(), false, $err->getCode(), object(), [], true);
+        }
+    }
+
 
 }

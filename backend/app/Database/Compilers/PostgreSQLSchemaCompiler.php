@@ -42,7 +42,7 @@ class PostgreSQLSchemaCompiler extends Connection
         try {
             $response = $this->getConnection()->Execute($creationQuery);
         } catch (Throwable $th) {
-            throw new DatabaseNotCreatedException('500 - There was an error!', $th->getCode(), $th->getPrevious());
+            throw new DatabaseNotCreatedException($th->getMessage(), $th->getCode(), $th->getPrevious());
         }
 
         return Response::json(message: '', code: 204, data: object(DatabaseCreated: $response !== false));
@@ -129,7 +129,7 @@ class PostgreSQLSchemaCompiler extends Connection
         }
 
         if (isset($constraint->deferred) && $constraint->deferred === true) {
-            $sql .= ' DEFERRED INITIALLY DEFERRED ';
+            $sql .= ' DEFERRABLE INITIALLY DEFERRED ';
         }
 
         return $sql;

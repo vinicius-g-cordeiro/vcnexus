@@ -21,7 +21,7 @@ use App\Database\Attributes\Column;
 #[ForeignKeyConstraint(name: 'fk_users_created_by', foreignKeys: ['created_by'], references: 'users', columns: ['id'], actionOnDelete: true, deleteAction: 'SET NULL')]
 #[ForeignKeyConstraint(name: 'fk_users_updated_by', foreignKeys: ['updated_by'], references: 'users', columns: ['id'], actionOnDelete: true, deleteAction: 'SET NULL')]
 #[ForeignKeyConstraint(name: 'fk_users_deleted_by', foreignKeys: ['deleted_by'], references: 'users', columns: ['id'], actionOnDelete: true, deleteAction: 'SET NULL')]
-#[UniqueConstraint(name: 'uq_users_id_tenant', columns: ['id', 'tenant_id'])]
+#[UniqueConstraint(name: 'uq_users_id_tenant', columns: ['id', 'tenant_id']),]
 #[UniqueConstraint(name: 'uq_users_email', columns: ['email'])]
 class UsersSchema extends Schema
 {
@@ -29,6 +29,9 @@ class UsersSchema extends Schema
 
     #[Column(type: 'VARCHAR(100)', default: '', nullable: false)]
     public string $name = '';
+
+    #[Column(type: 'VARCHAR(64)', default: '', nullable: false)]
+    public string $password = '';
     
     #[Column(type: 'VARCHAR(100)', default: '', nullable: true)]
     public ?string $surname = null;
@@ -48,19 +51,19 @@ class UsersSchema extends Schema
     #[Column(type: 'VARCHAR(24)', default: null, nullable: true, comment: '')]
     public ?string $phone = null;
 
-    #[Column(type: 'BIT(1)', default: null, nullable: true, comment: '')]
+    #[Column(type: 'SMALLINT', default: null, nullable: true, comment: '')]
     public ?int $gender = null;
 
-    #[Column(type: 'BIT(1)', default: null, nullable: true, comment: '')]
+    #[Column(type: 'SMALLINT', default: null, nullable: true, comment: '')]
     public ?int $marital_status = null;
 
-    #[Column(type: 'BIT(1)', default: null, nullable: true, comment: '')]
+    #[Column(type: 'SMALLINT', default: null, nullable: true, comment: '')]
     public ?int $sexual_orientation = null;
 
-    #[Column(type: 'BIT(1)', default: null, nullable: true, comment: '')]
+    #[Column(type: 'SMALLINT', default: null, nullable: true, comment: '')]
     public ?int $religion = null;
 
-    #[Column(type: 'BIT(1)', default: null, nullable: true, comment: '')]
+    #[Column(type: 'SMALLINT', default: null, nullable: true, comment: '')]
     public ?int $blocked = null;
 
     #[Column(type: 'BIGINT', default: null, nullable: true, comment: '')]
@@ -70,7 +73,7 @@ class UsersSchema extends Schema
     public ?string $blocked_at = null;
 
 
-    #[Column(type: 'BIT(1)', default: null, nullable: true, comment: '')]
+    #[Column(type: 'SMALLINT', default: null, nullable: true, comment: '')]
     public ?string $blood_type = null;
 
 
@@ -82,8 +85,20 @@ class UsersSchema extends Schema
     public ?string $locale = null;
 
 
-    function __construct()
-    {
+    #[Column(type: 'TIMESTAMP', default: null, nullable: true, comment: 'Last time the user was logged in on the system')]
+    public ?string $last_login = null;
+
+    #[Column(type: 'TIMESTAMP WITH TIME ZONE', default: null, nullable: true, comment: 'Last time the user was logged in on the system')]
+    public ?string $last_login_local = null;
+
+    #[Column(type: 'VARCHAR(50)', default: null, nullable: true, comment: '')]
+    public ?string $last_ip = null;
+
+
+    #[Column(type: 'VARCHAR(500)', default: null, nullable: true, comment: '')]
+    public ?string $last_agent = null;
+
+    function __construct() {
         parent::__construct();
     }
 }
