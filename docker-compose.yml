@@ -210,5 +210,6 @@ secrets:
 
 volumes:
   db_data:
+    driver: local
   node_modules:
     driver: local

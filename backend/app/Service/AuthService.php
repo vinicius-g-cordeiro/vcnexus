@@ -23,6 +23,7 @@ use App\Model\Model;
 use App\Shared\Session;
 use App\DTOs\Authentication\UserRegistrationDTO;
 use DateTimeZone;
+use RuntimeException;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -99,19 +100,30 @@ class AuthService extends Service
             throw new AppExceptionHandler(implode('##,##', $errors), 400, null);
         }
 
-        $usernameModel = new UsernameModel($this->connection);
-        $response = $this->transaction(function () use ($userRegistrationDTO, $usernameModel) {
-            $response =  $this->model->store($userRegistrationDTO);
+        $response = $this->transaction(function () use ($userRegistrationDTO) {
+
+            $response = $this->model->store($userRegistrationDTO);
+
+            if (!$response || !isset($response->insertID, $response->tenant_id)) {
+                throw new RuntimeException('Failed to create user.');
+            }
+
+            $usernameModel = new UsernameModel($this->connection);
+
+            $usernameResponse = $usernameModel->store(
+                new UsernameRegistrationDTO(
+                    $userRegistrationDTO->username,
+                    $response->insertID,
+                    $response->tenant_id
+                )
+            );
+
+            if (!$usernameResponse) {
+                throw new RuntimeException('Failed to create username.');
+            }
+
             return $response;
         });
-
-         if($response !== false){
-            $this->transaction(function () use ($userRegistrationDTO, $response, $usernameModel) {
-                return $usernameModel->store(new UsernameRegistrationDTO($userRegistrationDTO->username, $response->insertID, $response->tenant_id));
-            });
-        }
-
-
         return $response === false ? null : $response;
     }
 
@@ -153,11 +165,12 @@ class AuthService extends Service
 
     public function getSelf() : object|null {
         $uuid = $this->session->get('user')?->uuid;
-
         $response = $this->model->find($uuid, ['u.id', 'un.username', 'u.name', 't.name as "organization_name" ', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email']);
-
+        if($response === false || $response == null || $response == object()){
+            throw new RuntimeException('404 - user not found', 404);
+        }
+        
         return $response === false ? null : $response;
-
     }
 
     public function getUser(?string $uuid = null) : object|null {
@@ -176,7 +189,7 @@ class AuthService extends Service
         }
 
         $response = $this->transaction(function () use ($userFound) {
-            return $this->model->update(new LogoutDTO(id: (int)$userFound->id, uuid: $userFound->uuid), 'uuid = \'' . $userFound->uuid . '\'');
+            $result = $this->model->update(new LogoutDTO(id: (int)$userFound->id, uuid: $userFound->uuid), 'uuid = \'' . $userFound->uuid . '\'');
             
         });
 

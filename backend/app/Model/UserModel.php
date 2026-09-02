@@ -26,9 +26,28 @@ final class UserModel extends Model
     function list(?object $parameters) : object|bool|null|array {
         $response = null;
         
+        $sql = 'select t.name as "organization",un.username , u.name, u.surname, u.lastname, u.nickname, u.created_at, u.updated_at, u.created_by , u.email 
+        from "' . $this->schema->table . '" u 
+        inner join "tenants" t on u.tenant_id = t.id 
+        inner join "usernames" un on un.user_id = u.id
+        ';
+
+
+        
+        if(isset($parameters, $parameters->search) && $parameters->search !== ''){
+            $sql .= 'where (public.unaccent(lower(u.name)) = public.unaccent(lower(\''.$parameters->search.'\')) or public.unaccent(lower(u.surname)) = public.unaccent(lower(\''.$parameters->search.'\')) or public.unaccent(lower(u.lastname)) = public.unaccent(lower(\''.$parameters->search.'\')) or public.unaccent(lower(un.username)) = public.unaccent(lower(\''.$parameters->search.'\')) or public.unaccent(lower(u.phone)) = public.unaccent(lower(\''.$parameters->search.'\')))';
+        }
+
+        if(isset($parameters, $parameters->active) && $parameters->active !== ''){
+            if(isset($parameters, $parameters->search) && $parameters->search !== ''){
+                $sql .= ' and  u.active = ' . $parameters->active . ' ';
+            }else{
+                $sql .= ' where  u.active = ' . $parameters->active . ' ';
+            }
+        }
         try{
-            $result = $this->getConnection()->Execute('select t.name as "organization", u.name, u.surname, u.lastname, u.nickname, u.email from "' . $this->schema->table . '" u inner join tenants t on u.tenant_id = t.id ;');
-            $response = $this->fr2Arr($result, false, 'array');
+            $result = $this->getConnection()->Execute($sql);
+            $response = $this->fr2Arr($result, false);
         }catch(\Exception $err){
             throw new AppExceptionHandler($err->getMessage(), $err->getCode(), $err->getPrevious());
         }
@@ -38,8 +57,8 @@ final class UserModel extends Model
     }
 
     function login(?object $parameters = null): object|bool {
-        $query = $this->getConnection()->Prepare('SELECT id, uuid, name, email, phone, lastname, active, password FROM ' . $this->schema->table . ' WHERE email = ? or phone = ? LIMIT 1;');
-        $response = $this->getConnection()->Execute($query,[$parameters->login, $parameters->login]);
+        $query = $this->getConnection()->Prepare('SELECT u.id, u.uuid, u.name, u.email, u.phone, u.lastname, u.active, u.password , un.username FROM ' . $this->schema->table . ' u inner join usernames un on un.user_id = u.id  WHERE public.unaccent(lower(email)) = ? or phone = ? or public.unaccent(lower(un.username)) = public.unaccent(lower(?)) LIMIT 1;');
+        $response = $this->getConnection()->Execute($query,[$parameters->login, $parameters->login, $parameters->login]);
 
         $result = $this->fr2Arr($response);
 
@@ -65,8 +84,7 @@ final class UserModel extends Model
         $response = $this->getConnection()->Execute('SELECT ' . $returnColumns . '  FROM ' . $this->schema->table . ' u INNER JOIN tenants t ON t.id = u.tenant_id LEFT JOIN usernames un ON un.user_id = u.id ' . $where, [$uuid]);
 
         $result = $this->fr2Arr($response, false);
-
-
+                
         return (object)$result[0] ?? false;
     }
 

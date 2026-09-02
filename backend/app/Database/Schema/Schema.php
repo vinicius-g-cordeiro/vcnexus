@@ -60,7 +60,7 @@ class Schema {
     #[Column(type: 'BIGINT',default: 1, nullable: false, comment: 'Tenant id for multi-tenant management using RLS')]
     public ?int $tenant_id = 1;
 
-    #[Column(type: 'BIT(1)',default: 'B\'1\'', nullable: false, comment: '')]
+    #[Column(type: 'SMALLINT',default: '1', nullable: false, comment: '')]
     public ?int $active = 1;
 
     /**

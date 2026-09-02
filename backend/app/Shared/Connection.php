@@ -13,7 +13,7 @@ namespace App\Shared;
 
 use ADOConnection;
 use ADODB_Exception;
-use Symfony\Component\VarDumper\VarDumper;
+use Throwable;
 
 #[\AllowDynamicProperties]
 class Connection {
@@ -37,13 +37,14 @@ class Connection {
                 $connection->SetFetchMode(ADODB_FETCH_ASSOC);
                 $connection->SetCharSet('utf8');
                 $connection->enableLastInsertID(true);
-
+                $connection->Execute('CREATE EXTENSION IF NOT EXISTS unaccent;');
                 $connection->autoCommit = false;
+                $connection->raiseExceptions = true;
                 
             } catch (ADODB_Exception $e) {
                 Response::log(file: 'errors', message: $e->getMessage(), status: 500, success: false);
                 throw $e;
-            }catch (\Exception $e) {
+            }catch (Throwable $e) {
                 Response::log(file: 'errors', message: $e->getMessage(), status: 500, success: false);
                 throw $e;
             }

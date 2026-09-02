@@ -1,6 +1,6 @@
-<?php 
+<?php
 /** 
-* @brief 
+ * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com><https://github.com/vinicius-g-cordeiro>
  * @version 1.0
  * @date 2026/08/29
@@ -21,40 +21,53 @@ use App\Shared\Response;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
+use Closure;
+use RuntimeException;
 
+class Service
+{
 
-class Service {
-    
     protected ?Request $request = null;
 
     protected ?ValidatorInterface $validator = null;
-    function __construct(protected ?Connection $connection = null,protected ?Model $model = null,protected ?Session $session = null){
+    function __construct(protected ?Connection $connection = null, protected ?Model $model = null, protected ?Session $session = null)
+    {
         $this->connection = $connection ?: Connection::getInstance();
         $this->model = $model ?: new Model();
         $this->validator = Validation::createValidator();
         $this->session = $session ?: Session::getInstance();
-        $this->request = Request::instance();    
+        $this->request = Request::instance();
     }
 
-    function verifyHealth() : void {
+    function verifyHealth(): void
+    {
         $bIsDatabaseConnected = $this->model->isConnected();
         $bIsRedisConnected = false;
         $bIsSessionAvailable = $this->session->isSessionValid();
-        Response::json(message: 'Connected to API, Connections verified', code: 200, status: true, data: object(DatabaseConnection: $bIsDatabaseConnected, RedisConnection: $bIsRedisConnected, SessionValid: $bIsSessionAvailable) );
+        Response::json(message: 'Connected to API, Connections verified', code: 200, status: true, data: object(DatabaseConnection: $bIsDatabaseConnected, RedisConnection: $bIsRedisConnected, SessionValid: $bIsSessionAvailable));
     }
 
 
-    public function transaction(callable $callback)  {
-        
+    protected function transaction(Closure $callback): mixed
+    {
         $this->model->getConnection()->StartTrans();
-        try{
+
+        try {
             $result = $callback();
+
+            if ($this->model->getConnection()->HasFailedTrans()) {
+                throw new RuntimeException('Transaction failed.');
+            }
+
             $this->model->getConnection()->CompleteTrans();
+
             return $result;
-        }catch(Throwable $err){
+
+        } catch (Throwable $e) {
             $this->model->getConnection()->FailTrans();
             $this->model->getConnection()->CompleteTrans();
-            throw $err;
+
+            throw $e;
         }
     }
 }

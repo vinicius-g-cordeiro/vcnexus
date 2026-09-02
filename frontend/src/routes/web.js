@@ -11,7 +11,7 @@ import { useAuthStore } from '@/stores/authStore'
 const routes = [
     {
         path: '/',        
-        component: () => import('@/components/shared/layouts/Guest.vue'),
+        component: () => import('@/components/layouts/Guest.vue'),
         meta: {
             requiresGuest: true,
         },
@@ -19,7 +19,7 @@ const routes = [
             {
                 path: '',
                 name: 'home',
-                component: () => import('@/views/locales/pt-br/Home.vue'),
+                component: () => import('@/views/Home.vue'),
                  meta: {
                     breadcrumbs: [],
                     actions: [],
@@ -29,7 +29,7 @@ const routes = [
             {
                 path: 'login/',
                 name: 'login',
-                component: () => import('@/views/locales/pt-br/auth/Login.vue'),
+                component: () => import('@/views/auth/Login.vue'),
                  meta: {
                     breadcrumbs: [],
                     actions: [],
@@ -39,7 +39,7 @@ const routes = [
             {
                 path:"register/",
                 name:"register",
-                component: () => import('@/views/locales/pt-br/auth/Register.vue'),
+                component: () => import('@/views/auth/Register.vue'),
                  meta: {
                     breadcrumbs: [],
                     actions: [],
@@ -50,7 +50,7 @@ const routes = [
     },
     {
         path: '/',        
-        component: () => import('@/components/shared/layouts/Default.vue'),
+        component: () => import('@/components/layouts/Default.vue'),
         meta: {
             requiresAuth: true
         },
@@ -58,7 +58,7 @@ const routes = [
             {
                 path: 'dashboard/',
                 name: 'dashboard',
-                component: () => import('@/views/locales/pt-br/Dashboard.vue'),
+                component: () => import('@/views/Dashboard.vue'),
                 meta: {
                     breadcrumbs: [],
                     actions: [],
@@ -66,16 +66,32 @@ const routes = [
                 }
             },
             {
-                path: 'users/',
-                name: 'users',
-                component: () => import('@/views/locales/pt-br/users/Profile.vue'),
+                path: 'profile/',
+                name: 'profile',
+                component: () => import('@/views/users/Profile.vue'),
                 meta: {
                     breadcrumbs: [],
                     actions: [],
-                    title: 'Profile'
+                    title: 'Profile',
                 }
-            }
+            },
+        {
+                path: 'users/list/',
+                name: 'users-list',
+                component: () => import('@/views/users/List.vue'),
+                meta: {
+                    breadcrumbs: [],
+                    actions: [],
+                    title: 'Users - List'
+                }
+            },
         ]
+    },
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'not-found',
+        component: () => import('@/views/errors/Error404.vue'),
+        
     },
 ];
 

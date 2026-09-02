@@ -45,7 +45,7 @@ final class Router {
     private array $routes = [];
 
     /** @var class-string[] */
-    private array $globalMiddlewares = [];
+    public array $globalMiddlewares = [];
 
     protected ?Connection $connection = null;
 
@@ -151,13 +151,19 @@ final class Router {
 
     function runPipeline(array $route, Request $request) : mixed {
         $middlewareInstances = array_map(static fn(string $class) : MiddlewareInterface => new $class(), $this->globalMiddlewares);
-
+        
         if(isset($route['rateLimit'], $route['rateLimit']->maxAttempts, $route['rateLimit']->decaySeconds) && $route['rateLimit'] !== null) {
             $middlewareInstances[] = new RateLimitMiddleware($this->rateLimiter, $route['rateLimit']->maxAttempts, $route['rateLimit']->decaySeconds);
         }
-
-        foreach($route['middlewareClasses'] as $class) {
-            $middlewareInstances[] = new $class();
+        
+        
+        foreach($route['middlewareClasses'] as $class) {      
+            if($class instanceof ReflectionAttribute){
+                $midlClass = $class->getArguments()[0];
+                $middlewareInstances[] = new $midlClass();
+            }else{
+                $middlewareInstances[] = new $class();
+            }
         }
 
         $destination = static function(Request $request) use ($route) : mixed {

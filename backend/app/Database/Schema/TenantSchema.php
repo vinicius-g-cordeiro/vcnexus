@@ -20,7 +20,7 @@ final class TenantSchema extends Schema
     #[Column(type: 'VARCHAR(100)', default: '', nullable: false, comment: '')]
     public ?string $name = '';
 
-    #[Column(type: 'BIT(1)', default: 'B\'1\'', nullable: false, comment: 'Current status of the subscription plan. 1: active, 2: expired')]
+    #[Column(type: 'SMALLINT', default: '1', nullable: false, comment: 'Current status of the subscription plan. 1: active, 2: expired')]
     public ?int $status = 1;
 
     #[Column(type: 'VARCHAR(4) ARRAY', default: 'ARRAY[\'0\']::VARCHAR(4)[]', nullable: false, comment: 'Current status of the subscription plan. 1: active, 2: expired')]

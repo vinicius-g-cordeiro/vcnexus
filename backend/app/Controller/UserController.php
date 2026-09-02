@@ -39,12 +39,11 @@ class UserController extends Controller
     }
 
     #[Route('GET', '/list/')]
-    
     public function index(?Request $request) : void {
         $response = null;
         try{
             $response = $this->service->list();
-            Response::json(code: 200, status: true, data: $response ?: object());
+            Response::json(code: 200, status: true, data: object(users: ($response ?: object())));
         }catch(AppExceptionHandler $exception) {
             Response::json('There was an error whilst querying for user, try again later', false, 500, object(), [], true);
         }catch(Exception $exception){

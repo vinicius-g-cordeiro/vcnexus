@@ -13,7 +13,7 @@ namespace App\Middleware;
 
 use App\Shared\Interfaces\MiddlewareInterface;
 use App\Shared\Request;
-class LoggingMiddleware implements MiddlewareInterface {
+final class LoggingMiddleware implements MiddlewareInterface {
 
     public function handle(Request $request, callable $next) : mixed {
         $start = microtime(true);

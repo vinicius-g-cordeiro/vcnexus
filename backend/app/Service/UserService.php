@@ -24,6 +24,7 @@ final class UserService extends Service {
         $response = null;
         $parameters ??= $this->request->params();
         
+        
         $response = $this->model->list($parameters);
         return $response;
     }

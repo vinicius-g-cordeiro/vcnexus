@@ -105,6 +105,9 @@ class AuthController extends Controller{
         }catch(Throwable $err){
             Response::log('error', $err->getMessage(), 500, false, (object)$err->getTraceAsString());
             Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
+        }catch(\Exception $err){
+            Response::log('error', $err->getMessage(), $err->getCode(), false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);   
         }
     }
 
