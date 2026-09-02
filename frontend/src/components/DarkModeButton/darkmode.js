@@ -19,7 +19,7 @@ const isDark = ref(false)
 
 function applyClass(dark) {
   if (typeof document === 'undefined') return
-  document.documentElement.classList.toggle('dark', dark)
+  document.documentElement.classList.toggle('my-app-dark', dark)
 }
 
 export function initDarkMode() {
@@ -28,11 +28,11 @@ export function initDarkMode() {
   const stored = localStorage.getItem(STORAGE_KEY)
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
 
-  isDark.value = stored ? stored === 'dark' : prefersDark
+  isDark.value = stored ? stored === 'my-app-dark' : prefersDark
   applyClass(isDark.value)
 
   // Keep in sync with OS-level changes if the user hasn't set an explicit preference
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  window.matchMedia('(prefers-color-scheme: my-app-dark)').addEventListener('change', (e) => {
     if (!localStorage.getItem(STORAGE_KEY)) {
       isDark.value = e.matches
       applyClass(isDark.value)
@@ -45,7 +45,7 @@ export function useDarkMode() {
     isDark.value = value
     applyClass(value)
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, value ? 'dark' : 'light')
+      localStorage.setItem(STORAGE_KEY, value ? 'my-app-dark' : 'light')
     }
   }
 
