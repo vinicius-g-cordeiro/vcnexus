@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\DTOs\Authentication\AuthLoginDTO;
+use App\DTOs\Authentication\LogoutDTO;
 use App\DTOs\Users\UsernameRegistrationDTO;
 use App\Exceptions\AppExceptionHandler;
 use App\Model\UserModel;
@@ -101,15 +102,15 @@ class AuthService extends Service
         $usernameModel = new UsernameModel($this->connection);
         $response = $this->transaction(function () use ($userRegistrationDTO, $usernameModel) {
             $response =  $this->model->store($userRegistrationDTO);
-            if($response !== false){
-                $this->transaction(function () use ($userRegistrationDTO, $response, $usernameModel) {
-
-                    return $usernameModel->store(new UsernameRegistrationDTO($userRegistrationDTO->username, $response->insertID, $response->tenant_id));
-                });
-            }
-
             return $response;
         });
+
+         if($response !== false){
+            $this->transaction(function () use ($userRegistrationDTO, $response, $usernameModel) {
+                return $usernameModel->store(new UsernameRegistrationDTO($userRegistrationDTO->username, $response->insertID, $response->tenant_id));
+            });
+        }
+
 
         return $response === false ? null : $response;
     }
@@ -136,7 +137,6 @@ class AuthService extends Service
             throw new AppExceptionHandler(implode('##,##', $errors), 400, null);
         }
 
-
         $response = $this->transaction(function () use ($authLoginDTO) {
             $result = $this->model->login($authLoginDTO);
             $this->session->set('user', $result);
@@ -145,11 +145,47 @@ class AuthService extends Service
 
             $dateLocal = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
             $res = $this->model->update(new AuthLoginDTO(login: $result->email, id: (int)$result->id, last_login: (string)$date->getTimestamp(),last_login_local: (string)$dateLocal, last_ip: $_SERVER['REMOTE_ADDR'], last_agent: $_SERVER['HTTP_USER_AGENT'] ), ('id = ' . $result->id));
-            
+            return $result;
         });
-        dd($this->session->get('user'));
-
 
         return $response === false ? null : $response;
+    }
+
+    public function getSelf() : object|null {
+        $uuid = $this->session->get('user')?->uuid;
+
+        $response = $this->model->find($uuid, ['u.id', 'un.username', 'u.name', 't.name as "organization_name" ', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email']);
+
+        return $response === false ? null : $response;
+
+    }
+
+    public function getUser(?string $uuid = null) : object|null {
+
+        $response = $this->model->find($uuid, ['u.id', 'un.username', 'u.name', 't.name as "organization_name" ', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email']);
+
+        return $response === false ? null : $response;
+    }
+
+    public function logout(?string $uuid) : object|null {
+        $response = null;
+
+        $userFound = $this->model->find($uuid, ['u.id', 'u.uuid']);
+        if($userFound === false){
+            throw new AppExceptionHandler(message: 'Could not find the user to logout', code:400);
+        }
+
+        $response = $this->transaction(function () use ($userFound) {
+            return $this->model->update(new LogoutDTO(id: (int)$userFound->id, uuid: $userFound->uuid), 'uuid = \'' . $userFound->uuid . '\'');
+            
+        });
+
+        if(isset($response) && $response === 1){
+            $this->session->set('user', null);
+        }
+
+        return $response === 1 ? object(loggedOut: true) : null;
+
+
     }
 }

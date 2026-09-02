@@ -44,7 +44,6 @@ class PostgreSQLSchemaCompiler extends Connection
         } catch (Throwable $th) {
             throw new DatabaseNotCreatedException($th->getMessage(), $th->getCode(), $th->getPrevious());
         }
-
         return Response::json(message: '', code: 204, data: object(DatabaseCreated: $response !== false));
     }
 
@@ -128,9 +127,12 @@ class PostgreSQLSchemaCompiler extends Connection
             $sql .= ' ON DELETE ' . $constraint->deleteAction;
         }
 
-        if (isset($constraint->deferred) && $constraint->deferred === true) {
+        if($constraint->deferred === true){
             $sql .= ' DEFERRABLE INITIALLY DEFERRED ';
         }
+        // if (isset($constraint->deferred) && $constraint->deferred === true) {
+        //     $sql .= ' DEFERRABLE INITIALLY DEFERRED ';
+        // }
 
         return $sql;
     }

@@ -3,7 +3,7 @@ module.exports = {
     darkMode: 'class',
     content: [
         './src/**/*.{html,js}',
-        './src/**/*.{vue,js}',
+        './src/**/*.{vue,js,ts,jsx,tsx}',
     ],
     theme: {
         fontFamily: {
@@ -13,5 +13,10 @@ module.exports = {
             poppins: ['Poppins', 'sans-serif'],
             helvetica: ['Helvetica', 'sans-serif'],
         },
+        extend: {
+            colors: {
+                gold: '#D4AF37',
+            },
+        }
     }
 }

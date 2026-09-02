@@ -58,4 +58,16 @@ final class UserModel extends Model
         return (object)$result[0] ?? false;
     }
 
+    function find(?string $uuid, array $columns = []) : object|bool {
+        $returnColumns = implode(', ', $columns);
+        
+        $where = ' WHERE u.uuid = ?';
+        $response = $this->getConnection()->Execute('SELECT ' . $returnColumns . '  FROM ' . $this->schema->table . ' u INNER JOIN tenants t ON t.id = u.tenant_id LEFT JOIN usernames un ON un.user_id = u.id ' . $where, [$uuid]);
+
+        $result = $this->fr2Arr($response, false);
+
+
+        return (object)$result[0] ?? false;
+    }
+
 }

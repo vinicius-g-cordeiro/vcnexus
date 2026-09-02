@@ -1,9 +1,26 @@
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
 
-<script setup lang="js">
-    import { ref } from 'vue'
+
+const authStore = useAuthStore()
+
+const user = computed(() => authStore.sessionUser)
+
+onMounted(async () => {
+    await authStore.fetchUser()
+})
+
+
+// change the layout based on the current user
+const layout = computed(() => {
+    return user.value ? 'Default' : 'Guest'
+})
 
 </script>
 
 <template>
-    <router-view></router-view>
+    <component :is="layout">
+        <router-view />
+    </component>
 </template>

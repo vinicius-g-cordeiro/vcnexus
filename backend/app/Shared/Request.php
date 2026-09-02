@@ -181,7 +181,7 @@ class Request {
             return $this->post;
         }
         if(empty($value)) {
-            return $this->post->{$key} ?? object();
+            return $this->post->{$key} ?? null;
         } else {
             $this->post->{$key} = $value;
         }

@@ -8,3 +8,32 @@
  */
 
 declare(strict_types=1);
+
+namespace App\Middleware;
+
+use App\Exceptions\AppExceptionHandler;
+use App\Shared\Session;
+use App\Shared\Interfaces\MiddlewareInterface;
+use App\Shared\Request;
+use App\Shared\Response;
+
+class AuthMiddleware  implements MiddlewareInterface {
+
+    protected ?Session $session;
+    public function __construct() {
+        $this->session = Session::getInstance();
+    }
+    public function handle(Request $request, callable $next): mixed {
+
+        if(isset($this->session) === false) {
+            throw new AppExceptionHandler(message: 'There was no session initialized!', code: 500);
+        }
+
+        $user = $this->session->get('user');
+        if(isset($user) === false){
+            Response::json(message: '403 Unauthorized Access', status: false, code: 403, data: object());
+        }
+
+        return $next($request);
+    }
+}

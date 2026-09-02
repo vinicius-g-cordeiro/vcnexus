@@ -13,6 +13,7 @@ require_once __DIR__ . '/../app/bootstrap.php';
 use App\Controller\AuthController;
 use App\Controller\Controller;
 use App\Controller\UserController;
+use App\Controller\TenantController;
 use App\Shared\Request;
 use App\Middleware\LoggingMiddleware;
 use App\Shared\Router;
@@ -23,7 +24,8 @@ $router->addGlobalMiddleware(LoggingMiddleware::class);
 $router->registerControllers([
     UserController::class,
     Controller::class,
-    AuthController::class
+    AuthController::class,
+    TenantController::class
 ]);
 
 $request = Request::instance();

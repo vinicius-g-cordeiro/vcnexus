@@ -15,7 +15,7 @@ use App\Shared\Notification;
 
 final class Response{
 
-    public static function json(?string $message = '', bool $status = true, int $code = 200, object|array $data = [], array $headers = [], bool $bShouldExit = true) : Response {
+    public static function json(?string $message = '', bool $status = true, int $code = 200, object|array $data = [], array $headers = [], bool $bShouldExit = true, string $redirectUrl = '') {
         header('Content-Type: application/json');
         http_response_code($code);
 
@@ -23,12 +23,9 @@ final class Response{
             header($key . ': ' . $value);
         }
 
-
         echo json_encode(object(message : $message, status : $status, code : $code, data : $data ), JSON_UNESCAPED_UNICODE);
 
         if($bShouldExit) exit(0);
-
-        return static::self;
     }
 
     public static function file(string $file) : void {
@@ -50,8 +47,19 @@ final class Response{
             if($notification === null) return;
             Session::getInstance()->addNotification($notification);
         }
-        http_response_code(302);
-        header('Location: ' . $url);
+        
+        if(headers_sent())
+        {
+            $string = '<script type="text/javascript">';
+            $string .= 'window.location = "' . $url . '"';
+            $string .= '</script>';
+            echo $string;
+        }
+        else
+        {
+            http_response_code(302);
+            header('Location: '.$url);
+        }
         exit(0);
     }
 

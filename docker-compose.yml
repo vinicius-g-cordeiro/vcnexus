@@ -5,7 +5,7 @@ services:
     ports: 
       - 5432:5432
     volumes:
-      - /var/lib/postgresql/data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     environment:
         POSTGRES_PASSWORD_FILE: /run/secrets/db_password
         POSTGRES_USER: app_user
@@ -146,7 +146,7 @@ services:
     networks:
       - app_network
     environment:
-      - VITE_API_URL=http://localhost:${APP_PORT:-5173}
+      - VITE_API_URL=http://localhost:80
     secrets:
       - vite_api_key
     deploy:

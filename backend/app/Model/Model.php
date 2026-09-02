@@ -27,7 +27,7 @@ class Model extends Connection
 
     private ?Session $session = null;
 
-    function __construct($dbConnection = null, public ?Schema $schema = null, ) {
+    function __construct($dbConnection = null, public ?Schema $schema = null) {
         parent::__construct($dbConnection);
         $this->sqlCompiler = new PostgreSQLSchemaCompiler($dbConnection, $schema);
         $this->session = Session::getInstance();
@@ -86,15 +86,14 @@ class Model extends Connection
                 continue;
             }
 
-            if($value == null){ continue; }
+            if($value == null) { continue; }
 
             if ($key == 'password' && password_needs_rehash($value, CRYPT_SHA512, ['cost' => 12])) {
                 $fields['password'] = password_hash($value, CRYPT_SHA512, ['cost' => 12]);
                 continue;
             }
 
-            if ($key == 'password_confirmation' && password_needs_rehash($value, CRYPT_SHA512, ['cost' => 12])) {
-                $fields['password_confirmation'] = password_hash($value, CRYPT_SHA512, ['cost' => 12]);
+            if ($key == 'password_confirmation') {
                 continue;
             }
 
@@ -115,19 +114,16 @@ class Model extends Connection
         }
 
                 
-        if (isset($this->session->get('user')->id, $dataTransferObject->created_by, $dataTransferObject->created_at)) {
+        // if (isset($this->session->get('user')->id, $dataTransferObject->created_by, $dataTransferObject->created_at)) {
             $date = new DateTime('now', new DateTimeZone('UTC'));
-            $fields['created_by'] = $this->session->get('user')->id;
+            $fields['created_by'] = 1;
             $fields['created_at'] = $date->getTimestamp();
             $fields['created_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
-        }
-
+        // }
 
         $this->getConnection()->AutoExecute($this->schema->table, $fields, 'INSERT');
-    
-
         $tenant_id = (object)$this->getConnection()->GetRow('SELECT tenant_id FROM ' . $this->schema->table . ' WHERE id = ?', [$this->getConnection()->Insert_ID()]);
-        return object(insertID : $this->getConnection()->Insert_ID(), tenant_id: $tenant_id->tenant_id) ?: false;
+        return object(insertID : $this->getConnection()->Insert_ID(), tenant_id: $tenant_id->tenant_id ?? null) ?: false;
     }
 
 

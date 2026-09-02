@@ -17,10 +17,10 @@ use App\Shared\Request;
 
 use App\Shared\Session;
 use App\Shared\Response;
-use Exception;
 
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Throwable;
 
 
 class Service {
@@ -45,13 +45,13 @@ class Service {
 
 
     public function transaction(callable $callback)  {
-        $this->model->getConnection()->SetFetchMode(ADODB_FETCH_ASSOC);
+        
         $this->model->getConnection()->StartTrans();
         try{
             $result = $callback();
-            $this->model->getConnection()->CompleteTrans(true);
+            $this->model->getConnection()->CompleteTrans();
             return $result;
-        }catch(Exception $err){
+        }catch(Throwable $err){
             $this->model->getConnection()->FailTrans();
             $this->model->getConnection()->CompleteTrans();
             throw $err;

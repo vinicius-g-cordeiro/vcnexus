@@ -17,10 +17,10 @@ use App\Database\Schema\Schema;
 use App\Database\Attributes\Column;
 
 
-#[ForeignKeyConstraint(name: 'fk_users_tenant', foreignKeys: ['tenant_id'], references: 'tenants', columns: ['id'], actionOnDelete: true, deleteAction: 'CASCADE')]
-#[ForeignKeyConstraint(name: 'fk_users_created_by', foreignKeys: ['created_by'], references: 'users', columns: ['id'], actionOnDelete: true, deleteAction: 'SET NULL')]
-#[ForeignKeyConstraint(name: 'fk_users_updated_by', foreignKeys: ['updated_by'], references: 'users', columns: ['id'], actionOnDelete: true, deleteAction: 'SET NULL')]
-#[ForeignKeyConstraint(name: 'fk_users_deleted_by', foreignKeys: ['deleted_by'], references: 'users', columns: ['id'], actionOnDelete: true, deleteAction: 'SET NULL')]
+#[ForeignKeyConstraint(name: 'fk_users_tenant', foreignKeys: ['tenant_id'], references: 'tenants', columns: ['id'], actionOnDelete: true, deleteAction: 'CASCADE', deferred:true)]
+#[ForeignKeyConstraint(name: 'fk_users_created_by', foreignKeys: ['created_by'], references: 'users', columns: ['id'], actionOnDelete: true, deleteAction: 'SET NULL', deferred:true)]
+#[ForeignKeyConstraint(name: 'fk_users_updated_by', foreignKeys: ['updated_by'], references: 'users', columns: ['id'], actionOnDelete: true, deleteAction: 'SET NULL', deferred:true)]
+#[ForeignKeyConstraint(name: 'fk_users_deleted_by', foreignKeys: ['deleted_by'], references: 'users', columns: ['id'], actionOnDelete: true, deleteAction: 'SET NULL', deferred:true)]
 #[UniqueConstraint(name: 'uq_users_id_tenant', columns: ['id', 'tenant_id']),]
 #[UniqueConstraint(name: 'uq_users_email', columns: ['email'])]
 class UsersSchema extends Schema
