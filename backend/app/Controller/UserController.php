@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Exceptions\AppExceptionHandler;
+use App\Middleware\AuthMiddleware;
 use App\Service\UsernameService;
+use App\Shared\Attributes\Middleware;
 use App\Shared\Attributes\Route;
 use App\Shared\Response;
 use App\Shared\Request;
@@ -24,6 +26,7 @@ use Exception;
 
 
 #[Route('GET', '/users/')]
+#[Middleware(AuthMiddleware::class)]
 class UserController extends Controller
 {
 
@@ -36,6 +39,7 @@ class UserController extends Controller
     }
 
     #[Route('GET', '/list/')]
+    
     public function index(?Request $request) : void {
         $response = null;
         try{

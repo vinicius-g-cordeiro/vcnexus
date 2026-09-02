@@ -8,7 +8,7 @@
                     {{ brandInitial }}
                 </span>
                 <h2 class="max-w-sm font-medium text-3xl leading-snug">
-                    Everything you need, set up in minutes.
+                    Everything customized for your workflow!
                 </h2>
                 <ul class="flex flex-col gap-4 mt-8">
                     <li v-for="point in highlights" :key="point" class="flex items-start gap-3 text-neutral-300 text-sm">
@@ -125,7 +125,7 @@ const authStore = useAuthStore()
 const props = defineProps({
     brandName: {
         type: String,
-        default: 'Acme',
+        default: 'VCNexus',
     },
     isSubmitting: {
         type: Boolean,
@@ -138,9 +138,10 @@ const props = defineProps({
     highlights: {
         type: Array,
         default: () => [
-            'Unlimited projects on every plan',
-            'Invite your whole team, no seat limits',
+            'Modules for managing your whole business',
+            'From workers and tasks to weekly reports and payments',
             'Cancel anytime, no questions asked',
+            'Your concerns in mind: Security, Performance, Workflow, Budget!'
         ],
     },
 })

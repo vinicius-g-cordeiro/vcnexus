@@ -1,5 +1,5 @@
 <template>
-    <main class="gap-2 grid grid-cols-2 mx-auto w-10/12">
+    <main class="grid grid-cols-2">
         <section>
             <!-- Content -->
             <main class="p-6">
@@ -17,40 +17,56 @@
                 </div>
             </main>
 
-            
-            <section class="mx-auto px-6 w-5xl">
+            <!-- Stats row -->
+            <section class="mx-auto w-7xl px-6">
                 <section class="gap-3 grid grid-cols-4">
-                    <StatCard v-for="stat in stats" :key="stat.label" v-bind="stat" />
+                    <StatCard
+                        v-for="stat in stats"
+                        :key="stat.label"
+                        v-bind="stat"
+                    />
                 </section>
             </section>
 
-            <section class="mx-auto mt-6 px-6 w-5xl">
+            <section class="mx-auto w-7xl px-6 mt-6">
                 <Fieldset legend="Links">
                     <section class="gap-3 grid grid-cols-3">
-                        <LinkGroup v-for="group in linkGroups" :key="group.title" :title="group.title" :accent="group.accent" :links="group.links" />
+                        <LinkGroup
+                            v-for="group in linkGroups"
+                            :key="group.title"
+                            :title="group.title"
+                            :accent="group.accent"
+                            :links="group.links"
+                        />
                     </section>
                 </Fieldset>
             </section>
 
-            <section class="mx-auto mt-6 px-6 w-5xl">
+            <!-- Tasks + System activity, side by side -->
+            <section class="mx-auto w-7xl px-6 mt-6">
+                <section class="gap-3 grid grid-cols-2 items-start">
+                    <Fieldset legend="Tasks">
+                        <TaskList :tasks="tasks" />
+                    </Fieldset>
+
+                    <Fieldset legend="System Activity">
+                        <ActivityFeed :events="activityEvents" />
+                    </Fieldset>
+                </section>
+            </section>
+
+            <section class="mx-auto w-7xl px-6 mt-6">
                 <Fieldset legend="Bulletin Board">
                     <section class="gap-3 grid grid-cols-3">
-                        <BulletinCard v-for="post in bulletinPosts" :key="post.title" v-bind="post" />
+                        <BulletinCard
+                            v-for="post in bulletinPosts"
+                            :key="post.title"
+                            v-bind="post"
+                        />
                     </section>
                 </Fieldset>
             </section>
         </section>
-
-        <section class="ms-auto mt-6 px-6">
-            <Fieldset legend="System Activity">
-                <ActivityFeed :events="activityEvents" />
-            </Fieldset>
-
-            <Fieldset legend="Tasks">
-                <TaskList :tasks="tasks" />
-            </Fieldset>
-        </section>
-
     </main>
 </template>
 
@@ -58,17 +74,17 @@
 import { ref } from 'vue'
 import BulletinCard from '@/components/Cards/BulletinCard.vue'
 import Fieldset from '@/components/Fieldset/Fieldset.vue'
-import LinkGroup from '@/components/Cards/LinkGroup.vue'
-import StatCard from '@/components/Cards/StatCard.vue'
-import TaskList from '@/components/Cards/TaskList.vue'
-import ActivityFeed from '@/components/Cards/ActivityFeed.vue'
+import LinkGroup from '@/components/LinkGroup/LinkGroup.vue'
+import StatCard from '@/components/StatCard/StatCard.vue'
+import TaskList from '@/components/TaskList/TaskList.vue'
+import ActivityFeed from '@/components/ActivityFeed/ActivityFeed.vue'
 
 // Placeholder metrics — wire up to real endpoints when available.
 const stats = ref([
-    { label: 'Active Users', value: '5', icon: 'bi-people-fill', delta: '+4.2%', deltaDirection: 'up', accent: 'emerald' },
-    { label: 'Open Tasks', value: '10', icon: 'bi-list-check', delta: '-8.1%', deltaDirection: 'down', accent: 'cyan' },
-    { label: 'Revenue (MTD)', value: '$100', icon: 'bi-cash-stack', delta: '+12.6%', deltaDirection: 'up', accent: 'rose' },
-    { label: 'Active Tenants', value: '5', icon: 'bi-buildings', delta: '+1.3%', deltaDirection: 'up', accent: 'amber' },
+    { label: 'Active Users', value: '1,284', icon: 'bi-people-fill', delta: '+4.2%', deltaDirection: 'up', accent: 'emerald' },
+    { label: 'Open Tasks', value: '37', icon: 'bi-list-check', delta: '-8.1%', deltaDirection: 'down', accent: 'cyan' },
+    { label: 'Revenue (MTD)', value: '$48,920', icon: 'bi-cash-stack', delta: '+12.6%', deltaDirection: 'up', accent: 'rose' },
+    { label: 'Active Tenants', value: '156', icon: 'bi-buildings', delta: '+1.3%', deltaDirection: 'up', accent: 'amber' },
 ])
 
 // Each group carries a small accent color to make modules scannable at a
@@ -162,9 +178,8 @@ const activityEvents = ref([
     { actor: 'Maria Santos', title: 'created a new tenant record for Unit 402', time: '32 minutes ago', type: 'info' },
     { actor: 'CyberSecurity Team', title: 'flagged 3 failed login attempts', time: '1 hour ago', type: 'warning' },
     { actor: 'System', title: 'failed to sync inventory with supplier feed', time: '2 hours ago', type: 'error' },
-    { actor: 'Jonas Firmino', title: 'approved a new payment extract', time: '3 hours ago', type: 'success' },
+    { actor: 'James Okafor', title: 'approved a new payment extract', time: '3 hours ago', type: 'success' },
     { actor: 'System', title: 'ran scheduled backup', time: '6 hours ago', type: 'info' },
-
 ])
 
 const bulletinPosts = ref([

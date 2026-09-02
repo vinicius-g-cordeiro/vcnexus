@@ -1,80 +1,44 @@
 <template>
   <Teleport to="body">
-    <Transition
-      enter-active-class="transition-opacity duration-200 ease-out"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition-opacity duration-150 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
-      <div
-        v-if="modelValue"
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4"
-        @click.self="handleBackdropClick"
-      >
+    <Transition enter-active-class="transition-opacity duration-200 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition-opacity duration-150 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+      <div v-if="modelValue" class="z-[100] fixed inset-0 flex justify-center items-center p-4" @click.self="handleBackdropClick">
         <!-- Backdrop -->
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
         <!-- Panel -->
-        <Transition
-          appear
-          enter-active-class="transition duration-200 ease-out"
-          enter-from-class="opacity-0 scale-95"
-          enter-to-class="opacity-100 scale-100"
-          leave-active-class="transition duration-150 ease-in"
-          leave-from-class="opacity-100 scale-100"
-          leave-to-class="opacity-0 scale-95"
-        >
-          <div
-            v-if="modelValue"
-            :class="[
-              'relative z-10 w-full rounded-xl shadow-2xl overflow-hidden flex flex-col',
-              'dark:bg-neutral-800 bg-neutral-200 dark:text-neutral-50 text-neutral-900',
-              'max-h-[90vh]',
-              sizeClass,
-            ]"
-            role="dialog"
-            aria-modal="true"
-            :aria-label="title"
-          >
+        <Transition appear enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+          <div v-if="modelValue" :class="[
+            'relative z-10 w-full rounded-xl shadow-2xl overflow-hidden flex flex-col',
+            'dark:bg-neutral-800 bg-neutral-200 dark:text-neutral-50 text-neutral-900',
+            'max-h-[90vh]',
+            sizeClass,
+          ]" role="dialog" aria-modal="true" :aria-label="title">
             <!-- Image / media mode (lightbox) -->
             <template v-if="image">
-              <img :src="image" :alt="title" class="w-full max-h-[80vh] object-contain dark:bg-neutral-900 bg-neutral-900/5" />
-              <button
-                type="button"
-                class="absolute top-3 right-3 rounded-full p-2 bg-black/50 text-white hover:bg-black/70 transition-colors"
-                aria-label="Close"
-                @click="close"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              <img :src="image" :alt="title" class="bg-neutral-900/5 dark:bg-neutral-900 w-full max-h-[80vh] object-contain" />
+              <button type="button" class="top-3 right-3 absolute bg-black/50 hover:bg-black/70 p-2 rounded-full text-white transition-colors" aria-label="Close" @click="close">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
-              <div v-if="title || $slots.caption" class="px-5 py-3 border-t dark:border-neutral-700 border-neutral-300">
+              <div v-if="title || $slots.caption" class="px-5 py-3 border-neutral-300 dark:border-neutral-700 border-t">
                 <slot name="caption">
-                  <p class="text-sm font-medium">{{ title }}</p>
+                  <p class="font-medium text-sm">{{ title }}</p>
                 </slot>
               </div>
             </template>
 
             <!-- Standard content mode -->
             <template v-else>
-              <div
-                v-if="title || $slots.header"
-                class="flex items-center justify-between gap-4 px-5 py-4 border-b dark:border-neutral-700 border-neutral-300 shrink-0"
-              >
+              <div v-if="title || $slots.header" class="flex justify-between items-center gap-4 px-5 py-4 border-neutral-300 dark:border-neutral-700 border-b shrink-0">
                 <slot name="header">
                   <h2 class="font-semibold text-base">{{ title }}</h2>
                 </slot>
-                <button
-                  type="button"
-                  class="p-1.5 rounded-md hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors shrink-0"
-                  aria-label="Close"
-                  @click="close"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                <button type="button" class="hover:bg-neutral-300 dark:hover:bg-neutral-700 p-1.5 rounded-md transition-colors shrink-0" aria-label="Close" @click="close">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
                   </svg>
                 </button>
               </div>
@@ -83,7 +47,7 @@
                 <slot />
               </div>
 
-              <div v-if="$slots.footer" class="px-5 py-4 border-t dark:border-neutral-700 border-neutral-300 flex items-center justify-end gap-3 shrink-0">
+              <div v-if="$slots.footer" class="flex justify-end items-center gap-3 px-5 py-4 border-neutral-300 dark:border-neutral-700 border-t shrink-0">
                 <slot name="footer" />
               </div>
             </template>

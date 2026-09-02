@@ -1,20 +1,15 @@
 <template>
-  <fieldset
-    :class="[
-      'rounded-xl border transition-colors',
-      'dark:bg-neutral-800 bg-neutral-200',
-      'dark:border-neutral-700/60 border-neutral-300/70',
-      'shadow-sm dark:shadow-black/20',
-      paddingClass,
-    ]"
-  >
-    <legend
-      v-if="legend"
-      class="px-2 -ml-2 text-sm font-semibold dark:text-neutral-50 text-neutral-900"
-    >
+  <fieldset :class="[
+    'rounded-md m-2 border transition-colors',
+    'dark:bg-neutral-800 bg-neutral-100',
+    'dark:border-neutral-100/60 border-neutral-500/70',
+    'shadow-sm dark:shadow-black/20',
+    paddingClass,
+  ]">
+    <legend v-if="legend" class="-ml-2 px-2 font-semibold text-neutral-900 dark:text-neutral-50 text-sm uppercase">
       {{ legend }}
     </legend>
-    <p v-if="description" class="mt-1 mb-4 text-sm dark:text-neutral-400 text-neutral-500">
+    <p v-if="description" class="mt-1 mb-4 text-neutral-500 dark:text-neutral-400 text-sm">
       {{ description }}
     </p>
 
@@ -38,7 +33,7 @@
  * </Fieldset>
  *
  * For multi-column layouts, wrap fields in your own
- * <div class="grid grid-cols-2 gap-4"> inside the default slot —
+ * <div class="gap-4 grid grid-cols-2"> inside the default slot —
  * Fieldset itself stays a single flex column.
  */
 import { computed } from 'vue'
