@@ -8,3 +8,21 @@
  */
 
 declare(strict_types=1);
+
+namespace App\Events\Interfaces;
+
+interface EventListenerInterface
+{
+    /**
+     * Handle the event.
+     */
+    public function handle(EventInterface $event): void;
+
+    /**
+     * Which event classes this listener should be attached to.
+     * Returning multiple lets one listener subscribe to several events.
+     *
+     * @return array<class-string<EventInterface>>
+     */
+    public function listensTo(): array;
+}

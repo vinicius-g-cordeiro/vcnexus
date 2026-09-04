@@ -21,7 +21,6 @@ use App\Shared\Session;
 use DateTimeZone;
 use DateTime;
 use RuntimeException;
-use Throwable;
 
 class Model extends Connection
 {
@@ -31,6 +30,7 @@ class Model extends Connection
 
     function __construct($dbConnection = null, public ?Schema $schema = null) {
         parent::__construct($dbConnection);
+        
         $this->sqlCompiler = new PostgreSQLSchemaCompiler($dbConnection, $schema);
         $this->session = Session::getInstance();
         if ($this->doesTableExists() === false) {
@@ -126,7 +126,7 @@ class Model extends Connection
 
         $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'INSERT');
         if($return === false){
-            throw new RuntimeException('500 - Error', 500);
+            throw new AppExceptionHandler('500 - Error', 500);
         }
         $tenant_id = (object)$this->getConnection()->GetRow('SELECT tenant_id FROM ' . $this->schema->table . ' WHERE id = ?', [$this->getConnection()->Insert_ID()]);
         return object(insertID : $this->getConnection()->Insert_ID(), tenant_id: $tenant_id->tenant_id ?? null) ?: false;

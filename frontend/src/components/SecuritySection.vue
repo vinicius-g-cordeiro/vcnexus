@@ -3,13 +3,13 @@
     <div class="gap-5 grid grid-cols-1 sm:grid-cols-2">
       <BaseInput type="password"
         :model-value="form.password"
-        label="Password" placeholder="******************" :error="errors.password" required
-        @update:model-value="updateField('password', $event)"
+        label="Password" placeholder="Fill this if wants to change password" :error="errors.password" required
+        @update:model-value="updateField('password', $event)" aria-autocomplete="new-password" autocomplete="new-password"
       />
       <BaseInput type="password"
-        :model-value="form.password_confirmation"
-        label="Password confirmation" placeholder="******************" :error="errors.password_confirmation" required
-        @update:model-value="updateField('password_confirmation', $event)"
+        value = ''
+        label="Password confirmation" placeholder="Confirm password" :error="errors.password_confirmation" required
+        @update:model-value="updateField('password_confirmation', $event)" aria-autocomplete="new-password" autocomplete="new-password"
       />
     </div>
   </Fieldset>

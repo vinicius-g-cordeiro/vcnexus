@@ -17,10 +17,10 @@ use App\Database\Attributes\Column;
 use App\Database\Attributes\Index;
 
 
-#[ForeignKeyConstraint(name: 'fk_usernames_user_tenant', foreignKeys: ['user_id', 'tenant_id'], references:'users', columns: ['id', 'tenant_id'], actionOnDelete: true, deleteAction: 'CASCADE')]
-#[ForeignKeyConstraint(name: 'fk_users_created_by', foreignKeys: ['created_by'], references:'users', columns:['id'], actionOnDelete: true, deleteAction: 'SET NULL')]
-#[ForeignKeyConstraint(name: 'fk_users_updated_by', foreignKeys: ['updated_by'], references:'users', columns:['id'], actionOnDelete: true, deleteAction: 'SET NULL')]
-#[ForeignKeyConstraint(name: 'fk_users_deleted_by', foreignKeys: ['deleted_by'], references: 'users', columns: ['id'],actionOnDelete: true, deleteAction: 'SET NULL')]
+#[ForeignKeyConstraint(name: 'fk_usernames_user_tenant', deferred: true, foreignKeys: ['user_id', 'tenant_id'], references:'users', columns: ['id', 'tenant_id'], actionOnDelete: true, deleteAction: 'CASCADE')]
+#[ForeignKeyConstraint(name: 'fk_users_created_by', deferred: true, foreignKeys: ['created_by'], references:'users', columns:['id'], actionOnDelete: true, deleteAction: 'SET NULL')]
+#[ForeignKeyConstraint(name: 'fk_users_updated_by', deferred: true, foreignKeys: ['updated_by'], references:'users', columns:['id'], actionOnDelete: true, deleteAction: 'SET NULL')]
+#[ForeignKeyConstraint(name: 'fk_users_deleted_by', deferred: true, foreignKeys: ['deleted_by'], references: 'users', columns: ['id'],actionOnDelete: true, deleteAction: 'SET NULL')]
 #[Index(name: 'idx_usernames_user_id', unique: false, columns:['user_id'], references:'usernames')]
 #[Index(name: 'uq_usernames_tenant_username', unique: true, columns: ['tenant_id', 'username'], condition: ['active' => '1'], references:'usernames')]
 class UsernamesSchema extends Schema {

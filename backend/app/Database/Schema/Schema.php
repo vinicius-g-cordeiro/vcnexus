@@ -50,15 +50,15 @@ class Schema {
     #[Column(type: 'TIMESTAMP WITH TIME ZONE',default: null, nullable: true, comment: '')]
     public ?string $deleted_at_local = null;
 
-    #[Column(type: 'BIGINT',default: 1, nullable: false, comment: '')]
-    public ?int $created_by = 1;
+    #[Column(type: 'BIGINT',default: 1, nullable: true, comment: '')]
+    public ?int $created_by = null;
     #[Column(type: 'BIGINT',default: null, nullable: true, comment: '')]
     public ?int $updated_by = null;
     #[Column(type: 'BIGINT',default: null, nullable: true, comment: '')]
     public ?int $deleted_by = null;
 
-    #[Column(type: 'BIGINT',default: 1, nullable: false, comment: 'Tenant id for multi-tenant management using RLS')]
-    public ?int $tenant_id = 1;
+    #[Column(type: 'BIGINT',default: null, nullable: true, comment: 'Tenant id for multi-tenant management using RLS')]
+    public ?int $tenant_id = null;
 
     #[Column(type: 'SMALLINT',default: '1', nullable: false, comment: '')]
     public ?int $active = 1;

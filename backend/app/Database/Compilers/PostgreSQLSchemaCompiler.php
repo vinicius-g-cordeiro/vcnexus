@@ -38,12 +38,18 @@ class PostgreSQLSchemaCompiler extends Connection
         $creationQuery = $this->createTableQuery($tableName);
         $creationQuery .= $this->buildIndexesQuery();
         $creationQuery .= $this->buildCommentsQuery($tableName);
+
         $response = false;
         try {
             $response = $this->getConnection()->Execute($creationQuery);
         } catch (Throwable $th) {
             throw new DatabaseNotCreatedException($th->getMessage(), $th->getCode(), $th->getPrevious());
         }
+
+        if($tableName == 'users'){
+            $this->initDefaultsUsers();
+        }
+
         return Response::json(message: '', code: 204, data: object(DatabaseCreated: $response !== false));
     }
 
@@ -127,7 +133,7 @@ class PostgreSQLSchemaCompiler extends Connection
             $sql .= ' ON DELETE ' . $constraint->deleteAction;
         }
 
-        if($constraint->deferred === true){
+        if ($constraint->deferred === true) {
             $sql .= ' DEFERRABLE INITIALLY DEFERRED ';
         }
         // if (isset($constraint->deferred) && $constraint->deferred === true) {
@@ -200,6 +206,81 @@ class PostgreSQLSchemaCompiler extends Connection
         return implode(',', array_map(static function (string $column): string {
             return '"' . $column . '"';
         }, $columns));
+    }
+
+    public function initDefaultsUsers()
+    {
+
+
+        $sqlAdminPassword = password_hash(trim(file_get_contents(trim(getenv('ADMIN_PASSWORD')))), PASSWORD_BCRYPT, ['cost' => 16]);
+        
+
+        $sql = "
+INSERT INTO public.tenants (\"name\", modules, active) VALUES('Cerrado G Studios', ARRAY['0'::character varying(4)], 1);
+
+insert
+    into
+    public.users
+(\"uuid\",
+    created_at,
+    created_at_local,
+    updated_at,
+    updated_at_local,
+    deleted_at,
+    deleted_at_local,
+    created_by,
+    updated_by,
+    deleted_by,
+    tenant_id,
+    active,
+    \"name\",
+    \"password\",
+    surname,
+    lastname,
+    nickname,
+    birthdate,
+    email,
+    phone,
+    gender,
+    marital_status,
+    sexual_orientation,
+    religion,
+    \"blocked\",
+    blocked_by,
+    blocked_at,
+    blood_type,
+    blood_factor,
+    locale,
+    last_login,
+    last_login_local,
+    last_ip,
+    last_agent)
+values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, null, null, null, null, 1, 'admin', '".$sqlAdminPassword."', 'super', '', array[''::character varying(100)], '2026-09-03', 'vinismtpgo@gmail.com', '', 0, 0, 0, 0, 0, 0, null, 0, null, '', null, null, null, '');
+
+
+insert into public.usernames (\"username\", active, user_id, created_by) VALUES('admin', 1, 1, 1)";
+
+
+        $this->getConnection()->StartTrans();
+
+        try {
+            $result = $this->getConnection()->Execute($sql);
+
+            if ($this->getConnection()->HasFailedTrans()) {
+                throw new \RuntimeException('Transaction failed.');
+            }
+
+            $this->getConnection()->CompleteTrans();
+
+            return $result;
+
+        } catch (Throwable $e) {
+            $this->getConnection()->FailTrans();
+            $this->getConnection()->CompleteTrans();
+
+            throw $e;
+        }
+
     }
 
 }

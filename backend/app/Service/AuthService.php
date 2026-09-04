@@ -102,27 +102,26 @@ class AuthService extends Service
 
         $response = $this->transaction(function () use ($userRegistrationDTO) {
 
-            $response = $this->model->store($userRegistrationDTO);
-
-            if (!$response || !isset($response->insertID, $response->tenant_id)) {
-                throw new RuntimeException('Failed to create user.');
+            $result = $this->model->store($userRegistrationDTO);
+            if (!$result || !isset($result->insertID)) {
+                throw new AppExceptionHandler('Failed to create user.');
             }
 
             $usernameModel = new UsernameModel($this->connection);
 
-            $usernameResponse = $usernameModel->store(
+            $usernameResult = $usernameModel->store(
                 new UsernameRegistrationDTO(
                     $userRegistrationDTO->username,
-                    $response->insertID,
-                    $response->tenant_id
+                    $result->insertID,
+                    $result->tenant_id
                 )
             );
 
-            if (!$usernameResponse) {
-                throw new RuntimeException('Failed to create username.');
+            if ($usernameResult === false || !(isset($usernameResult))) {
+                throw new AppExceptionHandler('Failed to create username.');
             }
 
-            return $response;
+            return $result;
         });
         return $response === false ? null : $response;
     }
@@ -190,7 +189,7 @@ class AuthService extends Service
 
         $response = $this->transaction(function () use ($userFound) {
             $result = $this->model->update(new LogoutDTO(id: (int)$userFound->id, uuid: $userFound->uuid), 'uuid = \'' . $userFound->uuid . '\'');
-            
+            return $result;
         });
 
         if(isset($response) && $response === 1){

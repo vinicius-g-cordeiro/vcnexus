@@ -21,7 +21,7 @@
           ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
           : 'border-zinc-100/90 focus:border-emerald-500 focus:ring-emerald-500',
         disabled ? 'opacity-50 cursor-not-allowed' : '',
-      ]" v-bind="$attrs" />
+      ]" :autocomplete="autocomplete" v-bind="$attrs" />
 
       <button v-if="type === 'password'" type="button" class="top-1/2 right-2.5 absolute text-zinc-500 hover:text-emerald-500 dark:text-zinc-400 -translate-y-1/2" :aria-label="showPassword ? 'Hide password' : 'Show password'" @click="showPassword = !showPassword">
         <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -69,6 +69,7 @@ const props = defineProps({
   error: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
   required: { type: Boolean, default: false },
+  autocomplete: { type: String, default: 'off'},
   min: { type: [String, Number], default: undefined },
   max: { type: [String, Number], default: undefined },
   step: { type: [String, Number], default: undefined },

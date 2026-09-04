@@ -31,6 +31,8 @@ final readonly class UserRegistrationDTO implements DTOInterface
         public readonly ?int $marital_status = null,
         public readonly ?string $locale = '',
         public readonly array|string|null $nickname = null,
+        public readonly ?int $created_by = 1,
+        public readonly ?int $tenant_id = 1,
     ) {
     }
 

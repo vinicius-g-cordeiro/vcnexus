@@ -13,6 +13,9 @@ namespace App\Controller;
 
 use App\DTOs\Authentication\UserRegistrationDTO;
 use App\DTOs\Authentication\AuthLoginDTO;
+use App\Events\Container;
+use App\Events\Auth\UserRegistered;
+use App\Events\Auth\UserLoggedIn;
 use App\Middleware\AdminOrOwnerMiddleware;
 use App\Middleware\GuestMiddleware;
 use App\Middleware\AuthMiddleware;
@@ -25,6 +28,7 @@ use App\Shared\Request;
 use App\Shared\Connection;
 use App\Shared\Attributes\Route;
 use App\Shared\Response;
+use DateTimeZone;
 use Throwable;
 
 
@@ -60,13 +64,18 @@ class AuthController extends Controller{
                 sexual_orientation: (int)($this->request->post('sexual_orientation') ?: null),
                 marital_status: (int)($this->request->post('marital_status') ?: null),
                 locale: $this->request->post('locale') ?: null,
-                nickname: $this->request->post('nickname') ?: null
+                nickname: $this->request->post('nickname') ?: null,
+                created_by: (int)$this->session->get('user')->id ?? 1,
             );
 
             $response = $this->service->store($userRegisterDTO);
 
-            Response::json(message: 'User created', status: true, code: 201, bShouldExit: true, data: $response);
 
+            Container::getInstance()->dispatch(
+                new UserRegistered((int)$response->insertID, $userRegisterDTO->name, $userRegisterDTO->email)
+            );
+
+            Response::json(message: 'User created', status: true, code: 201, bShouldExit: true, data: $response);
         }catch(Throwable $er){
             Response::log('error', $er->getMessage(), 500, false, (object)$er->getTraceAsString());
             Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
@@ -88,6 +97,11 @@ class AuthController extends Controller{
                 password: $this->request->post('password'),
             );
             $response = $this->service->login($authLoginDTO);
+            // dd($response, $this->request->ip(),);
+            $dateLoggedIn =  new \DateTime('now',new DateTimeZone('America/Sao_Paulo'))->format('d/m/Y H:i:s');
+            Container::getInstance()->dispatch(
+                new UserLoggedIn((int)$response->id, $response->name, $response->email, $this->request->ip(), $dateLoggedIn)
+            );
             Response::json(message: 'User logged!', status: true, code: 201, bShouldExit: false, data: object(user:$response));
         }catch(Throwable $er){
             Response::log('error', $er->getMessage(), 500, false, (object)$er->getTraceAsString());

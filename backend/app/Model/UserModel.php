@@ -20,22 +20,24 @@ final class UserModel extends Model
 
     function __construct($dbConnection = null)
     {
+        $tenantModel = new TenantModel($dbConnection);
         parent::__construct($dbConnection, new UsersSchema());
+        $usernamesModel = new UsernameModel($dbConnection);
     }
 
     function list(?object $parameters) : object|bool|null|array {
         $response = null;
         
-        $sql = 'select t.name as "organization",un.username , u.name, u.surname, u.lastname, u.nickname, u.created_at, u.updated_at, u.created_by , u.email 
+        $sql = 'select t.name as "organization",un.username , (select cu.name from users cu where cu.id = u.created_by limit 1) as "created_by" , u.name, u.surname, u.lastname, u.nickname, u.created_at, u.updated_at, u.created_by , u.email 
         from "' . $this->schema->table . '" u 
         inner join "tenants" t on u.tenant_id = t.id 
         inner join "usernames" un on un.user_id = u.id
         ';
 
-
-        
         if(isset($parameters, $parameters->search) && $parameters->search !== ''){
-            $sql .= 'where (public.unaccent(lower(u.name)) = public.unaccent(lower(\''.$parameters->search.'\')) or public.unaccent(lower(u.surname)) = public.unaccent(lower(\''.$parameters->search.'\')) or public.unaccent(lower(u.lastname)) = public.unaccent(lower(\''.$parameters->search.'\')) or public.unaccent(lower(un.username)) = public.unaccent(lower(\''.$parameters->search.'\')) or public.unaccent(lower(u.phone)) = public.unaccent(lower(\''.$parameters->search.'\')))';
+            $sql .= 'where (public.unaccent(lower(u.name)) like public.unaccent(lower(\'%'.$parameters->search.'%\')) or public.unaccent(lower(u.surname)) like public.unaccent(lower(\'%'.$parameters->search.'%\')) 
+            or public.unaccent(lower(u.lastname)) like public.unaccent(lower(\'%'.$parameters->search.'%\')) or public.unaccent(lower(un.username)) like public.unaccent(lower(\'%'.$parameters->search.'%\')) 
+            or public.unaccent(lower(u.phone)) like public.unaccent(lower(\'%'.$parameters->search.'%\')) or public.unaccent(lower(u.email)) like public.unaccent(lower(\'%'.$parameters->search.'%\')))';
         }
 
         if(isset($parameters, $parameters->active) && $parameters->active !== ''){
@@ -63,11 +65,11 @@ final class UserModel extends Model
         $result = $this->fr2Arr($response);
 
         if (is_bool($result) || (is_bool($result) === false && count($result) == 0)) {
-            throw new AppExceptionHandler(message: 'User not found', code: 404);
+            throw new AppExceptionHandler(message: 'No result found', code: 404);
         }
 
         if (!password_verify($parameters->password, $result[0]->password)) {
-            throw new AppExceptionHandler(message: 'Invalid password', code: 401);
+            throw new AppExceptionHandler(message: 'No result found', code: 404);
         }
 
 
@@ -84,7 +86,6 @@ final class UserModel extends Model
         $response = $this->getConnection()->Execute('SELECT ' . $returnColumns . '  FROM ' . $this->schema->table . ' u INNER JOIN tenants t ON t.id = u.tenant_id LEFT JOIN usernames un ON un.user_id = u.id ' . $where, [$uuid]);
 
         $result = $this->fr2Arr($response, false);
-                
         return (object)$result[0] ?? false;
     }
 

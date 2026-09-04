@@ -8,3 +8,20 @@
  */
 
 declare(strict_types=1);
+
+
+namespace App\Events\Interfaces;
+
+/**
+ * Marker interface for all Events.
+ * Events are simple data carriers - no behavior, just payload.
+ */
+interface EventInterface
+{
+    /**
+     * Unique name used to register/look up listeners.
+     * Convention: return static::class, but allow override
+     * (e.g. for wildcard-style names like "user.*").
+     */
+    public function getName(): string;
+}

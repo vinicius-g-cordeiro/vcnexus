@@ -1,16 +1,16 @@
 services:
   db:
-    image: postgres
+    image: postgres:18
     restart: unless-stopped
-    ports: 
+    ports:
       - 5432:5432
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:
-        POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-        POSTGRES_USER: app_user
-        POSTGRES_DB: app_db
-        PGDATA: /var/lib/postgresql/18/docker/
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_USER: app_user
+      POSTGRES_DB: app_db
+      PGDATA: /var/lib/postgresql/data/pgdata
     healthcheck:
       interval: 10s
       timeout: 5s
@@ -76,6 +76,7 @@ services:
       - JWT_SECRET=/run/secrets/jwt_secret
       - SMTP_USERNAME=/run/secrets/smtp_user
       - SMTP_PASSWORD=/run/secrets/smtp_password
+      - ADMIN_PASSWORD=/run/secrets/admin_password
       - APP_KEY=/run/secrets/app_key
     working_dir: /var/www
     depends_on:
@@ -110,6 +111,7 @@ services:
       - redis_password
       - smtp_password
       - smtp_user
+      - admin_password
     networks:
       - app_network
 
@@ -207,6 +209,8 @@ secrets:
     file: ./secrets/app_key
   smtp_user:
     file: ./secrets/smtp_user
+  admin_password:
+    file: ./secrets/admin_password
 
 volumes:
   db_data:

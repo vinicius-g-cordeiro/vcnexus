@@ -21,7 +21,7 @@ class Controller {
 
     protected ?Service $service = null;
     public function __construct(protected ?Connection $dbConnection = null, public ?Request $request = null, protected ?Session $session = null ) {
-        
+        $this->session = Session::getInstance();
     }
 
     #[Route('GET', '/health-check')]

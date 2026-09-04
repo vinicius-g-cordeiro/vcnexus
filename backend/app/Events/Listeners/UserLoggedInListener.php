@@ -12,14 +12,13 @@ declare(strict_types=1);
 
 namespace App\Events\Listeners;
 
+use App\Events\Auth\UserLoggedIn;
 use App\Events\Interfaces\EventInterface;
-use App\Events\Auth\UserRegistered;
 use App\Service\Mailer;
 
-class UserRegisteredListener extends EventListener
+class UserLoggedInListener extends EventListener
 {
-    protected ?string $event = UserRegistered::class;
-
+    protected ?string $event = UserLoggedIn::class;
     private readonly Mailer $mailer;
 
     
@@ -31,17 +30,25 @@ class UserRegisteredListener extends EventListener
 
     public function handle(EventInterface $event): void
     {
-        if (!$event instanceof UserRegistered) {
+        if (!$event instanceof UserLoggedIn) {
             return; // defensive, shouldn't happen given listensTo()
         }
 
+        
         $this->mailer->send(
             toEmail: $event->email,
             toName: $event->name,
-            subject: 'Welcome!',
-            htmlBody: $this->buildEmailHtml($event->name),
+            subject: 'Logged In detected!',
+            htmlBody: $this->buildEmailHtml($event->name, $event->ipAddress, $event->accessDate)
+            // htmlBody: sprintf(
+            //     '<p>Hi %s,</p><p>A new access was detected on the following IP Address: %s at: %s.</p>',
+            //     htmlspecialchars($event->name),
+            //     htmlspecialchars($event->ipAddress),
+                
+            // ),
         );
     }
+
 
 
     /**
@@ -53,7 +60,7 @@ class UserRegisteredListener extends EventListener
      * in real inboxes. Tables are used for layout since flexbox/grid
      * support is inconsistent across email clients.
      */
-    private function buildEmailHtml(string $name): string
+    private function buildEmailHtml(string $name, string $ipAddress = '' , string $accessDate = ''): string
     {
         $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
  
@@ -63,7 +70,7 @@ class UserRegisteredListener extends EventListener
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Welcome</title>
+            <title>Logging Detected</title>
         </head>
         <body style="margin:0; padding:0; background-color:#f3f4f6; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f4f6; padding:32px 16px;">
@@ -73,7 +80,7 @@ class UserRegisteredListener extends EventListener
                             <tr>
                                 <td style="background-color:#4f46e5; padding:32px 40px; text-align:center;">
                                     <p style="margin:0; font-size:20px; font-weight:700; color:#ffffff; letter-spacing:-0.025em;">
-                                        Welcome aboard 🎉
+                                        New Logging Detected 
                                     </p>
                                 </td>
                             </tr>
@@ -83,13 +90,18 @@ class UserRegisteredListener extends EventListener
                                         Hi {$safeName},
                                     </p>
                                     <p style="margin:0 0 24px 0; font-size:16px; line-height:24px; color:#4b5563;">
-                                        Thanks for registering — your account is ready to go. We're glad to have you here.
+                                        A new login was detected on your account!
                                     </p>
-                                    <table role="presentation" cellpadding="0" cellspacing="0">
+                                    <table role="presentation" cellpadding="2" cellspacing="2">
                                         <tr>
                                             <td style="border-radius:6px; background-color:#4f46e5;">
                                                 <a href="#" style="display:inline-block; padding:12px 24px; font-size:14px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:6px;">
-                                                    Get started
+                                                    IP Address: {$ipAddress}
+                                                </a>
+                                            </td>
+                                            <td style="border-radius:6px; background-color:#4f46e5;">
+                                                <a href="#" style="display:inline-block; padding:12px 24px; font-size:14px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:6px;">
+                                                    Access Date: {$accessDate}
                                                 </a>
                                             </td>
                                         </tr>
@@ -111,6 +123,4 @@ class UserRegisteredListener extends EventListener
         </html>
         HTML;
     }
-
-
 }
