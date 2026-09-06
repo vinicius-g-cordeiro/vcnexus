@@ -29,5 +29,12 @@ class Controller {
         $this->service = new Service($this->dbConnection);
         $this->service->verifyHealth();
     }
+
+    #[Route('GET', '/init-tables')]
+    public function init() : void{
+        $this->service = new Service($this->dbConnection);
+        $this->service->initTables();
+
+    }
 }
 

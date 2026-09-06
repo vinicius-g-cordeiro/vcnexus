@@ -6,7 +6,7 @@
         variantClass,
         block ? 'w-full' : '',
         (disabled || loading) ? 'opacity-60 cursor-not-allowed pointer-events-none' : 'cursor-pointer',
-    ]" @click="handleClick">
+    ]" @click="handleClick" :title="title">
         <svg v-if="loading" class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
@@ -92,11 +92,12 @@ const props = defineProps({
     },
     size: {
         type: String,
-        default: 'md', // 'sm' | 'md' | 'lg'
+        default: 'sm', // 'sm' | 'md' | 'lg'
     },
     block: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },
+    title: { type: String, default: ''},
 
     // Icons — pass a raw SVG string, or use the #icon / #icon-right slots for full control
     icon: { type: String, default: '' },

@@ -115,7 +115,7 @@ class Request {
             return $this->put;
         }
         if(empty($value)) {
-            return $this->put->{$key} ?? object();
+            return $this->put->{$key} ?? null;
         } else {
             $this->put->{$key} = $value;
         }
@@ -128,7 +128,7 @@ class Request {
             return $this->patch;
         }
         if(empty($value)) {
-            return $this->patch->{$key} ?? object();
+            return $this->patch->{$key} ?? null;
         } else {
             $this->patch->{$key} = $value;
         }
@@ -141,7 +141,7 @@ class Request {
             return $this->delete;
         }
         if(empty($value)) {
-            return $this->delete->{$key} ?? object();
+            return $this->delete->{$key} ?? null;
         } else {
             $this->delete->{$key} = $value;
         }
@@ -154,7 +154,7 @@ class Request {
             return $this->get;
         }
         if(empty($value)) {
-            return $this->get->{$key} ?? object();
+            return $this->get->{$key} ?? null;
         } else {
             $this->get->{$key} = $value;
         }

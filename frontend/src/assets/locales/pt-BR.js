@@ -29,8 +29,8 @@ export default {
             documents: 'Documentos',
             reports: 'Relatórios',
         },
-        entity: {
-            entity: 'Entidade',
+        tenants: {
+            tenants: 'Organização',
             new: 'Novo',
             list: 'Listar',
             reports: 'Relatórios',
@@ -65,17 +65,76 @@ export default {
         searchbtn: 'Pesquisar',
         clear: 'Limpar'
       },
+      actions: {
+        new: 'Novo',
+        reports: 'Relatórios',
+        documents: 'Documentos'
+      },
       results: {
         legend: 'Lista de usuários',
-        name: 'Nome',
-        created_at: 'Data de criação',
-        updated_at: 'Data de atualização',
-        email: 'Email',
-        actions: 'Ações',
-        organization: 'Organização',
-        errors: 'Ocorreu um erro.',
-        loading: 'Carregando...'
+        loading: 'Carregando...',
+        errors: 'Ocorreu um erro...',
+        empty: 'Nenhum resultado encontrado..',
+        headers : {
+          userInfo: 'Usuário',
+          status: 'Status',
+          actions: 'Ações',
+          created_at: 'Criado',
+          updated_at: 'Atualizado',
+          last_login: 'Último login',
+        },
+        actions: {
+          view: 'Visualizar',
+          edit: 'Editar',
+          delete: 'Desativar',
+          block: 'Bloquear',
+        }
       }
     },
   },
+  tenants: {
+    list: {
+      search: {
+        legend: "Organização - Pesquisa",
+        search: 'Pesquisa',
+        order: {
+          label: 'Ordenar',
+        },
+        active: {
+          label: 'Ativo',
+          active: 'Ativo',
+          deactivated: 'Desativado' 
+        },
+        order_by: 'Ordenar por',
+        searchbtn: 'Pesquisa',
+        clear: 'Limpar'
+      },
+      actions: {
+        new: 'Novo',
+        reports: 'Relatórios',
+        users: 'Usuários'
+      },
+
+      results: {
+        legend: 'Lista de Organizações',
+        loading: 'Carregando...',
+        errors: 'Ocorreu um erro.',
+        empty: 'Nenhum resultado encontrado..',
+        headers : {
+          tenantInfo: 'Organização',
+          status: 'Status',
+          actions: 'Ações',
+          created_at: 'Criado',
+          updated_at: 'Atualizado',
+          last_login: 'Último login',
+        },
+        actions: {
+          view: 'Visualizar',
+          edit: 'Editar',
+          delete: 'Desativar',
+          block: 'Bloquear',
+        }
+      }
+    },
+  }
 };

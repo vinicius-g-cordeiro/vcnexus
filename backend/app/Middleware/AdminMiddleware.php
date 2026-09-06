@@ -11,13 +11,38 @@ declare(strict_types=1);
 
 namespace App\Middleware;
 
+use App\Exceptions\AppExceptionHandler;
+use App\Service\AuthService;
+use App\Shared\Session;
 use App\Shared\Interfaces\MiddlewareInterface;
 use App\Shared\Request;
+use App\Shared\Connection;
+use App\Shared\Response;
 
-class AdminMiddleware implements MiddlewareInterface
-{
-    public function handle(Request $request, callable $next): mixed{
-        /// @todo implement admin middleware
+class AdminMiddleware  implements MiddlewareInterface {
+
+    protected ?Session $session;
+    protected ?AuthService $authService;
+    public function __construct() {
+        $this->session = Session::getInstance();
+        $this->authService = new AuthService(Connection::getInstance());
+    }
+    public function handle(Request $request, callable $next): mixed {
+
+        if(isset($this->session) === false) {
+            throw new AppExceptionHandler(message: 'There was no session initialized!', code: 500);
+        }
+
+        $sessionUser = $this->session->get('user');
+        
+        if(isset($sessionUser) === false){
+            Response::json(message: '403 Unauthorized Access', status: false, code: 403, data: object(), bShouldExit: true);
+        }
+
+        if((int)$sessionUser->role !== 1){
+            Response::json(message: '403 Unauthorized Access', status: false, code: 403, data: object(), bShouldExit: true);
+        }
+
         return $next($request);
     }
 }

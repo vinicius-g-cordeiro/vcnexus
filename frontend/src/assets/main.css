@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.my-app-dark, .my-app-dark *)); /** dark mode configuration*/
 
 body{
-    @apply bg-zinc-200 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 min-h-screen text-sm
+    @apply bg-zinc-200 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 min-h-screen text-xs
 }
 
 .card {

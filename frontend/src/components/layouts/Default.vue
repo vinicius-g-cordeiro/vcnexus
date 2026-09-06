@@ -1,7 +1,7 @@
 <template>
 
     <main class="bg-zinc-50 dark:bg-zinc-900 min-h-screen">
-        <Header :nav-items="[
+        <Header :nav-items="isSuperAdmin ? [
             { label: t('header.links.home'), href: '/', icon: 'bi bi-house-fill' },
             {
                 label: t('header.links.schedule.schedule'), children: [
@@ -24,13 +24,28 @@
                 ], icon: 'bi bi-people-fill'
             },
             {
-                label: t('header.links.entity.entity'),children: [
-                    { label:  t('header.links.entity.new'), href: '/entities/new/', icon: 'bi bi-building-add' },
-                    { label: t('header.links.entity.list'), href: '/entities/list/', icon: 'bi bi-buildings' },
-                    { label: t('header.links.entity.reports'), href: 'entities/report/', icon: 'bi bi-building-fill-exclamation' },
+                label: t('header.links.tenants.tenants'),children: [
+                    { label:  t('header.links.tenants.new'), href: '/tenants/new/', icon: 'bi bi-building-add' },
+                    { label: t('header.links.tenants.list'), href: '/tenants/list/', icon: 'bi bi-buildings' },
+                    { label: t('header.links.tenants.reports'), href: 'tenants/report/', icon: 'bi bi-building-fill-exclamation' },
                 ], icon: 'bi bi-building-fill'
             },
-        ]" user-name="" @search="onSearch">
+        ] : 
+        [
+            { label: t('header.links.home'), href: '/', icon: 'bi bi-house-fill' },
+            {
+                label: t('header.links.schedule.schedule'), children: [
+                    { label: t('header.links.schedule.calendar'), href: '/schedule/calendar/', icon: 'bi bi-calendar-plus' },
+                    { label: t('header.links.schedule.list'), href: '/schedule/list/', icon: 'bi bi-list-task' },
+                ] , icon:'bi bi-calendar',                
+            },
+            {
+                label: t('header.links.tasks.tasks'), children: [
+                    { label:  t('header.links.tasks.new'), href: '/tasks/new/', icon: 'bi bi-plus-square-fill'  },
+                    { label: t('header.links.tasks.list'), href: '/tasks/list/', icon: 'bi bi-list-task'  },
+                ], icon: 'bi bi-list-task'
+            },
+        ] " user-name="" @search="onSearch">
             <template v-slot:brand>
                 VCNexus
             </template>
@@ -43,10 +58,14 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import Header from '@/components/Header.vue';
-
+import { useAuthStore } from '@/stores/authStore';
 
 const { t } = useI18n()
 
+const authStore = useAuthStore();
+
+
+const isSuperAdmin = authStore.isSuperAdmin
 
 </script>
 

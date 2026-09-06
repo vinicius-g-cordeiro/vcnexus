@@ -127,7 +127,7 @@
  *   user-name="Jane Doe"
  *   @search="onSearch"
  * >
- *   <template #brand>Acme</template>
+ *   <template #brand>VCNexus</template>
  * </Header>
  */
 import { ref, computed } from 'vue'

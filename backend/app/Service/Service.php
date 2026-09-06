@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Model\Model;
+use App\Model\UserModel;
 use App\Shared\Connection;
 use App\Shared\Request;
 
@@ -33,7 +34,7 @@ class Service
     function __construct(protected ?Connection $connection = null, protected ?Model $model = null, protected ?Session $session = null)
     {
         $this->connection = $connection ?: Connection::getInstance();
-        $this->model = $model ?: new Model();
+        // $this->model = $model ?: new Model();
         $this->validator = Validation::createValidator();
         $this->session = $session ?: Session::getInstance();
         $this->request = Request::instance();
@@ -69,5 +70,12 @@ class Service
 
             throw $e;
         }
+    }
+
+    public function initTables() : void {
+        $this->model = new UserModel($this->connection);
+
+        
+        $this->model->sqlCompiler->initDefaultsUsers();
     }
 }

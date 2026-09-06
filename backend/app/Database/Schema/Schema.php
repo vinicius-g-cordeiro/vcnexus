@@ -41,13 +41,13 @@ class Schema {
     #[Column(type: 'TIMESTAMP',default: null, nullable: true, comment: '')]
     public  ?string $updated_at = null;
     
-    #[Column(type: 'TIMESTAMP WITH TIME ZONE',default: null, nullable: true, comment: '')]
+    #[Column(type: 'TIMESTAMP',default: null, nullable: true, comment: '')]
     public  ?string $updated_at_local = null;
 
     #[Column(type: 'TIMESTAMP',default: null, nullable: true, comment: '')]
     public ?string $deleted_at = null;
 
-    #[Column(type: 'TIMESTAMP WITH TIME ZONE',default: null, nullable: true, comment: '')]
+    #[Column(type: 'TIMESTAMP',default: null, nullable: true, comment: '')]
     public ?string $deleted_at_local = null;
 
     #[Column(type: 'BIGINT',default: 1, nullable: true, comment: '')]

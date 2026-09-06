@@ -12,9 +12,11 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Exceptions\AppExceptionHandler;
+use App\Middleware\AdminMiddleware;
 use App\Middleware\AuthMiddleware;
 use App\Service\UsernameService;
 use App\Shared\Attributes\Middleware;
+use App\DTOs\Authentication\UserRegistrationDTO;
 use App\Shared\Attributes\Route;
 use App\Shared\Response;
 use App\Shared\Request;
@@ -23,6 +25,9 @@ use App\Service\Service;
 use App\Shared\Attributes\RateLimit;
 use App\Shared\Connection;
 use Exception;
+use App\Events\Container;
+use Throwable;
+use App\Events\Auth\UserRegistered;
 
 
 #[Route('GET', '/users/')]
@@ -57,10 +62,44 @@ class UserController extends Controller
     }
 
 
-    #[Route('POST|POST', '/create/')]
+    #[Route('POST', 'create/')]
+    #[Middleware(AuthMiddleware::class)]
+    #[Middleware(AdminMiddleware::class)]
     #[RateLimit(maxAttempts: 5, decaySeconds: 60)]
-    public function store(Request $request) : void {
+    public function store() : void {
+        $response = null;
         
+        try{
+            $userRegisterDTO = new UserRegistrationDTO(
+                name: $this->request->post('name'),
+                surname: $this->request->post('surname'),
+                lastname: $this->request->post('lastname'),
+                username: $this->request->post('username'),
+                email: $this->request->post('email'),
+                password: $this->request->post('password'),
+                password_confirmation: $this->request->post('password_confirmation'),
+                birthdate: $this->request->post('birthdate'),
+                gender: (int)($this->request->post('gender') ?: null),
+                sexual_orientation: (int)($this->request->post('sexual_orientation') ?: null),
+                marital_status: (int)($this->request->post('marital_status') ?: null),
+                locale: $this->request->post('locale') ?: null,
+                nickname: $this->request->post('nickname') ?: null,
+                created_by: (int)$this->session->get('user')->id ?? 1,
+                tenant_id: (int)$this->request->post('business')['tenant'] ?? null
+            );
+
+            $response = $this->service->store($userRegisterDTO);
+
+
+            Container::getInstance()->dispatch(
+                new UserRegistered((int)$response->insertID, $userRegisterDTO->name, $userRegisterDTO->email)
+            );
+
+            Response::json(message: 'User created', status: true, code: 201, bShouldExit: true, data: $response);
+        }catch(Throwable $er){
+            Response::log('error', $er->getMessage(), 500, false, (object)$er->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
+        }
     }
 
     #[Route('PUT', '/{id}/update/')]

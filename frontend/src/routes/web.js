@@ -5,120 +5,168 @@
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com>
  */
 
-import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
+import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@/stores/authStore";
 
 const routes = [
-    {
-        path: '/',        
-        component: () => import('@/components/layouts/Guest.vue'),
+  {
+    path: "/",
+    component: () => import("@/components/layouts/Guest.vue"),
+    meta: {
+      requiresGuest: true,
+    },
+    children: [
+      {
+        path: "",
+        name: "home",
+        component: () => import("@/views/Home.vue"),
         meta: {
-            requiresGuest: true,
+          breadcrumbs: [],
+          actions: [],
+          title: "Home",
         },
-        children: [
-            {
-                path: '',
-                name: 'home',
-                component: () => import('@/views/Home.vue'),
-                 meta: {
-                    breadcrumbs: [],
-                    actions: [],
-                    title: 'Home'
-                }
-            },
-            {
-                path: 'login/',
-                name: 'login',
-                component: () => import('@/views/auth/Login.vue'),
-                 meta: {
-                    breadcrumbs: [],
-                    actions: [],
-                    title: 'Login'
-                }
-            },
-            {
-                path:"register/",
-                name:"register",
-                component: () => import('@/views/auth/Register.vue'),
-                 meta: {
-                    breadcrumbs: [],
-                    actions: [],
-                    title: 'Register'
-                }
-            },
-        ]
-    },
-    {
-        path: '/',        
-        component: () => import('@/components/layouts/Default.vue'),
+      },
+      {
+        path: "login/",
+        name: "login",
+        component: () => import("@/views/auth/Login.vue"),
         meta: {
-            requiresAuth: true
+          breadcrumbs: [],
+          actions: [],
+          title: "Login",
         },
+      },
+      {
+        path: "register/",
+        name: "register",
+        component: () => import("@/views/auth/Register.vue"),
+        meta: {
+          breadcrumbs: [],
+          actions: [],
+          title: "Register",
+        },
+      },
+    ],
+  },
+  {
+    path: "/",
+    component: () => import("@/components/layouts/Default.vue"),
+    meta: {
+      requiresAuth: true,
+    },
+    children: [
+      {
+        path: "dashboard/",
+        name: "dashboard",
+        component: () => import("@/views/Dashboard.vue"),
+        meta: {
+          breadcrumbs: [],
+          actions: [],
+          title: "Dashboard",
+        },
+      },
+      {
+        path: "profile/",
+        name: "profile",
+        component: () => import("@/views/users/Profile.vue"),
+        meta: {
+          breadcrumbs: [],
+          actions: [],
+          title: "Profile",
+        },
+      },
+      {
+        path: "tenants/",
         children: [
-            {
-                path: 'dashboard/',
-                name: 'dashboard',
-                component: () => import('@/views/Dashboard.vue'),
-                meta: {
-                    breadcrumbs: [],
-                    actions: [],
-                    title: 'Dashboard'
-                }
+          {
+            path: "list/",
+            name: "tenants-list",
+            component: () => import("@/views/tenants/List.vue"),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "Tenants - List",
             },
-            {
-                path: 'profile/',
-                name: 'profile',
-                component: () => import('@/views/users/Profile.vue'),
-                meta: {
-                    breadcrumbs: [],
-                    actions: [],
-                    title: 'Profile',
-                }
+          },
+          {
+            path: 'new/',
+            name: 'tenants-new',
+            component: () => import('@/views/tenants/New.vue'),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "Tenants - New",
             },
-        {
-                path: 'users/list/',
-                name: 'users-list',
-                component: () => import('@/views/users/List.vue'),
-                meta: {
-                    breadcrumbs: [],
-                    actions: [],
-                    title: 'Users - List'
-                }
+          }
+        ],
+        meta: {
+          requiresSuperAdmin: true,
+        }
+      },
+	  {
+        path: "users/",
+        children: [
+          {
+            path: "list/",
+            name: "users-list",
+            component: () => import("@/views/users/List.vue"),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "Users - List",
             },
-        ]
-    },
-    {
-        path: '/:pathMatch(.*)*',
-        name: 'not-found',
-        component: () => import('@/views/errors/Error404.vue'),
-        
-    },
+          },
+          {
+            path: "new/",
+            name: "users-new",
+            component: () => import("@/views/users/New.vue"),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "Users - New",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "not-found",
+    component: () => import("@/views/errors/Error404.vue"),
+  },
 ];
 
 const router = createRouter({
-    history: createWebHistory(),
-    routes
+  history: createWebHistory(),
+  routes,
 });
 
 router.beforeEach(async (to, from) => {
-    const authStore = useAuthStore()
-    document.title = to.meta.title ? `${to.meta.title} - VCNexus` : 'VCNexus'
-    
-    if (!authStore.hydration) {
-        await authStore.fetchUser()
-    }
+  const authStore = useAuthStore();
+  document.title = to.meta.title ? `${to.meta.title} - VCNexus` : "VCNexus";
 
-    const isAuthenticated = authStore.isAuthenticated
-    const requiresAuth = to.matched.some(r => r.meta.requiresAuth)
-    const requiresGuest = to.matched.some(r => r.meta.requiresGuest)
+  if (!authStore.hydration) {
+    await authStore.fetchUser();
+  }
 
-    if (requiresAuth && !isAuthenticated) {
-        return { name: 'login', query: { redirect: to.fullPath } }
-    }
+  const isAuthenticated = authStore.isAuthenticated;
+  const isAdminAccount = authStore.isSuperAdmin;
+  const requiresAuth = to.matched.some((r) => r.meta.requiresAuth);
+  const requiresGuest = to.matched.some((r) => r.meta.requiresGuest);
+  const requiresSuperAdmin = to.matched.some((r) => r.meta.requiresSuperAdmin);
 
-    if (requiresGuest && isAuthenticated) {
-        return { name: 'dashboard' }
-    }
-})
+  if(requiresSuperAdmin && isAdminAccount === false){
+    return { name: "dashboard" };
+  }
+  
+  if (requiresAuth && !isAuthenticated) {
+    return { name: "login", query: { redirect: to.fullPath } };
+  }
 
-export default router
+  if (requiresGuest && isAuthenticated) {
+    return { name: "dashboard" };
+  }
+});
+
+export default router;

@@ -35,9 +35,13 @@ class OwnerMiddleware  implements MiddlewareInterface {
 
         $userSession = $this->session->get('user');
 
-        $user = $this->authService->getUser($request->post('uuid'));
+        if($request->method == 'POST'){
+            $uuid = $request->post('uuid');
+        }else if($request->method == 'PUT'){
+            $uuid = $request->put('uuid');
+        }
+        $user = $this->authService->getUser($uuid);
 
-        
         if(isset($user, $userSession) === false){
             Response::json(message: '403 Unauthorized Access', status: false, code: 403, data: object(), bShouldExit: true);
         }

@@ -1,10 +1,11 @@
 <template>
   <fieldset :class="[
-    'rounded-md m-2 border transition-colors',
+    'm-2 border transition-colors',
     'dark:bg-zinc-800 bg-zinc-100',
     'dark:border-neutral-100/60 border-neutral-500/70',
     'shadow-sm dark:shadow-black/20',
     paddingClass,
+    borderClass
   ]">
     <legend v-if="legend" class="-ml-2 px-2 font-semibold text-zinc-900 dark:text-zinc-50 text-sm uppercase">
       <i class="bi" :class="icon"></i>
@@ -13,6 +14,14 @@
     <p v-if="description" class="mt-1 mb-4 text-zinc-500 dark:text-zinc-400 text-sm">
       {{ description }}
     </p>
+
+    <ul v-if="actions" class="flex flex-wrap justify-end gap-2 ms-auto mt-1 mb-4 text-zinc-500 dark:text-zinc-400 text-sm">
+      <li v-for="action in actions" :key="action.url" class="" >
+          <Button :to="action.url" variant="outline" >
+            <i :class=action.icon></i>
+            {{ action.name }} </Button>
+      </li> 
+    </ul>
 
     <!-- height adapts automatically to however many inputs are slotted in -->
     <div :class="['flex flex-col', gapClass]">
@@ -38,6 +47,7 @@
  * Fieldset itself stays a single flex column.
  */
 import { computed } from 'vue'
+import Button from './Button.vue'
 
 const props = defineProps({
   legend: {
@@ -56,9 +66,17 @@ const props = defineProps({
     type: String,
     default: 'md', // 'sm' | 'md' | 'lg'
   },
+  border: {
+    type: String,
+    default: 'xs', //'xs' | 'sm' | 'md' | 'lg'
+  },
   icon: {
     type: String,
     default: ''
+  },
+  actions: {
+    type: Array,
+    default: []
   }
 })
 
@@ -69,6 +87,11 @@ const gapClass = computed(() => {
 
 const paddingClass = computed(() => {
   const map = { sm: 'p-4', md: 'p-6', lg: 'p-8' }
+  return map[props.padding] ?? map.md
+})
+
+const borderClass = computed(() => {
+  const map = { xs: 'rounded-xs', sm: 'rounded-sm', md: 'rounded-md', lg: 'rounded-lg' }
   return map[props.padding] ?? map.md
 })
 </script>

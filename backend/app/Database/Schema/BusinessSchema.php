@@ -26,7 +26,10 @@ final class BusinessSchema extends Schema
     #[Column(type: 'VARCHAR(100)', default: null, nullable: true, comment: '')]
     public ?string $trade_name = '';
 
-    #[Column(type: 'SMALLINT', default: null, nullable: true, comment: 'Business type: MEI, LTDA, Simples Nacional, CPF')]
+    #[Column(type: 'TEXT', default: null, nullable: true, comment: '')]
+    public ?string $description = '';
+
+    #[Column(type: 'SMALLINT', default: null, nullable: true, comment: 'Business type: MEI, LTDA, Simples Nacional, Simples Anonimo, CPF')]
     public ?int $type = 1;
 
     #[Column(type: 'VARCHAR(100)', default: '', nullable: false, comment: 'The legal tax identification of the business such as CNPJ on Brazil')]

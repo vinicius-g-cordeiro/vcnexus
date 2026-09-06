@@ -18,6 +18,9 @@ export const useAuthStore = defineStore("auth", {
 
   getters: {
     isAuthenticated: (state) => !!state.sessionUser,
+    isSuperAdmin: (state) => !!state.sessionUser && state.sessionUser.role === "1",
+    isWorker: (state) =>  !!state.sessionUser && state.sessionUser.role === "1",
+    canManageAccess: (state) =>  !!state.sessionUser && state.sessionUser.role === "1",
   },
 
   actions: {
@@ -45,7 +48,6 @@ export const useAuthStore = defineStore("auth", {
         this.error = null;
         const response = await authService.login(credentials);
         this.sessionUser = response.data.user;
-        console.log(this.sessionUser);
         this.hydration = true; // we now know who's logged in, no need to refetch
         return true;
       } catch (e) {
@@ -93,18 +95,34 @@ export const useAuthStore = defineStore("auth", {
       return this.fetchUser();
     },
 
-    async updateUser(userData) {
+    async updateUser(payload) {
       try {
         this.loading = true;
-        const response = await authService.edit(userData);
+        this.error = null;
+        const response = await authService.updateProfile(payload);
         this.sessionUser = response.data.user;
         return true;
       } catch (e) {
-        this.error = e.response.data.message || "Erro ao atualizar perfil";
+        this.error = e.response?.data?.message || "Erro ao atualizar perfil";
         return false;
       } finally {
         this.loading = false;
         this.hydration = true;
+      }
+    },
+
+    async updateAvatar(formData) {
+      try {
+        this.loading = true;
+        this.error = null;
+        const response = await authService.updateAvatar(formData);
+        this.sessionUser = response.data.user;
+        return true;
+      } catch (e) {
+        this.error = e.response?.data?.message || "Erro ao atualizar avatar";
+        return false;
+      } finally {
+        this.loading = false;
       }
     },
   },

@@ -13,6 +13,7 @@ namespace App\Service;
 
 use App\DTOs\Authentication\AuthLoginDTO;
 use App\DTOs\Authentication\LogoutDTO;
+use App\DTOs\Authentication\ProfileUpdateDTO;
 use App\DTOs\Users\UsernameRegistrationDTO;
 use App\Exceptions\AppExceptionHandler;
 use App\Model\UserModel;
@@ -39,6 +40,7 @@ class AuthService extends Service
         parent::__construct($connection, new UserModel($connection), Session::getInstance());
 
     }
+
 
     function store(UserRegistrationDTO $userRegistrationDTO): object|null
     {
@@ -126,10 +128,11 @@ class AuthService extends Service
         return $response === false ? null : $response;
     }
 
-    public function login(AuthLoginDTO $authLoginDTO) : object|null {
+    public function login(AuthLoginDTO $authLoginDTO): object|null
+    {
         $response = null;
 
-        
+
         // Validate 
         $assert = new Assert\Collection(fields: [
             'login' => new Assert\NotBlank(message: 'Login is required!'),
@@ -150,49 +153,143 @@ class AuthService extends Service
 
         $response = $this->transaction(function () use ($authLoginDTO) {
             $result = $this->model->login($authLoginDTO);
-            $this->session->set('user', $result);
 
             $date = new \DateTime('now', new DateTimeZone('UTC'));
 
             $dateLocal = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
-            $res = $this->model->update(new AuthLoginDTO(login: $result->email, id: (int)$result->id, last_login: (string)$date->getTimestamp(),last_login_local: (string)$dateLocal, last_ip: $_SERVER['REMOTE_ADDR'], last_agent: $_SERVER['HTTP_USER_AGENT'] ), ('id = ' . $result->id));
+            $res = $this->model->update(new AuthLoginDTO(login: $result->email, id: (int) $result->id, last_login: (string) $date->getTimestamp(), last_login_local: (string) $dateLocal, last_ip: $_SERVER['REMOTE_ADDR'], last_agent: $_SERVER['HTTP_USER_AGENT']), ('id = ' . $result->id), bUpdate: false);
+
+            $result->last_login = $dateLocal;
             return $result;
         });
+        $this->session->set('user', $response);
 
         return $response === false ? null : $response;
     }
 
-    public function getSelf() : object|null {
+
+    function updateProfile(ProfileUpdateDTO $profileUpdateDTO): object|null
+    {
+        $response = null;
+
+        // Validate 
+        $assert = new Assert\Collection(fields: [
+            'name' => new Assert\NotBlank(message: 'Name is required!'),
+            'lastname' => new Assert\NotBlank(message: 'Last name is required!'),
+            'surname' => new Assert\Optional(),
+            'birthdate' => [
+                new Assert\Optional(),
+                new Assert\Date(),
+            ],
+            'gender' => [
+                new Assert\Optional(),
+                new Assert\Type('int'),
+            ],
+            'sexual_orientation' => [
+                new Assert\Optional(),
+                new Assert\Type('int'),
+            ],
+            'marital_status' => [
+                new Assert\Optional(),
+                new Assert\Type('int'),
+            ],
+            'locale' => [
+                new Assert\Optional(),
+                new Assert\Type('string', 'The type of localization should be passed as a string. Ex: \'pt-br\''),
+            ],
+            'username' => [
+                new Assert\NotBlank(message: 'Username is required!'),
+                new Assert\Length(min: 3, max: 100, charset: 'UTF-8'),
+            ],
+            'email' => [
+                new Assert\NotBlank(message: 'Email is required'),
+                new Assert\Email(message: 'Email should be a valid email')
+            ],
+            'password' => [
+                new Assert\Optional(),
+                new Assert\PasswordStrength()
+            ],
+            'password_confirmation' => new Assert\Callback(function ($value, ExecutionContextInterface $context) use ($profileUpdateDTO) {
+                if ($profileUpdateDTO->password !== $profileUpdateDTO->password_confirmation) {
+                    $context->buildViolation('Passwords does not match')->atPath('password_confirmation')->addViolation();
+                }
+            })
+        ], allowMissingFields: false, allowExtraFields: true);
+
+        $violations = $this->validator->validate((array) $profileUpdateDTO, [$assert]);
+
+        if ($violations->count() > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[] = $violation->getMessage();
+            }
+
+            // This should handle the notification to the user, using the session notification method
+            throw new AppExceptionHandler(implode('##,##', $errors), 400, null);
+        }
+
+        $response = $this->transaction(function () use ($profileUpdateDTO) {
+            
+            
+            $result = $this->model->update($profileUpdateDTO, 'uuid = \'' . $profileUpdateDTO->uuid. '\'');
+            
+            if (!$result || !isset($result)) {
+                throw new AppExceptionHandler('Failed to update user.');
+            }
+
+            $usernameModel = new UsernameModel($this->connection);
+
+            $usernameResult = $usernameModel->update(
+                new UsernameRegistrationDTO(
+                    $profileUpdateDTO->username,
+                    (string)$profileUpdateDTO->id,
+                    (string)$profileUpdateDTO->tenant_id
+                )
+            , 'user_id = \'' . $profileUpdateDTO->id . '\'');
+
+            if ($usernameResult === false || !(isset($usernameResult))) {
+                throw new AppExceptionHandler('Failed to create username.');
+            }
+
+            return $profileUpdateDTO;
+        });
+        return $response === false ? null : $response;
+    }
+
+
+
+    public function getSelf(): object|null
+    {
         $uuid = $this->session->get('user')?->uuid;
-        $response = $this->model->find($uuid, ['u.id', 'un.username', 'u.name', 't.name as "organization_name" ', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email']);
-        if($response === false || $response == null || $response == object()){
+        $response = $this->model->find($uuid, ['u.id', 'u.role', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation' , 'b.tax_id', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
+        if ($response === false || $response == null || $response == object()) {
             throw new RuntimeException('404 - user not found', 404);
         }
-        
-        return $response === false ? null : $response;
-    }
-
-    public function getUser(?string $uuid = null) : object|null {
-
-        $response = $this->model->find($uuid, ['u.id', 'un.username', 'u.name', 't.name as "organization_name" ', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email']);
 
         return $response === false ? null : $response;
     }
 
-    public function logout(?string $uuid) : object|null {
+    public function getUser(?string $uuid = null): object|null
+    {
+        $response = $this->model->find($uuid, ['u.id', 'u.role', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation' , 'b.tax_id', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
+        return $response === false ? null : $response;
+    }
+
+    public function logout(?string $uuid): object|null
+    {
         $response = null;
 
         $userFound = $this->model->find($uuid, ['u.id', 'u.uuid']);
-        if($userFound === false){
-            throw new AppExceptionHandler(message: 'Could not find the user to logout', code:400);
+        if ($userFound === false) {
+            throw new AppExceptionHandler(message: 'Could not find the user to logout', code: 400);
         }
 
         $response = $this->transaction(function () use ($userFound) {
-            $result = $this->model->update(new LogoutDTO(id: (int)$userFound->id, uuid: $userFound->uuid), 'uuid = \'' . $userFound->uuid . '\'');
+            $result = $this->model->update(dataTransferObject: new LogoutDTO(id: (int) $userFound->id, uuid: $userFound->uuid), where: 'uuid = \'' . $userFound->uuid . '\'', bUpdate: false);
             return $result;
         });
 
-        if(isset($response) && $response === 1){
+        if (isset($response) && $response === 1) {
             $this->session->set('user', null);
         }
 

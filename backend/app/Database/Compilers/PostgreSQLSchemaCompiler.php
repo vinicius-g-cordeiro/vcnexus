@@ -40,17 +40,22 @@ class PostgreSQLSchemaCompiler extends Connection
         $creationQuery .= $this->buildCommentsQuery($tableName);
 
         $response = false;
+        $this->getConnection()->StartTrans();
         try {
+
             $response = $this->getConnection()->Execute($creationQuery);
+
+            if ($this->getConnection()->HasFailedTrans()) {
+                throw new \RuntimeException('Transaction failed.');
+            }
+
+            $this->getConnection()->CompleteTrans();
         } catch (Throwable $th) {
+            $this->getConnection()->FailTrans();
+            $this->getConnection()->CompleteTrans();
             throw new DatabaseNotCreatedException($th->getMessage(), $th->getCode(), $th->getPrevious());
         }
 
-        if($tableName == 'users'){
-            $this->initDefaultsUsers();
-        }
-
-        return Response::json(message: '', code: 204, data: object(DatabaseCreated: $response !== false));
     }
 
     public function createTableQuery(string $tableName = 'example')
@@ -126,7 +131,7 @@ class PostgreSQLSchemaCompiler extends Connection
         $sql = sprintf('CONSTRAINT "%s"  FOREIGN KEY (%s) REFERENCES "%s" (%s)', $constraint->name, $this->quoteColumns($constraint->foreignKeys), $constraint->references, $this->quoteColumns($constraint->columns));
 
         if (isset($constraint->actionOnUpdate) && $constraint->actionOnUpdate === false) {
-            $sql .= ' ON UPDATE NO ACTION ';
+            $sql .= ' ON UPDATE NO ACTION';
         }
 
         if (isset($constraint->actionOnDelete) && $constraint->actionOnDelete === true) {
@@ -136,9 +141,6 @@ class PostgreSQLSchemaCompiler extends Connection
         if ($constraint->deferred === true) {
             $sql .= ' DEFERRABLE INITIALLY DEFERRED ';
         }
-        // if (isset($constraint->deferred) && $constraint->deferred === true) {
-        //     $sql .= ' DEFERRABLE INITIALLY DEFERRED ';
-        // }
 
         return $sql;
     }
@@ -210,14 +212,29 @@ class PostgreSQLSchemaCompiler extends Connection
 
     public function initDefaultsUsers()
     {
-
-
-        $sqlAdminPassword = password_hash(trim(file_get_contents(trim(getenv('ADMIN_PASSWORD')))), PASSWORD_BCRYPT, ['cost' => 16]);
-        
-
+        $sqlAdminPassword = password_hash(trim(file_get_contents(trim(getenv('ADMIN_PASSWORD')))), PASSWORD_BCRYPT, ['cost' => 12]);
         $sql = "
 INSERT INTO public.tenants (\"name\", modules, active) VALUES('Cerrado G Studios', ARRAY['0'::character varying(4)], 1);
+";
+        $this->getConnection()->StartTrans();
+        try {
+            $result = $this->getConnection()->Execute($sql);
 
+            if ($this->getConnection()->HasFailedTrans()) {
+                throw new \RuntimeException('Transaction failed.');
+            }
+
+            $this->getConnection()->CompleteTrans();
+
+        } catch (Throwable $e) {
+            Response::log(data: $e);
+            $this->getConnection()->FailTrans();
+            $this->getConnection()->CompleteTrans();
+
+            throw $e;
+        }
+
+        $sql = "
 insert
     into
     public.users
@@ -254,12 +271,30 @@ insert
     last_login,
     last_login_local,
     last_ip,
-    last_agent)
-values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, null, null, null, null, 1, 'admin', '".$sqlAdminPassword."', 'super', '', array[''::character varying(100)], '2026-09-03', 'vinismtpgo@gmail.com', '', 0, 0, 0, 0, 0, 0, null, 0, null, '', null, null, null, '');
+    last_agent,
+    role)
+values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, null, null, null, null, 1, 'Super', '" . $sqlAdminPassword . "', 'Admin', '', array[''::character varying(100)], '2026-09-03', 'vinismtpgo@gmail.com', '', 0, 0, 0, 0, 0, 0, null, 0, null, '', null, null, null, '', 1);
+";
+        $this->getConnection()->StartTrans();
+        try {
+            $result = $this->getConnection()->Execute($sql);
 
+            if ($this->getConnection()->HasFailedTrans()) {
+                throw new \RuntimeException('Transaction failed.');
+            }
 
-insert into public.usernames (\"username\", active, user_id, created_by) VALUES('admin', 1, 1, 1)";
+            $this->getConnection()->CompleteTrans();
 
+        } catch (Throwable $e) {
+            Response::log(data: $e);
+            $this->getConnection()->FailTrans();
+            $this->getConnection()->CompleteTrans();
+
+            throw $e;
+        }
+        $sql = "
+
+insert into public.usernames (\"username\", active, user_id, created_by) VALUES('admin', 1, 1, 1);";
 
         $this->getConnection()->StartTrans();
 
@@ -275,11 +310,14 @@ insert into public.usernames (\"username\", active, user_id, created_by) VALUES(
             return $result;
 
         } catch (Throwable $e) {
+            Response::log(data: $e);
             $this->getConnection()->FailTrans();
             $this->getConnection()->CompleteTrans();
 
             throw $e;
         }
+
+
 
     }
 

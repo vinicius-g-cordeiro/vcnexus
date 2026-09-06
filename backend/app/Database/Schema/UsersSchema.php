@@ -98,6 +98,10 @@ class UsersSchema extends Schema
     #[Column(type: 'VARCHAR(500)', default: null, nullable: true, comment: '')]
     public ?string $last_agent = null;
 
+
+    #[Column(type: 'SMALLINT', default: 4, nullable: false, comment: '')]
+    public ?int $role = 4;
+
     function __construct() {
         parent::__construct();
     }

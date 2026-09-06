@@ -123,7 +123,7 @@
  * Reuses BaseInput / BaseCheckbox from the shared input kit.
  *
  * Usage:
- * <LoginPage brand-name="Acme" @submit="handleLogin" @oauth="handleOAuth" />
+ * <LoginPage brand-name="VCNexus" @submit="handleLogin" @oauth="handleOAuth" />
  *
  * Emits:
  *  - submit: { email, password, remember }  (call setError / setSubmitting via exposed refs, or handle validation yourself upstream)

@@ -22,11 +22,76 @@ export const useUserStore = defineStore("users", {
 
       try {
         const response = await userService.search(params);
-        this.users = response.data.users
+        this.users = response.data.users;
         return true;
       } catch (error) {
         this.error = error;
         this.users = [];
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async createUser(userInfo) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await userService.create(userInfo);
+        this.users = response.data.users;
+        return true;
+      } catch (error) {
+        this.error = error;
+        this.users = [];
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async updateUser(id, payload) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await userService.updateUser(id,payload);
+        this.user = response.data.user;
+        return true;
+      } catch (error) {
+        this.error = error;
+        this.user = [];
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async updateUserAvatar(id, formData) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await userService.updateUserAvatar(id, formData);
+        this.user = response.data.user;
+        return true;
+      } catch (error) {
+        this.error = error;
+        this.user = [];
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async deleteUser(id) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await userService.updateUserAvatar(id, formData);
+        this.user = response.data.user;
+        return true;
+      } catch (error) {
+        this.error = error;
+        this.user = [];
         return false;
       } finally {
         this.loading = false;

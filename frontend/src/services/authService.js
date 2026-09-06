@@ -27,6 +27,19 @@ const authService = {
     const response = await api.get('/auth/me', { credentials: true })
     return response.data
   },
+
+  async updateProfile(payload) {
+    const { data } = await api.put('/auth/me', payload)
+    return data
+  },
+
+  async updateAvatar(formData) {
+    const { data } = await api.post('/auth/me/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return data
+  },
 }
 
 export default authService
+

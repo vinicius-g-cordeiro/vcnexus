@@ -107,7 +107,7 @@
  * Reuses BaseInput / BaseCheckbox from the shared input kit.
  *
  * Usage:
- * <RegisterPage brand-name="Acme" @submit="handleRegister" @oauth="handleOAuth" />
+ * <RegisterPage brand-name="VCNexus" @submit="handleRegister" @oauth="handleOAuth" />
  *
  * Emits:
  *  - submit: { firstName, lastName, email, password, password_confirmation }

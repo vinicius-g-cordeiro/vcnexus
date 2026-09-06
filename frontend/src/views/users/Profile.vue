@@ -3,9 +3,10 @@
     <div class="mx-auto px-4 sm:px-6 py-10 max-w-5xl">
       <!-- Page header -->
       <div class="mb-8">
-        <h1 class="font-semibold text-2xl tracking-tight">Profile settings</h1>
+        <h1 class="font-semibold text-2xl tracking-tight">My Profile</h1>
         <p class="mt-1 text-neutral-500 dark:text-neutral-400 text-sm">
-          Manage {{ isOwnProfile ? 'your' : `${user.personal.firstName}'s` }} profile, access and role information.
+          Update your profile
+          <i class="bi bi-person-gear"></i>
         </p>
       </div>
 
@@ -20,7 +21,7 @@
       <!-- Load error -->
       <div v-else-if="loadError" class="bg-red-500/10 px-4 py-3 border border-red-500/30 rounded-lg text-red-500 text-sm">
         {{ loadError }}
-        <button type="button" class="ml-2 font-medium underline underline-offset-2" @click="fetchUser">
+        <button type="button" class="ml-2 font-medium underline underline-offset-2" @click="loadUser">
           Try again
         </button>
       </div>
@@ -33,58 +34,36 @@
 
         <!-- Active section -->
         <div class="flex flex-col flex-1 gap-6 min-w-0">
-          <AvatarUpload
-            v-show="activeSection === 'avatar'"
-            v-model="user.avatarUrl"
-            :name="fullName"
-            @update:file="handleAvatarFile"
-          />
+          <AvatarUpload v-show="activeSection === 'avatar'" v-model="user.avatarUrl" :name="fullName" @update:file="handleAvatarFile" />
 
-          <PersonalDetailsSection
-            v-show="activeSection === 'personal'"
-            v-model="user.personal"
-            :errors="errors.personal"
-          />
+          <PersonalDetailsSection v-show="activeSection === 'personal'" v-model="user.personal" :errors="errors.personal" />
 
           <SecuritySection
             v-show="activeSection === 'security'"
             v-model="user.security"
             :errors="errors.security"
+            :password-required="false"
           />
 
-          <BusinessDetailsSection
-            v-show="activeSection === 'business' && isWorker"
-            v-model="user.business"
-            :errors="errors.business"
-          />
+          <BusinessDetailsSection v-show="activeSection === 'business' && auth.isWorker" v-model="user.business" :errors="errors.business" />
 
-          <BioSection
-            v-show="activeSection === 'bio'"
-            v-model="user.bio"
-            :error="errors.bio"
-          />
+          <BioSection v-show="activeSection === 'bio'" v-model="user.bio" :error="errors.bio" />
 
-          <PermissionsSection
-            v-show="activeSection === 'permissions' && canManageAccess"
-            v-model="user.permissions"
-          />
+          <PermissionsSection v-show="activeSection === 'permissions' && auth.canManageAccess" v-model="user.permissions" />
 
-          <RolesSection
-            v-show="activeSection === 'roles' && canManageAccess"
-            v-model="user.roles"
-          />
+          <RolesSection v-show="activeSection === 'roles' && auth.canManageAccess" v-model="user.roles" />
 
           <p v-if="saveError" class="text-red-500 text-sm">{{ saveError }}</p>
           <p v-if="saveSuccess" class="text-emerald-500 text-sm">Changes saved.</p>
 
           <!-- Save bar -->
           <div class="flex justify-end items-center gap-3 pt-2">
-            <AppButton variant="ghost" :disabled="isSaving" @click="handleCancel">
+            <Button variant="ghost" :disabled="isSaving" @click="handleCancel">
               Cancel
-            </AppButton>
-            <AppButton :loading="isSaving" @click="handleSave">
-              Save changes
-            </AppButton>
+            </Button>
+            <Button :loading="isSaving" @click="handleSave">
+              Save
+            </Button>
           </div>
         </div>
       </div>
@@ -94,55 +73,69 @@
 
 <script setup>
 /**
- * Profile.vue — user profile settings page, routed to directly
- * (e.g. `path: 'profile/'`) rather than mounted by a parent. It
- * loads its own data and performs its own save — no props required
- * to use it from the router.
+ * Profile.vue — "my own profile" page for the logged-in session
+ * user. Routed to directly (e.g. `path: 'profile'`), no `:id` param.
  *
  * DATA SOURCE
- *   This page edits the CURRENT SESSION USER, sourced from the auth
- *   store (`auth.fetchUser()` / `auth.user`) rather than a route
- *   param. See the README for the exact API response shape expected.
+ *   Reads and writes `authStore` exclusively, via its `sessionUser`
+ *   state and `fetchUser` / `updateUser` / `updateAvatar` actions.
+ *   This page always targets `auth.sessionUser`, never an arbitrary
+ *   user by id — for an admin-style "edit any user" page, see
+ *   UserForm.vue, backed by a separate `userStore` instead, so
+ *   "who's logged in" and "who's being edited" never conflate.
  *
  * PERMISSIONS
- *   `isWorker` and `canManageAccess` gate the Business/Permissions/
- *   Roles/Security tabs. Derived from `auth.user` once loaded.
+ *   `auth.isWorker` and `auth.canManageAccess` are store getters
+ *   derived from `sessionUser.role`, used directly in the template
+ *   rather than copied into local refs — one source of truth.
+ *
+ * STORE ACTION SHAPES
+ *   `auth.updateUser(payload)` and `auth.updateAvatar(formData)`
+ *   return a boolean (success/failure) and update `auth.sessionUser`
+ *   themselves, per authStore's existing convention (matching
+ *   `login`/`logout`) — this component reads `auth.sessionUser`
+ *   afterward rather than expecting a returned user object.
+ *
+ * PASSWORD CHANGES
+ *   Password fields are optional on this page (leave blank to keep
+ *   the current password). If your API requires re-authentication
+ *   to change a password, `user.security.currentPassword` is wired
+ *   up for that — drop it if your backend doesn't need it.
  */
-import { reactive, ref, computed, onMounted, watch } from 'vue'
+import { reactive, ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 
 import SettingsNav from '@/components/SettingsNav.vue'
-import AvatarUpload from '@/components/AvatarUpload.vue'
-import PersonalDetailsSection from '@/components/PersonalDetailsSection.vue'
-import BusinessDetailsSection from '@/components/BusinessDetailsSection.vue'
-import BioSection from '@/components/BioSection.vue'
-import PermissionsSection from '@/components/PermissionsSection.vue'
-import RolesSection from '@/components/RolesSection.vue'
-import AppButton from '@/components/AppButton.vue'
-import SecuritySection from '@/components/SecuritySection.vue'
+import AvatarUpload from '@/components/users/AvatarUpload.vue'
+import PersonalDetailsSection from '@/components/users/PersonalDetailsSection.vue'
+import BusinessDetailsSection from '@/components/users/BusinessDetailsSection.vue'
+import BioSection from '@/components/users/BioSection.vue'
+import PermissionsSection from '@/components/users/PermissionsSection.vue'
+import RolesSection from '@/components/users/RolesSection.vue'
+import Button from '@/components/Button.vue'
+import SecuritySection from '@/components/users/SecuritySection.vue'
+
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const auth = useAuthStore()
-
-// --- access flags -----------------------------------------------
-// Derived from the loaded session user. isOwnProfile is always true
-// here since this page only ever edits the logged-in user.
-const isWorker = ref(false)
-const canManageAccess = ref(false)
-const isOwnProfile = ref(true)
 
 // --- local state ---------------------------------------------------
 const emptyUser = () => ({
   id: null,
   avatarUrl: '',
   personal: {
-    firstName: '',
-    lastName: '',
+    name: '',
+    lastname: '',
     email: '',
     phone: '',
     birthDate: '',
     country: '',
+    username: '',
   },
   security: {
+    currentPassword: '',
     password: '',
     password_confirmation: '',
   },
@@ -154,10 +147,12 @@ const emptyUser = () => ({
     hourlyRate: '',
     hireDate: '',
     isContractor: false,
+    tenant: null,
   },
   bio: '',
   permissions: [],
   roles: [],
+  tenant: null,
 })
 
 const user = reactive(emptyUser())
@@ -183,8 +178,8 @@ const allSections = [
 
 const visibleSections = computed(() =>
   allSections.filter((s) => {
-    if (s.requires === 'worker') return isWorker.value
-    if (s.requires === 'access') return canManageAccess.value
+    if (s.requires === 'worker') return auth.isWorker
+    if (s.requires === 'access') return auth.canManageAccess
     return true
   })
 )
@@ -192,10 +187,10 @@ const visibleSections = computed(() =>
 const activeSection = ref('avatar')
 
 const fullName = computed(() =>
-  [user.personal.firstName, user.personal.lastName].filter(Boolean).join(' ')
+  [user.personal.name, user.personal.lastname].filter(Boolean).join(' ')
 )
 
-// --- mapping: raw API payload -> the shape the form sections expect --
+// --- mapping: raw API user -> the shape the form sections expect --
 // Adjust the right-hand-side keys to whatever your backend actually
 // calls them; this is the ONE place that needs to change if your
 // API's field names differ from what's listed here.
@@ -204,48 +199,115 @@ function mapApiUserToForm(apiUser) {
     id: apiUser.id,
     avatarUrl: apiUser.avatar_url ?? apiUser.avatarUrl ?? '',
     personal: {
-      name: apiUser.first_name ?? apiUser.name ?? '',
-      lastname: apiUser.last_name ?? apiUser.lastname ?? '',
+      name: apiUser.name ?? '',
+      lastname: apiUser.lastname ?? '',
+      surname: apiUser.surname ?? '',
       email: apiUser.email ?? '',
       phone: apiUser.phone ?? '',
-      birthdate: apiUser.birth_date ?? apiUser.birthdate ?? '',
-      country: apiUser.country ?? '',
+      birthdate: apiUser.birthdate ?? '',
+      username: apiUser.username ?? '',
+      locale: apiUser.locale ?? '',
+      gender: apiUser.gender,
+      religion: apiUser.religion,
+      marital_status: apiUser.marital_status,
+      sexual_orientation: apiUser.sexual_orientation,
     },
     security: {
+      currentPassword: '',
       password: '',
       password_confirmation: '',
     },
     business: {
-      companyName: apiUser.business?.company_name ?? '',
-      taxId: apiUser.business?.tax_id ?? '',
+      companyName: apiUser.organization_name ?? '',
+      taxId: apiUser.tax_id ?? '',
       jobTitle: apiUser.business?.job_title ?? '',
       department: apiUser.business?.department ?? '',
       hourlyRate: apiUser.business?.hourly_rate ?? '',
       hireDate: apiUser.business?.hire_date ?? '',
       isContractor: apiUser.business?.is_contractor ?? false,
+      tenant: apiUser.tenant_id ?? null,
+    },
+    medical: {
+      blood_factor: apiUser.medical?.blood_factor ?? '',
+      blood_type: apiUser.medical?.blood_type ?? '',
     },
     bio: apiUser.bio ?? '',
     permissions: apiUser.permissions ?? [],
     roles: apiUser.roles ?? [],
+    tenant: apiUser.tenant ?? null,
+  }
+}
+
+// --- mapping: form state -> API payload ------------------------------
+function mapFormToApiPayload() {
+  return {
+    id: auth.sessionUser.id,
+    uuid: auth.sessionUser.uuid,
+    name: user.personal.name,
+    surname: user.personal.surname,
+    lastname: user.personal.lastname,
+    email: user.personal.email,
+    phone: user.personal.phone,
+    birthdate: user.personal.birthdate,
+    locale: user.personal.locale,
+    username: user.personal.username,
+    blood_factor: user.personal.blood_factor,
+    blood_type: user.personal.blood_type,
+    gender: user.personal.gender,
+    religion: user.personal.religion,
+    marital_status: user.personal.marital_status,
+    sexual_orientation: user.personal.sexual_orientation,
+    bio: user.bio,
+    // Password change is optional here: only send password fields
+    // if the user actually typed a new password.
+    ...(user.security.password
+      ? {
+          current_password: user.security.currentPassword,
+          password: user.security.password,
+          password_confirmation: user.security.password_confirmation,
+        }
+      : {}),
+    ...(auth.isWorker
+      ? {
+          business: {
+            company_name: user.business.companyName,
+            tax_id: user.business.taxId,
+            job_title: user.business.jobTitle,
+            department: user.business.department,
+            hourly_rate: user.business.hourlyRate,
+            hire_date: user.business.hireDate,
+            is_contractor: user.business.isContractor,
+            tenant: user.business.tenant,
+          },
+        }
+      : {}),
+    // Most APIs won't let a user grant themselves permissions/roles
+    // via a self-service profile save, even if they can view them.
+    // Included here for parity; drop this block if your backend
+    // rejects (or silently ignores) it on self-edit.
+    ...(auth.canManageAccess
+      ? {
+          permissions: user.permissions,
+          roles: user.roles,
+        }
+      : {}),
   }
 }
 
 // --- data loading ---------------------------------------------------
-async function fetchUser() {
+async function loadUser() {
   isLoading.value = true
   loadError.value = ''
   try {
-    const apiUser = auth.sessionUser // expected to return the raw user object (see README)
-    Object.assign(user, mapApiUserToForm(apiUser))
-    console.log(apiUser)
-
-    isWorker.value = apiUser.type === 'worker' || apiUser.is_worker === true
-    canManageAccess.value = (apiUser.permissions ?? []).includes('users.manage_access')
-      || (apiUser.roles ?? []).includes('admin')
-    
+    const ok = await auth.fetchUser()
+    if (!ok || !auth.sessionUser) {
+      loadError.value = 'Could not load your profile. Please try again.'
+      return
+    }
+    Object.assign(user, mapApiUserToForm(auth.sessionUser))
   } catch (err) {
     console.error(err)
-    loadError.value = 'Could not load profile. Please try again.'
+    loadError.value = 'Could not load your profile. Please try again.'
   } finally {
     isLoading.value = false
   }
@@ -257,35 +319,49 @@ async function handleSave() {
   saveError.value = ''
   saveSuccess.value = false
   try {
-    // Replace with your real call, e.g.:
-    // await auth.updateUser({
-    //   first_name: user.personal.firstName,
-    //   last_name: user.personal.lastName,
-    //   email: user.personal.email,
-    //   phone: user.personal.phone,
-    //   birth_date: user.personal.birthDate,
-    //   country: user.personal.country,
-    //   bio: user.bio,
-    //   ...(user.security.password ? {
-    //     password: user.security.password,
-    //     password_confirmation: user.security.password_confirmation,
-    //   } : {}),
-    // })
-    // if (avatarFile.value) {
-    //   const formData = new FormData()
-    //   formData.append('avatar', avatarFile.value)
-    //   await auth.updateAvatar(formData)
-    // }
+    const payload = mapFormToApiPayload()
+    const ok = await auth.updateUser(payload)
+
+    if (!ok) {
+      saveError.value = auth.error || 'Could not save changes. Please try again.'
+      return
+    }
+
+    if (avatarFile.value) {
+      const formData = new FormData()
+      formData.append('avatar', avatarFile.value)
+      const avatarOk = await auth.updateAvatar(formData)
+      if (!avatarOk) {
+        saveError.value = auth.error || 'Profile saved, but the avatar upload failed.'
+        return
+      }
+    }
+
+    // authStore actions update sessionUser themselves; re-sync the
+    // form from it rather than trusting a locally-held copy.
+    if (auth.sessionUser) {
+      Object.assign(user, mapApiUserToForm(auth.sessionUser))
+    }
+
     saveSuccess.value = true
-  } catch (err) {
-    saveError.value = 'Could not save changes. Please try again.'
+    user.security.currentPassword = ''
+    user.security.password = ''
+    user.security.password_confirmation = ''
+    avatarFile.value = null
+
+    
   } finally {
     isSaving.value = false
+    router.push({ name: 'dashboard' })
   }
 }
 
 function handleCancel() {
-  fetchUser()
+  // No re-fetch needed: reset straight from the already-loaded
+  // session user rather than hitting the API again.
+  if (auth.sessionUser) {
+    Object.assign(user, mapApiUserToForm(auth.sessionUser))
+  }
   avatarFile.value = null
   saveError.value = ''
   saveSuccess.value = false
@@ -295,5 +371,5 @@ function handleAvatarFile(file) {
   avatarFile.value = file
 }
 
-onMounted(fetchUser)
+onMounted(loadUser)
 </script>

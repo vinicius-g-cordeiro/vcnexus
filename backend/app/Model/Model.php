@@ -24,14 +24,14 @@ use RuntimeException;
 
 class Model extends Connection
 {
-    private ?PostgreSQLSchemaCompiler $sqlCompiler = null;
+    public ?PostgreSQLSchemaCompiler $sqlCompiler = null;
 
     private ?Session $session = null;
 
     function __construct($dbConnection = null, public ?Schema $schema = null) {
-        parent::__construct($dbConnection);
-        
-        $this->sqlCompiler = new PostgreSQLSchemaCompiler($dbConnection, $schema);
+        parent::__construct($dbConnection);        
+        $this->schema = $schema;
+        $this->sqlCompiler = new PostgreSQLSchemaCompiler($dbConnection, $this->schema);
         $this->session = Session::getInstance();
         if ($this->doesTableExists() === false) {
             $this->sqlCompiler->createTable();
@@ -40,6 +40,7 @@ class Model extends Connection
 
     private function doesTableExists(): bool
     {
+        
         if (isset($this->schema) === false) {
             throw new AppExceptionHandler('Table DTO was not set for model!', 500);
         }
@@ -92,8 +93,8 @@ class Model extends Connection
 
             if($value == null) { continue; }
 
-            if ($key == 'password' && password_needs_rehash($value, CRYPT_SHA512, ['cost' => 12])) {
-                $fields['password'] = password_hash($value, CRYPT_SHA512, ['cost' => 12]);
+            if ($key == 'password' && password_needs_rehash($value, PASSWORD_BCRYPT, ['cost' => 12])) {
+                $fields['password'] = password_hash($value, PASSWORD_BCRYPT, ['cost' => 12]);
                 continue;
             }
 
@@ -117,13 +118,12 @@ class Model extends Connection
             $fields[$key] = $value;
         }
 
-                
-        
         $date = new DateTime('now', new DateTimeZone('UTC'));
         $fields['created_by'] = 1;
         $fields['created_at'] = $date->getTimestamp();
         $fields['created_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
 
+        
         $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'INSERT');
         if($return === false){
             throw new AppExceptionHandler('500 - Error', 500);
@@ -133,7 +133,7 @@ class Model extends Connection
     }
 
 
-    function update(?DTOInterface $dataTransferObject, string $where): object|bool|int {
+    function update(?DTOInterface $dataTransferObject, string $where, bool $bUpdate = true): object|bool|int {
         $fields = [];
         foreach ($dataTransferObject as $key => $value) {
 
@@ -145,8 +145,8 @@ class Model extends Connection
 
             if($value == null){ continue; }
 
-            if ($key == 'password' && $value !== null && trim($value) !== '' && password_needs_rehash($value, CRYPT_SHA512, ['cost' => 12])) {
-                $fields['password'] = password_hash($value, CRYPT_SHA512, ['cost' => 6]);
+            if ($key == 'password' && $value !== null && trim($value) !== '' && password_needs_rehash($value, PASSWORD_BCRYPT, ['cost' => 12])) {
+                $fields['password'] = password_hash($value, PASSWORD_BCRYPT, ['cost' => 6]);
                 continue;
             }
 

@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
-
+import { useAuthStore } from '@/stores/authStore'
 const { locale } = useI18n()
+
+const authStore = useAuthStore()
 
 const isOpen = ref(false)
 
@@ -13,7 +15,7 @@ const languages = [
         short: 'PT',
     },
     {
-        code: 'en',
+        code: 'en-us',
         label: 'English',
         short: 'EN',
     },
@@ -39,7 +41,9 @@ function closeDropdown(event) {
 }
 
 onMounted(() => {
-    const savedLocale = localStorage.getItem('locale')
+
+    const savedLocale = authStore?.sessionUser?.locale || localStorage.getItem('locale')
+
 
     if (savedLocale && languages.some(language => language.code === savedLocale)) {
         locale.value = savedLocale
@@ -80,9 +84,9 @@ onBeforeUnmount(() => {
         <Transition enter-active-class="transition duration-150 ease-out" enter-from-class="translate-y-1 opacity-0" enter-to-class="translate-y-0 opacity-100" leave-active-class="transition duration-100 ease-in" leave-from-class="translate-y-0 opacity-100" leave-to-class="translate-y-1 opacity-0">
             <div v-if="isOpen" class="right-0 z-50 absolute bg-neutral-950 shadow-xl mt-2 p-1 border border-neutral-800 rounded-xl w-44 overflow-hidden">
                 <button v-for="language in languages" :key="language.code" type="button" class="flex justify-between items-center px-3 py-2 rounded-lg w-full text-sm transition" :class="locale === language.code
-                                ? 'bg-emerald-500/10 text-emerald-400'
-                                : 'text-neutral-400 hover:bg-neutral-900 hover:text-white'
-                            " @click="changeLanguage(language.code)">
+                    ? 'bg-emerald-500/10 text-emerald-400'
+                    : 'text-neutral-400 hover:bg-neutral-900 hover:text-white'
+                    " @click="changeLanguage(language.code)">
                     <span>
                         {{ language.label }}
                     </span>

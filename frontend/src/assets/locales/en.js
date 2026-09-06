@@ -28,8 +28,8 @@ export default {
             documents: 'Documents',
             reports: 'Reports',
         },
-        entity: {
-            entity: 'Entity',
+        tenants: {
+            tenants: 'Tenant',
             new: 'New',
             list: 'List',
             reports: 'Reports',
@@ -65,16 +65,74 @@ export default {
         searchbtn: 'Search',
         clear: 'Clear'
       },
+      actions: {
+        new: 'New',
+        reports: 'Reports',
+        documents: 'Documents'
+      },
       results: {
         legend: 'User\'s List',
-        name: 'Name',
-        created_at: 'Creation Date',
-        updated_at: 'Update At',
-        email: 'Email',
-        actions: 'Actions',
-        organization: 'Organization',
+        loading: 'Loading...',
         errors: 'Something went wrong.',
-        loading: 'Loading...'
+        headers : {
+          userInfo: 'User',
+          status: 'Status',
+          actions: 'Actions',
+          created_at: 'Created',
+          updated_at: 'Updated',
+          last_login: 'Last Login',
+        },
+        actions: {
+          view: 'View',
+          edit: 'Edit',
+          delete: 'Deactivate',
+          block: 'Block',
+        }
+      }
+    },
+  },
+  tenants: {
+    list: {
+      search: {
+        legend: "Tenants - Search",
+        search: 'Search',
+        order: {
+          label: 'Order',
+        },
+        active: {
+          label: 'Active',
+          active: 'Active',
+          deactivated: 'Deactivated' 
+        },
+        order_by: 'Order by',
+        searchbtn: 'Search',
+        clear: 'Clear'
+      },
+      actions: {
+        new: 'New',
+        reports: 'Reports',
+        users: 'Users'
+      },
+
+      results: {
+        legend: 'Tenants List',
+        loading: 'Loading...',
+        errors: 'Something went wrong.',
+        empty: 'No results found..',
+        headers : {
+          tenantInfo: 'Tenant',
+          status: 'Status',
+          actions: 'Actions',
+          created_at: 'Created',
+          updated_at: 'Updated',
+          last_login: 'Last Login',
+        },
+        actions: {
+          view: 'View',
+          edit: 'Edit',
+          delete: 'Deactivate',
+          block: 'Block',
+        }
       }
     },
   }

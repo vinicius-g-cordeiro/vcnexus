@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\DTOs\Authentication\ProfileUpdateDTO;
 use App\DTOs\Authentication\UserRegistrationDTO;
 use App\DTOs\Authentication\AuthLoginDTO;
 use App\Events\Container;
@@ -69,8 +70,7 @@ class AuthController extends Controller{
             );
 
             $response = $this->service->store($userRegisterDTO);
-
-
+            
             Container::getInstance()->dispatch(
                 new UserRegistered((int)$response->insertID, $userRegisterDTO->name, $userRegisterDTO->email)
             );
@@ -97,7 +97,6 @@ class AuthController extends Controller{
                 password: $this->request->post('password'),
             );
             $response = $this->service->login($authLoginDTO);
-            // dd($response, $this->request->ip(),);
             $dateLoggedIn =  new \DateTime('now',new DateTimeZone('America/Sao_Paulo'))->format('d/m/Y H:i:s');
             Container::getInstance()->dispatch(
                 new UserLoggedIn((int)$response->id, $response->name, $response->email, $this->request->ip(), $dateLoggedIn)
@@ -115,6 +114,43 @@ class AuthController extends Controller{
         $response = null;
         try{
             $response = $this->service->getSelf();
+            Response::json(message: '', status: true, code: 200, bShouldExit:true, data: object(user: $response));
+        }catch(Throwable $err){
+            Response::log('error', $err->getMessage(), 500, false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
+        }catch(\Exception $err){
+            Response::log('error', $err->getMessage(), $err->getCode(), false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);   
+        }
+    }
+
+    #[Route('PUT', '/me/')]
+    #[Middleware(AuthMiddleware::class)]
+    #[Middleware(OwnerMiddleware::class)]
+    public function updateProfile() {
+        $response = null;
+        try{
+            $userUpdateDTO = new ProfileUpdateDTO(
+                id: (int)$this->request->put('id'),
+                uuid: $this->request->put('uuid'),
+                name: $this->request->put('name'),
+                surname: $this->request->put('surname') ?? null,
+                lastname: $this->request->put('lastname'),
+                username: (string)$this->request->put('username'),
+                email: $this->request->put('email'),
+                password: $this->request->put('password') ?? null,
+                password_confirmation: $this->request->put('password_confirmation') ?? null,
+                birthdate: $this->request->put('birthdate'),
+                gender: (int)($this->request->put('gender') ?: null),
+                sexual_orientation: (int)($this->request->put('sexual_orientation') ?: null),
+                marital_status: (int)($this->request->put('marital_status') ?: null),
+                religion: (int)($this->request->put('religion') ?: null),
+                locale: $this->request->put('locale') ?: null,
+                nickname: $this->request->put('nickname') ?: null,
+                updated_by: (int)$this->session->get('user')->id ?? 1,
+                phone: $this->request->put('phone') ?? '',
+            );
+            $response = $this->service->updateProfile($userUpdateDTO);
             Response::json(message: '', status: true, code: 200, bShouldExit:true, data: object(user: $response));
         }catch(Throwable $err){
             Response::log('error', $err->getMessage(), 500, false, (object)$err->getTraceAsString());
