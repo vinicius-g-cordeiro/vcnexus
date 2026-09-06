@@ -1,23 +1,23 @@
 <template>
   <Fieldset legend="Business details" description="Shown on invoices and to clients you work with.">
 
-    <Select :model-value="form.tenant" label="Tenant" placeholder="Select a tenant..." :options="tenantOptions" @focus="loadTenants" @update:model-value="updateField('tenant', $event)" />
+    <Select :disabled="disabled" :model-value="form.tenant" label="Tenant" placeholder="Select a tenant..." :options="tenantOptions" @focus="loadTenants" @update:model-value="updateField('tenant', $event)" />
 
     <div class="gap-5 grid grid-cols-1 sm:grid-cols-2">
-      <BaseInput :model-value="form.companyName" label="Company name" placeholder="VCNexus Services LLC" :error="errors.companyName" @update:model-value="updateField('companyName', $event)" />
-      <BaseInput :model-value="form.taxId" label="Tax ID / VAT number" placeholder="00.000.000/0001-00" :error="errors.taxId" @update:model-value="updateField('taxId', $event)" />
+      <BaseInput :disabled="disabled" :model-value="form.companyName" label="Company name" placeholder="VCNexus Services LLC" :error="errors.companyName" @update:model-value="updateField('companyName', $event)" />
+      <BaseInput :disabled="disabled" :model-value="form.taxId" label="Tax ID / VAT number" placeholder="00.000.000/0001-00" :error="errors.taxId" @update:model-value="updateField('taxId', $event)" />
     </div>
 
-    <Select :model-value="form.jobTitle" label="Job title" placeholder="Select a title..." :options="jobTitleOptions" @update:model-value="updateField('jobTitle', $event)" />
+    <Select :disabled="disabled" :model-value="form.jobTitle" label="Job title" placeholder="Select a title..." :options="jobTitleOptions" @update:model-value="updateField('jobTitle', $event)" />
 
-    <Select :model-value="form.department" label="Department" placeholder="Select a department..." :options="departmentOptions" @update:model-value="updateField('department', $event)" />
+    <Select :disabled="disabled" :model-value="form.department" label="Department" placeholder="Select a department..." :options="departmentOptions" @update:model-value="updateField('department', $event)" />
 
     <div class="gap-5 grid grid-cols-1 sm:grid-cols-2">
-      <BaseInput :model-value="form.hourlyRate" type="number" label="Hourly rate" placeholder="0.00" :error="errors.hourlyRate" @update:model-value="updateField('hourlyRate', $event)" />
-      <BaseInput :model-value="form.hireDate" type="date" label="Hire date" :error="errors.hireDate" @update:model-value="updateField('hireDate', $event)" />
+      <BaseInput :disabled="disabled" :model-value="form.hourlyRate" type="number" label="Hourly rate" placeholder="0.00" :error="errors.hourlyRate" @update:model-value="updateField('hourlyRate', $event)" />
+      <BaseInput :disabled="disabled" :model-value="form.hireDate" type="date" label="Hire date" :error="errors.hireDate" @update:model-value="updateField('hireDate', $event)" />
     </div>
 
-    <BaseCheckbox :model-value="form.isContractor" label="This worker is an independent contractor (not a direct employee)" @update:model-value="updateField('isContractor', $event)" />
+    <BaseCheckbox :disabled="disabled" :model-value="form.isContractor" label="This worker is an independent contractor (not a direct employee)" @update:model-value="updateField('isContractor', $event)" />
   </Fieldset>
 </template>
 
@@ -65,6 +65,10 @@ const props = defineProps({
       { label: 'Administration', value: 'administration' },
     ],
   },
+  disabled: {
+    type: Boolean,
+    default: false
+  }
 })
 
 const tenantStore = useTenantStore()

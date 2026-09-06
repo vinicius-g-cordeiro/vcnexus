@@ -4,7 +4,7 @@
       <div v-for="group in permissionGroups" :key="group.key" class="flex flex-col gap-2.5">
         <p class="font-medium text-neutral-900 dark:text-neutral-50 text-sm">{{ group.label }}</p>
         <div class="gap-2 grid grid-cols-1 sm:grid-cols-2">
-          <BaseCheckbox v-for="perm in group.permissions" :key="perm.value" :model-value="modelValue.includes(perm.value)" :label="perm.label" @update:model-value="togglePermission(perm.value, $event)" />
+          <BaseCheckbox :disabled="disabled" v-for="perm in group.permissions" :key="perm.value" :model-value="modelValue.includes(perm.value)" :label="perm.label" @update:model-value="togglePermission(perm.value, $event)" />
         </div>
       </div>
     </div>
@@ -13,9 +13,9 @@
       <p class="text-neutral-500 dark:text-neutral-400 text-xs">
         {{ modelValue.length }} permission{{ modelValue.length === 1 ? '' : 's' }} granted
       </p>
-      <AppButton v-if="modelValue.length" size="sm" variant="ghost" modal="revoke-all-permissions" @open-modal="isConfirmOpen = true">
+      <Button :disabled="disabled" v-if="modelValue.length" size="sm" variant="ghost" modal="revoke-all-permissions" @open-modal="isConfirmOpen = true">
         Revoke all
-      </AppButton>
+      </Button>
     </div>
 
     <Modal v-model="isConfirmOpen" title="Revoke all permissions?" size="sm">
@@ -24,8 +24,8 @@
         their roles will not be affected. This can't be undone automatically.
       </p>
       <template #footer>
-        <AppButton variant="ghost" @click="isConfirmOpen = false">Cancel</AppButton>
-        <AppButton variant="danger" @click="revokeAll">Revoke all</AppButton>
+        <Button :disabled="disabled" variant="ghost" @click="isConfirmOpen = false">Cancel</Button>
+        <Button :disabled="disabled" variant="danger" @click="revokeAll">Revoke all</Button>
       </template>
     </Modal>
   </Fieldset>
@@ -42,7 +42,7 @@
 import { ref } from 'vue'
 import Fieldset from '@/components/Fieldset.vue'
 import BaseCheckbox from '@/components/BaseCheckbox.vue'
-import AppButton from '@/components/AppButton.vue'
+import Button from '@/components/Button.vue'
 import Modal from '@/components/Modal.vue'
 
 const props = defineProps({
@@ -81,6 +81,10 @@ const props = defineProps({
       },
     ],
   },
+  disabled: {
+    type: Boolean,
+    default: false
+  }
 })
 
 const emit = defineEmits(['update:modelValue'])

@@ -2,7 +2,8 @@
   <section class="space-y-6 mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full max-w-7xl">
 
     <!-- Search -->
-    <Fieldset :legend="t('users.list.search.legend')" icon="bi-people-fill" :actions="[ {url: '/users/new/', name: t('users.list.actions.new'), icon: 'bi bi-person-add'}, {url: '/users/reports/', name: t('users.list.actions.reports'), icon: 'bi bi-file-spreadsheet'}, {url: '/users/documents/', name: t('users.list.actions.documents'), icon: 'bi bi-file-earmark'} ]">
+    <Fieldset :legend="t('users.list.search.legend')" icon="bi-people-fill"
+      :actions="[{ url: '/users/new/', name: t('users.list.actions.new'), icon: 'bi bi-person-add' }, { url: '/users/reports/', name: t('users.list.actions.reports'), icon: 'bi bi-file-spreadsheet' }, { url: '/users/documents/', name: t('users.list.actions.documents'), icon: 'bi bi-file-earmark' }]">
       <form class="space-y-6" @submit.prevent="handleSubmit">
         <!-- Filters -->
         <div class="gap-4 grid grid-cols-1 md:grid-cols-4">
@@ -129,6 +130,10 @@
                         </p>
 
                         <p class="mt-0.5 text-neutral-500 text-xs">
+                          <span>{{ getRole(user.role)?.label }}</span>
+                        </p>
+
+                        <p class="mt-0.5 text-neutral-500 text-xs">
                           @{{ user.username }}
                         </p>
 
@@ -147,7 +152,7 @@
                   </td>
 
 
-                  
+
                   <!-- Status -->
                   <td class="px-5 py-4 text-neutral-500">
                     <div class="flex items-center gap-3">
@@ -159,38 +164,49 @@
                       <div class="min-w-0">
 
                         <p class="mt-0.5 text-neutral-500 text-xs">
-                            <b>{{ t('users.list.results.headers.created_at') }}: </b>{{ formatDate(user.created_at,true) }}
+                          <b>{{ t('users.list.results.headers.created_at') }}: </b>{{ formatDate(user.created_at, true) }}
                         </p>
 
                         <template v-if="user.updated_at">
                           <p class="mt-0.5 text-neutral-500 text-xs">
-                            <b>{{ t('users.list.results.headers.updated_at') }}: </b>{{ formatDate(user.updated_at,true) }}
+                            <b>{{ t('users.list.results.headers.updated_at') }}: </b>{{ formatDate(user.updated_at, true) }}
                           </p>
                         </template>
                         <template v-if="user.last_login">
                           <p class="mt-0.5 text-neutral-500 text-xs">
-                            <b>{{ t('users.list.results.headers.last_login') }}: </b>{{ formatDate(user.last_login,true) }}
+                            <b>{{ t('users.list.results.headers.last_login') }}: </b>{{ formatDate(user.last_login, true) }}
+                          </p>
+                        </template>
+
+                        <template v-if="user.deleted_at">
+                          <p class="mt-0.5 text-red-500 text-xs">
+                            <b>{{ t('users.list.results.headers.deleted_at') }}: </b>{{ formatDate(user.deleted_at, true) }} por <b>{{ user.deleted_by }}</b>
+                            
                           </p>
                         </template>
                       </div>
 
                     </div>
 
-                    
+
                   </td>
 
                   <!-- Actions -->
-                  <td class="px-5 py-4">
+                  <td class="flex justify-center px-5 py-4">
 
-                    <div class="flex flex-wrap justify-evenly gap-1">
-                      <Button variant="link" :to='"user/view/"+user.id' :title="t('users.list.results.actions.view')"><i class="bi bi-eye"></i></Button>
+                    <div class="flex flex-wrap gap-1">
+                      <Button variant="ghost" :to="{ name: 'users-view', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.view')"><i class="bi bi-eye"></i></Button>
 
-                      <Button variant="link" :to='"user/edit/"+user.id' :title="t('users.list.results.actions.edit')"><i class="bi bi-pencil-square"></i></Button>
-
-                      <Button variant="link" :to='"user/delete/"+user.id' :title="t('users.list.results.actions.delete')"><i class="text-red-500 bi bi-trash"></i></Button>
-
-                      <Button variant="link" :to='"user/block/"+user.id' :title="t('users.list.results.actions.block')"><i class="text-red-200 bi-ban bi"></i></Button>
-
+                      <Button variant="ghost" :to="{ name: 'users-edit', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-pencil-square"></i></Button>
+                      <template v-if=" (user.role !== '1' && user.role !== '2') && user.uuid !== authStore.sessionUser.uuid">
+                        <template v-if="user.active === '1'">
+                          <Button variant="ghost" @click="handleDelete(user.uuid)" :title="t('users.list.results.actions.delete')"><i class="bi bi-toggle2-off"></i></Button>
+                        </template>
+                        <template v-else>
+                          <Button variant="ghost" @click="handleActivate(user.uuid)" :title="t('users.list.results.actions.activate')"><i class="bi bi-toggle2-on"></i></Button>
+                        </template>
+                        <Button variant="ghost" @click="handleBlock(user.uuid)" :title="t('users.list.results.actions.block')"><i class="text-red-400 bi-ban bi"></i></Button>
+                      </template>
 
                     </div>
 
@@ -203,154 +219,6 @@
             </table>
 
           </div>
-
-        </div>
-
-
-        <!-- =========================
-         Mobile cards
-         ========================= -->
-        <div class="md:hidden space-y-3">
-
-          <article v-for="user in users" :key="user.id" class="bg-white dark:bg-neutral-950 p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl">
-
-            <!-- User header -->
-            <div class="flex justify-between items-start gap-3">
-
-              <div class="flex items-center gap-3 min-w-0">
-
-                <div class="flex justify-center items-center bg-neutral-100 dark:bg-neutral-800 rounded-full w-10 h-10 text-neutral-600 dark:text-neutral-300 shrink-0">
-                  <i class="text-lg bi bi-person"></i>
-                </div>
-
-                <div class="min-w-0">
-
-                  <p class="font-medium text-neutral-900 dark:text-neutral-100 truncate">
-                    {{ user.name }}
-                    {{ user.surname }}
-                    {{ user.lastname }}
-                  </p>
-
-                  <p class="text-neutral-500 text-xs">
-                    @{{ user.username }}
-                  </p>
-
-                </div>
-
-              </div>
-
-
-              <!-- Actions -->
-              <div class="flex gap-1 shrink-0">
-
-                <button type="button" title="View user" class="flex justify-center items-center hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg w-8 h-8 text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
-                  <i class="bi bi-eye"></i>
-                </button>
-
-                <button type="button" title="Edit user" class="flex justify-center items-center hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg w-8 h-8 text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100">
-                  <i class="bi bi-pencil"></i>
-                </button>
-
-              </div>
-
-            </div>
-
-
-            <!-- User information -->
-            <div class="space-y-3 mt-4 pt-4 border-neutral-100 dark:border-neutral-800 border-t">
-
-              <!-- Organization -->
-              <div class="flex items-start gap-3">
-
-                <i class="mt-0.5 w-4 text-neutral-400 bi bi-building"></i>
-
-                <div class="min-w-0">
-                  <p class="font-medium text-neutral-400 text-xs">
-                    {{ t('users.list.results.organization') }}
-                  </p>
-
-                  <p class="text-neutral-700 dark:text-neutral-300 text-sm truncate">
-                    {{ user.organization }}
-                  </p>
-                </div>
-
-              </div>
-
-
-              <!-- Email -->
-              <div class="flex items-start gap-3">
-
-                <i class="mt-0.5 w-4 text-neutral-400 bi bi-envelope"></i>
-
-                <div class="min-w-0">
-                  <p class="font-medium text-neutral-400 text-xs">
-                    {{ t('users.list.results.email') }}
-                  </p>
-
-                  <p class="text-neutral-700 dark:text-neutral-300 text-sm break-all">
-                    {{ user.email }}
-                  </p>
-                </div>
-
-              </div>
-
-
-              <!-- Created -->
-              <div class="flex items-center gap-3">
-
-                <i class="w-4 text-neutral-400 bi bi-calendar-plus"></i>
-
-                <div>
-                  <span class="font-medium text-neutral-400 text-xs">
-                    {{ t('users.list.results.created_at') }}
-                  </span>
-
-                  <span class="ml-2 text-neutral-700 dark:text-neutral-300 text-sm">
-                    {{ formatDate(user.created_at) }}
-                  </span>
-                </div>
-
-              </div>
-
-
-              <!-- Updated -->
-              <div class="flex items-center gap-3">
-
-                <i class="w-4 text-neutral-400 bi bi-calendar-check"></i>
-
-                <div>
-                  <span class="font-medium text-neutral-400 text-xs">
-                    {{ t('users.list.results.updated_at') }}
-                  </span>
-
-                  <span class="ml-2 text-neutral-700 dark:text-neutral-300 text-sm">
-                    {{ formatDate(user.updated_at) }}
-                  </span>
-                </div>
-
-              </div>
-
-
-              <!-- Last login -->
-              <div class="flex items-center gap-3">
-
-                <i class="w-4 text-neutral-400 bi bi-calendar-check"></i>
-
-                <div>
-                  <span class="font-medium text-neutral-400 text-xs">
-                    {{ t('users.list.results.last_login') }}
-                  </span>
-
-                  <span class="ml-2 text-neutral-700 dark:text-neutral-300 text-sm">
-                    {{ formatDate(user.last_login, true) }}
-                  </span>
-                </div>
-
-              </div>
-
-            </div>
-
-          </article>
 
         </div>
 
@@ -372,6 +240,11 @@ import BaseInput from '@/components/BaseInput.vue'
 import Select from '@/components/Select.vue'
 import Button from '@/components/Button.vue'
 import { useUserStore } from '@/stores/userStore'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
+
+const router = useRouter()
+const authStore = useAuthStore()
 
 const { t } = useI18n()
 
@@ -400,6 +273,36 @@ async function handleSubmit() {
   await userStore.search(form)
 }
 
+async function handleDelete(id) {
+  const deleted = await userStore.deleteUser(id)
+  if(deleted) handleSubmit()
+}
+
+
+async function handleActivate(id) {
+  const deleted = await userStore.activateUser(id)
+  if(deleted) handleSubmit()
+}
+
+async function handleBlock(id) {
+  const deleted = await userStore.deleteUser(id)
+  
+}
+
+const roles = [
+    { label: 'Super Administrator', value: 1, description: 'Full access to every area of the system.' },
+    { label: 'Administrator', value: 2, description: 'Full access to every area of the system based on the tenant access.' },
+    { label: 'Manager', value: 3, description: 'Can manage workers and view reports.' },
+    { label: 'Worker', value: 4, description: 'Can view and update assigned jobs.' },
+    { label: 'Viewer', value: 5, description: 'Read-only access.' }
+];
+
+const getRole = (role) => {
+    return roles.find(item => item.value === Number(role));
+};
+
+
+
 function formatDate(date, showHour = false) {
   if (!date) {
     return '-'
@@ -411,7 +314,7 @@ function formatDate(date, showHour = false) {
     return '-'
   }
 
-  if(showHour === true){
+  if (showHour === true) {
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -420,8 +323,8 @@ function formatDate(date, showHour = false) {
       minute: '2-digit',
       second: '2-digit'
     }).format(parsed)
-  }else{
-      return new Intl.DateTimeFormat('pt-BR', {
+  } else {
+    return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

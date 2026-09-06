@@ -28,9 +28,10 @@ use Exception;
 use App\Events\Container;
 use Throwable;
 use App\Events\Auth\UserRegistered;
+use App\DTOs\Authentication\ProfileUpdateDTO;
 
 
-#[Route('GET', '/users/')]
+#[Route('GET', '/users')]
 #[Middleware(AuthMiddleware::class)]
 class UserController extends Controller
 {
@@ -56,9 +57,17 @@ class UserController extends Controller
         }
     }
 
-    #[Route('GET', '/{id}/')]
-    public function show(string $id) : void {
-        
+    #[Route('GET', '/{uuid}')]
+    public function get($uuid = '') : void {
+         $response = null;
+        try{
+            $response = $this->service->getUser($uuid);
+            Response::json(code: 200, status: true, data: object(users: ($response ?: object())));
+        }catch(AppExceptionHandler $exception) {
+            Response::json('There was an error whilst querying for user, try again later', false, 500, object(), [], true);
+        }catch(Exception $exception){
+            Response::json('500 Error - Try again later', false, 500, object(), [], true);
+        }
     }
 
 
@@ -84,6 +93,8 @@ class UserController extends Controller
                 marital_status: (int)($this->request->post('marital_status') ?: null),
                 locale: $this->request->post('locale') ?: null,
                 nickname: $this->request->post('nickname') ?: null,
+                phone: $this->request->post('phone') ?: null,
+                religion: $this->request->post('religion') ?: null,
                 created_by: (int)$this->session->get('user')->id ?? 1,
                 tenant_id: (int)$this->request->post('business')['tenant'] ?? null
             );
@@ -102,19 +113,71 @@ class UserController extends Controller
         }
     }
 
-    #[Route('PUT', '/{id}/update/')]
-    public function update(Request $request, string $id) : void {
-        
+    #[Route('PUT', '/{uuid}')]
+    public function update($uuid = '') : void {
+        $response = null;
+        try{
+            
+            $userUpdateDTO = new ProfileUpdateDTO(
+                id: (int)$this->request->put('id'),
+                uuid: $uuid,
+                name: $this->request->put('name'),
+                surname: $this->request->put('surname') ?? null,
+                lastname: $this->request->put('lastname'),
+                username: (string)$this->request->put('username'),
+                email: $this->request->put('email'),
+                password: $this->request->put('password') ?? null,
+                password_confirmation: $this->request->put('password_confirmation') ?? null,
+                birthdate: $this->request->put('birthdate'),
+                gender: (int)($this->request->put('gender') ?: null),
+                sexual_orientation: (int)($this->request->put('sexual_orientation') ?: null),
+                marital_status: (int)($this->request->put('marital_status') ?: null),
+                religion: (int)($this->request->put('religion') ?: null),
+                locale: $this->request->put('locale') ?: null,
+                nickname: $this->request->put('nickname') ?: null,
+                updated_by: (int)$this->session->get('user')->id ?? 1,
+                phone: $this->request->put('phone') ?? '',
+                tenant_id: (int)$this->request->put('tenant') ?? null,
+            );
+            $response = $this->service->updateProfile($userUpdateDTO);
+            Response::json(message: '', status: true, code: 200, bShouldExit:true, data: object(user: $response));
+        }catch(Throwable $err){
+            Response::log('error', $err->getMessage(), 500, false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
+        }catch(Exception $err){
+            Response::log('error', $err->getMessage(), $err->getCode(), false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);   
+        }
     }
 
-    #[Route('DELETE', '/{id}/delete/')]
-    public function deactivate(string $id) : void {
-        
+    #[Route('DELETE', '/delete/{uuid}')]
+    public function deactivate(string $uuid) : void {
+         $response = null;
+        try{
+            $response = $this->service->deactivate($uuid);
+            Response::json(message: 'User deactivated successfully!', status: true, code: 200, bShouldExit:true, data: object(user: $response));
+        }catch(Throwable $err){
+            Response::log('error', $err->getMessage(), 500, false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
+        }catch(Exception $err){
+            Response::log('error', $err->getMessage(), $err->getCode(), false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);   
+        }
     }
 
-    #[Route('PUT|GET|PATCH', '/{id}/activate/')]
-    public function activate(string $id) : void {
-        
+    #[Route('PUT', '/activate/{uuid}')]
+    public function activate(string $uuid) : void {
+         $response = null;
+        try{
+            $response = $this->service->activate($uuid);
+            Response::json(message: 'User activated successfully!', status: true, code: 200, bShouldExit:true, data: object(user: $response));
+        }catch(Throwable $err){
+            Response::log('error', $err->getMessage(), 500, false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
+        }catch(Exception $err){
+            Response::log('error', $err->getMessage(), $err->getCode(), false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);   
+        }   
     }
 
     #[Route('PUT|GET|PATCH', '/{id}/block/')]

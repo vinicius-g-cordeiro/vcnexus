@@ -20,7 +20,6 @@ use App\Shared\Connection;
 use App\Shared\Session;
 use DateTimeZone;
 use DateTime;
-use RuntimeException;
 
 class Model extends Connection
 {
@@ -138,7 +137,7 @@ class Model extends Connection
         foreach ($dataTransferObject as $key => $value) {
 
             // Check if the key is 'id' and skip it as we don't want to update the id
-            if ($key == 'id') {
+            if ($key == 'id' || $key == 'uuid') {
                 continue;
             }
 
@@ -179,15 +178,68 @@ class Model extends Connection
         }
 
         $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'UPDATE', $where);
+        
+        // if($return === false){
+        //     throw new RuntimeException('500 - Error', 500);
+        // }
+
+        $updatedID = (object)$this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
+        
+        return (int)$updatedID->id;
+    }
 
 
-        if($return === false){
-            throw new RuntimeException('500 - Error', 500);
+    function deactivate(string $where): object|bool|int {
+        $fields = [];
+
+        $fields['active'] = 0;
+        
+
+        if (isset($this->session->get('user')->id)) {
+            $date = new DateTime('now', new DateTimeZone('UTC'));
+            $fields['deleted_by'] = $this->session->get('user')->id;
+            $fields['deleted_at'] = $date->getTimestamp();
+            $fields['deleted_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
         }
 
+        if(empty($where)){
+            throw new AppExceptionHandler('No where provided for update clause', 500);
+        }
 
-        return $this->getConnection()->Affected_Rows();
+        $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'UPDATE', $where);
+
+        $updatedID = (object)$this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
+
+        return (int)$updatedID->id;
     }
+
+
+    function activate(string $where): object|bool|int {
+        $fields = [];
+
+        $fields['active'] = 1;
+        $fields['deleted_by'] = null;
+        $fields['deleted_at'] = null;
+        $fields['deleted_at_local'] = null;
+
+        if(empty($where)){
+            throw new AppExceptionHandler('No where provided for update clause', 500);
+        }
+
+        if (isset($this->session->get('user')->id)) {
+            $date = new DateTime('now', new DateTimeZone('UTC'));
+            $fields['updated_by'] = $this->session->get('user')->id;
+            $fields['updated_at'] = $date->getTimestamp();
+            $fields['updated_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
+        }
+        
+        $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'UPDATE', $where);
+
+        $updatedID = (object)$this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
+
+        return (int)$updatedID->id;
+    }
+
 
     function list(?object $parameters) : object|bool|null|array {
         $response = null;

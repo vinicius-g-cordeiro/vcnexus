@@ -3,9 +3,9 @@
     <div class="mx-auto px-4 sm:px-6 py-10 max-w-5xl">
       <!-- Page header -->
       <div class="mb-8">
-        <h1 class="font-semibold text-2xl tracking-tight">{{ isNew ? 'New User' : 'Edit User' }}</h1>
+        <h1 class="font-semibold text-2xl tracking-tight">{{ isView ? 'View User' : (isNew ? 'New User' : 'Edit User') }}</h1>
         <p class="mt-1 text-neutral-500 dark:text-neutral-400 text-sm">
-          {{ isNew ? 'Create a new profile' : 'Update this profile' }}
+          {{ isView ? 'View this profile' : (isNew ? 'Create a new profile' : 'Update this profile') }}
           <i class="bi" :class="isNew ? 'bi-person-add' : 'bi-pencil-square'"></i>
         </p>
       </div>
@@ -34,39 +34,35 @@
 
         <!-- Active section -->
         <div class="flex flex-col flex-1 gap-6 min-w-0">
-          <AvatarUpload v-show="activeSection === 'avatar'" v-model="user.avatarUrl" :name="fullName" @update:file="handleAvatarFile" />
+          <AvatarUpload :disabled="isView === true" v-show="activeSection === 'avatar'" v-model="user.avatarUrl" :name="fullName" @update:file="handleAvatarFile" />
 
-          <PersonalDetailsSection v-show="activeSection === 'personal'" v-model="user.personal" :errors="errors.personal" />
+          <PersonalDetailsSection :disabled="isView === true" v-show="activeSection === 'personal'" v-model="user.personal" :errors="errors.personal" />
 
-          <SecuritySection
-            v-show="activeSection === 'security'"
-            v-model="user.security"
-            :errors="errors.security"
-            :password-required="isNew"
-          />
+          <SecuritySection :disabled="isView === true" v-show="activeSection === 'security'" v-model="user.security" :errors="errors.security" :password-required="isNew" />
 
-          <BusinessDetailsSection v-show="activeSection === 'business' && isWorker" v-model="user.business" :errors="errors.business" />
+          <BusinessDetailsSection :disabled="isView === true" v-show="activeSection === 'business' && isWorker" v-model="user.business" :errors="errors.business" />
 
-          <BioSection v-show="activeSection === 'bio'" v-model="user.bio" :error="errors.bio" />
+          <BioSection :disabled="isView === true" v-show="activeSection === 'bio'" v-model="user.bio" :error="errors.bio" />
 
-          <PermissionsSection v-show="activeSection === 'permissions' && canManageAccess" v-model="user.permissions" />
+          <PermissionsSection :disabled="isView === true" v-show="activeSection === 'permissions' && canManageAccess" v-model="user.permissions" />
 
-          <RolesSection v-show="activeSection === 'roles' && canManageAccess" v-model="user.roles" />
+          <RolesSection :disabled="isView === true" v-show="activeSection === 'roles' && canManageAccess" v-model="user.roles" />
+          <template v-if="isView === false">
+            <p v-if="saveError" class="text-red-500 text-sm">{{ saveError }}</p>
+            <p v-if="saveSuccess" class="text-emerald-500 text-sm">
+              {{ isNew ? 'User created.' : 'Changes saved.' }}
+            </p>
 
-          <p v-if="saveError" class="text-red-500 text-sm">{{ saveError }}</p>
-          <p v-if="saveSuccess" class="text-emerald-500 text-sm">
-            {{ isNew ? 'User created.' : 'Changes saved.' }}
-          </p>
-
-          <!-- Save bar -->
-          <div class="flex justify-end items-center gap-3 pt-2">
-            <Button variant="ghost" :disabled="isSaving" @click="handleCancel">
-              Cancel
-            </Button>
-            <Button :loading="isSaving" @click="handleSave">
-              {{ isNew ? 'Create user' : 'Save' }}
-            </Button>
-          </div>
+            <!-- Save bar -->
+            <div class="flex justify-end items-center gap-3 pt-2">
+              <Button variant="ghost" :disabled="isSaving" @click="handleCancel">
+                Cancel
+              </Button>
+              <Button :loading="isSaving" @click="handleSave">
+                {{ isNew ? 'Create user' : 'Save' }}
+              </Button>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -121,10 +117,14 @@ const router = useRouter()
 const auth = useAuthStore()
 const userStore = useUserStore()
 
+
+
 // --- mode -----------------------------------------------------------
 // route param wins: presence of :id decides create vs edit.
-const targetId = computed(() => route.params.id ?? null)
+const targetId = computed(() => route.params.uuid ?? null)
 const isNew = computed(() => !targetId.value)
+const isView = computed(() => route.name === 'users-view' ?? null)
+
 
 // --- access flags -----------------------------------------------
 // In create mode: what can the CURRENT (logged-in) user grant?
@@ -173,7 +173,7 @@ const loadError = ref('')
 const isSaving = ref(false)
 const saveError = ref('')
 const saveSuccess = ref(false)
-const errors = reactive({ personal: {}, business: {}, bio: '', security: {} })
+const errors = reactive({ personal: {}, business: {}, bio: '', security: {}, roles: {}, permissions: {} })
 
 // --- sections -----------------------------------------------------
 const allSections = [
@@ -211,8 +211,14 @@ function mapApiUserToForm(apiUser) {
     personal: {
       name: apiUser.name ?? '',
       lastname: apiUser.lastname ?? '',
+      surname: apiUser.surname ?? '',
+      religion: apiUser.religion ?? '',
+      sexual_orientation: apiUser.sexual_orientation ?? '',
+      marital_status: apiUser.marital_status ?? '',
+      gender: apiUser.gender ?? '',
       email: apiUser.email ?? '',
       phone: apiUser.phone ?? '',
+      locale: apiUser.locale ?? '',
       birthDate: apiUser.birthdate ?? '',
       username: apiUser.username ?? '',
       country: apiUser.country ?? '',
@@ -222,14 +228,14 @@ function mapApiUserToForm(apiUser) {
       password_confirmation: '',
     },
     business: {
-      companyName: apiUser.business?.company_name ?? '',
-      taxId: apiUser.business?.tax_id ?? '',
-      jobTitle: apiUser.business?.job_title ?? '',
-      department: apiUser.business?.department ?? '',
-      hourlyRate: apiUser.business?.hourly_rate ?? '',
-      hireDate: apiUser.business?.hire_date ?? '',
-      isContractor: apiUser.business?.is_contractor ?? false,
-      tenant: apiUser.business?.tenant ?? null,
+      companyName: apiUser.company_name ?? '',
+      taxId: apiUser.tax_id ?? '',
+      jobTitle: apiUser.job_title ?? '',
+      department: apiUser.department ?? '',
+      hourlyRate: apiUser.hourly_rate ?? '',
+      hireDate: apiUser.hire_date ?? '',
+      isContractor: apiUser.is_contractor ?? false,
+      tenant: apiUser.tenant ?? null,
     },
     bio: apiUser.bio ?? '',
     permissions: apiUser.permissions ?? [],
@@ -243,38 +249,41 @@ function mapFormToApiPayload() {
   return {
     name: user.personal.name,
     lastname: user.personal.lastname,
+    username: user.personal.username,
+    surname: user.personal.surname,
     email: user.personal.email,
     phone: user.personal.phone,
-    birthdate: user.personal.birthDate,
+    birthdate: user.personal.birthdate,
     country: user.personal.country,
-    username: user.personal.username,
+    gender: user.personal.gender,
+    marital_status: user.personal.marital_status,
+    sexual_orientation: user.personal.sexual_orientation,
+    locale: user.personal.locale,
     bio: user.bio,
     // Password: required on create, optional on edit (only sent if set).
     ...(isNew.value || user.security.password
       ? {
-          password: user.security.password,
-          password_confirmation: user.security.password_confirmation,
-        }
+        password: user.security.password,
+        password_confirmation: user.security.password_confirmation,
+      }
       : {}),
     ...(isWorker.value
       ? {
-          business: {
-            company_name: user.business.companyName,
-            tax_id: user.business.taxId,
-            job_title: user.business.jobTitle,
-            department: user.business.department,
-            hourly_rate: user.business.hourlyRate,
-            hire_date: user.business.hireDate,
-            is_contractor: user.business.isContractor,
-            tenant: user.business.tenant,
-          },
-        }
+        company_name: user.business.companyName,
+        tax_id: user.business.taxId,
+        job_title: user.business.jobTitle,
+        department: user.business.department,
+        hourly_rate: user.business.hourlyRate,
+        hire_date: user.business.hireDate,
+        is_contractor: user.business.isContractor,
+        tenant: user.business.tenant,
+      }
       : {}),
     ...(canManageAccess.value
       ? {
-          permissions: user.permissions,
-          roles: user.roles,
-        }
+        permissions: user.permissions,
+        roles: user.roles,
+      }
       : {}),
   }
 }
@@ -289,12 +298,12 @@ async function loadUser() {
       // flags reflect what the logged-in admin is allowed to grant.
       Object.assign(user, emptyUser())
       isWorker.value = true
-      canManageAccess.value = auth.user?.role === '1'
+      canManageAccess.value = auth.sessionUser?.role === '1'
     } else {
-      const apiUser = await userStore.fetchUser(targetId.value)
-      Object.assign(user, mapApiUserToForm(apiUser))
-      isWorker.value = true
-      canManageAccess.value = apiUser.role === '1'
+      const ok = await userStore.fetchUser(targetId.value)
+      Object.assign(user, mapApiUserToForm(userStore.user))
+      isWorker.value = auth.sessionUser?.role === '1'
+      canManageAccess.value = auth.sessionUser?.role === '1'
     }
   } catch (err) {
     console.error(err)
@@ -308,17 +317,21 @@ async function loadUser() {
 
 // --- save -----------------------------------------------------------
 async function handleSave() {
+  if (isView === true) {
+    return
+  }
   isSaving.value = true
   saveError.value = ''
   saveSuccess.value = false
   try {
+
     const payload = mapFormToApiPayload()
 
     const saved = isNew.value
       ? await userStore.createUser(payload)
       : await userStore.updateUser(targetId.value, payload)
 
-      console.log(saved)
+    console.log(saved)
 
     if (avatarFile.value) {
       const formData = new FormData()
@@ -349,6 +362,9 @@ async function handleSave() {
 }
 
 function handleCancel() {
+  if (isView === true) {
+    return
+  }
   if (isNew.value) {
     router.push({ name: 'users.index' })
     return
@@ -360,6 +376,9 @@ function handleCancel() {
 }
 
 function handleAvatarFile(file) {
+  if (isView === true) {
+    return
+  }
   avatarFile.value = file
 }
 

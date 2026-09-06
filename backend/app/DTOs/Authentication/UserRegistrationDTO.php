@@ -29,10 +29,14 @@ final readonly class UserRegistrationDTO implements DTOInterface
         public readonly ?int $gender = null,
         public readonly ?int $sexual_orientation = null,
         public readonly ?int $marital_status = null,
+        public readonly ?int $religion = null, 
         public readonly ?string $locale = '',
+        public readonly ?string $phone = '',
+        public readonly ?string $bio = '',
+        public readonly ?string $address = '',
         public readonly array|string|null $nickname = null,
         public readonly ?int $created_by = 1,
-        public readonly ?int $tenant_id = 1,
+        public readonly ?int $tenant_id = null,
     ) {
     }
 

@@ -16,8 +16,6 @@ use App\DTOs\Authentication\UserRegistrationDTO;
 use App\DTOs\Authentication\AuthLoginDTO;
 use App\Events\Container;
 use App\Events\Auth\UserRegistered;
-use App\Events\Auth\UserLoggedIn;
-use App\Middleware\AdminOrOwnerMiddleware;
 use App\Middleware\GuestMiddleware;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\OwnerMiddleware;
@@ -47,7 +45,6 @@ class AuthController extends Controller{
     
     #[Route('POST', '/register/')]
     #[Middleware(GuestMiddleware::class)]
-    #[Middleware(AdminOrOwnerMiddleware::class)]
     #[RateLimit(10,60)]
     public function store() : void {
         $response = null;
@@ -87,7 +84,6 @@ class AuthController extends Controller{
     
     #[Route('POST', '/login/')]
     #[Middleware(GuestMiddleware::class)]
-    #[Middleware(AdminOrOwnerMiddleware::class)]
     #[RateLimit(5,60)]
     public function login() : void {
         $response = null;
@@ -98,9 +94,9 @@ class AuthController extends Controller{
             );
             $response = $this->service->login($authLoginDTO);
             $dateLoggedIn =  new \DateTime('now',new DateTimeZone('America/Sao_Paulo'))->format('d/m/Y H:i:s');
-            Container::getInstance()->dispatch(
-                new UserLoggedIn((int)$response->id, $response->name, $response->email, $this->request->ip(), $dateLoggedIn)
-            );
+            // Container::getInstance()->dispatch(
+            //     new UserLoggedIn((int)$response->id, $response->name, $response->email, $this->request->ip(), $dateLoggedIn)
+            // );
             Response::json(message: 'User logged!', status: true, code: 201, bShouldExit: false, data: object(user:$response));
         }catch(Throwable $er){
             Response::log('error', $er->getMessage(), 500, false, (object)$er->getTraceAsString());

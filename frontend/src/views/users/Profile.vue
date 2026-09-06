@@ -38,12 +38,7 @@
 
           <PersonalDetailsSection v-show="activeSection === 'personal'" v-model="user.personal" :errors="errors.personal" />
 
-          <SecuritySection
-            v-show="activeSection === 'security'"
-            v-model="user.security"
-            :errors="errors.security"
-            :password-required="false"
-          />
+          <SecuritySection v-show="activeSection === 'security'" v-model="user.security" :errors="errors.security" :password-required="false" />
 
           <BusinessDetailsSection v-show="activeSection === 'business' && auth.isWorker" v-model="user.business" :errors="errors.business" />
 
@@ -262,24 +257,24 @@ function mapFormToApiPayload() {
     // if the user actually typed a new password.
     ...(user.security.password
       ? {
-          current_password: user.security.currentPassword,
-          password: user.security.password,
-          password_confirmation: user.security.password_confirmation,
-        }
+        current_password: user.security.currentPassword,
+        password: user.security.password,
+        password_confirmation: user.security.password_confirmation,
+      }
       : {}),
     ...(auth.isWorker
       ? {
-          business: {
-            company_name: user.business.companyName,
-            tax_id: user.business.taxId,
-            job_title: user.business.jobTitle,
-            department: user.business.department,
-            hourly_rate: user.business.hourlyRate,
-            hire_date: user.business.hireDate,
-            is_contractor: user.business.isContractor,
-            tenant: user.business.tenant,
-          },
-        }
+        business: {
+          company_name: user.business.companyName,
+          tax_id: user.business.taxId,
+          job_title: user.business.jobTitle,
+          department: user.business.department,
+          hourly_rate: user.business.hourlyRate,
+          hire_date: user.business.hireDate,
+          is_contractor: user.business.isContractor,
+          tenant: user.business.tenant,
+        },
+      }
       : {}),
     // Most APIs won't let a user grant themselves permissions/roles
     // via a self-service profile save, even if they can view them.
@@ -287,9 +282,9 @@ function mapFormToApiPayload() {
     // rejects (or silently ignores) it on self-edit.
     ...(auth.canManageAccess
       ? {
-          permissions: user.permissions,
-          roles: user.roles,
-        }
+        permissions: user.permissions,
+        roles: user.roles,
+      }
       : {}),
   }
 }
@@ -349,7 +344,7 @@ async function handleSave() {
     user.security.password_confirmation = ''
     avatarFile.value = null
 
-    
+
   } finally {
     isSaving.value = false
     router.push({ name: 'dashboard' })

@@ -74,8 +74,6 @@ class Service
 
     public function initTables() : void {
         $this->model = new UserModel($this->connection);
-
-        
         $this->model->sqlCompiler->initDefaultsUsers();
     }
 }

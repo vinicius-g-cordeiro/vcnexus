@@ -12,16 +12,21 @@ declare(strict_types=1);
 namespace App\Middleware;
 
 use App\Exceptions\AppExceptionHandler;
+use App\Service\AuthService;
 use App\Shared\Session;
 use App\Shared\Interfaces\MiddlewareInterface;
 use App\Shared\Request;
 use App\Shared\Response;
+use App\Shared\Connection;
 
 final class AuthMiddleware  implements MiddlewareInterface {
 
     protected ?Session $session;
+    protected ?AuthService $authService;
+
     public function __construct() {
         $this->session = Session::getInstance();
+        $this->authService = new AuthService(Connection::getInstance());
     }
     public function handle(Request $request, callable $next): mixed {
         if(isset($this->session) === false) {
@@ -32,7 +37,7 @@ final class AuthMiddleware  implements MiddlewareInterface {
         if(isset($user) === false){
             Response::json(message: '403 Unauthorized Access', status: false, code: 403, data: object());
         }
-        
+
         return $next($request);
     }
 }

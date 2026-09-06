@@ -4,7 +4,7 @@
       <label :for="textareaId" class="font-medium text-neutral-900 dark:text-neutral-50 text-sm">
         About you
       </label>
-      <textarea :id="textareaId" :value="modelValue" :maxlength="maxLength" rows="5" placeholder="Tell us a bit about yourself..." :class="[
+      <textarea :disabled="disabled" :id="textareaId" :value="modelValue" :maxlength="maxLength" rows="5" placeholder="Tell us a bit about yourself..." :class="[
         'w-full rounded-md px-3 py-2 text-sm transition-colors resize-y',
         'dark:bg-neutral-800 bg-neutral-200 dark:text-neutral-50 text-neutral-900',
         'placeholder:text-neutral-500 dark:placeholder:text-neutral-400',
@@ -32,12 +32,16 @@
  * Usage:
  * <BioSection v-model="form.bio" :error="errors.bio" />
  */
-import Fieldset from '../Fieldset.vue'
+import Fieldset from '@/components/Fieldset.vue'
 
 defineProps({
   modelValue: { type: String, default: '' },
   error: { type: String, default: '' },
   maxLength: { type: Number, default: 280 },
+  disabled: {
+    type: Boolean,
+    default: false
+  }
 })
 
 defineEmits(['update:modelValue'])

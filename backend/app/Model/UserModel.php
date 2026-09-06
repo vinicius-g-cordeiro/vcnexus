@@ -13,8 +13,10 @@ namespace App\Model;
 
 use App\Database\Schema\UsersSchema;
 use App\Exceptions\AppExceptionHandler;
+use App\Model\Tenants\BusinessModel;
 use App\Model\Tenants\TenantModel;
-
+use Throwable;
+use App\Shared\Response;
 
 final class UserModel extends Model
 {
@@ -22,6 +24,7 @@ final class UserModel extends Model
     function __construct($dbConnection = null)
     {
         $tenantModel = new TenantModel($dbConnection);
+        $businessModel = new BusinessModel($dbConnection);
         parent::__construct($dbConnection, new UsersSchema());
         $usernamesModel = new UsernameModel($dbConnection);
     }
@@ -29,10 +32,11 @@ final class UserModel extends Model
     function list(?object $parameters) : object|bool|null|array {
         $response = null;
         
-        $sql = 'select t.name as "organization",un.username , (select cu.name from users cu where cu.id = u.created_by limit 1) as "created_by" , u.name, u.surname,
-         u.lastname, u.nickname, u.created_at, u.updated_at, u.created_by , u.email, u.last_login, u.last_login_local, u.uuid, u.id
+        $sql = 'select b.legal_name as "organization",un.username , (select cu.name from users cu where cu.id = u.created_by limit 1) as "created_by" , (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from users cu where cu.id = u.deleted_by limit 1) as "deleted_by", u.name, u.surname,
+         u.lastname, u.nickname, u.created_at, u.updated_at, u.created_by, u.deleted_at , u.email, u.last_login, u.last_login_local, u.uuid, u.id, u.active, u.role
         from "' . $this->schema->table . '" u 
         inner join "tenants" t on u.tenant_id = t.id 
+        inner join "business" b on b.tenant_id = t.id
         inner join "usernames" un on un.user_id = u.id
         ';
 
@@ -49,6 +53,8 @@ final class UserModel extends Model
                 $sql .= ' where  u.active = ' . $parameters->active . ' ';
             }
         }
+
+        $sql .= ' order by u.name, u.uuid desc';
         try{
             $result = $this->getConnection()->Execute($sql);
             $response = $this->fr2Arr($result, false);
@@ -61,7 +67,15 @@ final class UserModel extends Model
     }
 
     function login(?object $parameters = null): object|bool {
-        $query = $this->getConnection()->Prepare('SELECT u.id, u.role, u.last_login, u.last_login_local, u.lastname, u.surname, u.tenant_id, u.uuid, u.name, u.email, u.phone, u.lastname, u.active, u.password , un.username FROM ' . $this->schema->table . ' u inner join usernames un on un.user_id = u.id  WHERE public.unaccent(lower(email)) = ? or phone = ? or public.unaccent(lower(un.username)) = public.unaccent(lower(?)) LIMIT 1;');
+        $query = 'SELECT b.legal_name as "organization",(select cu.name from users cu where cu.id = u.created_by limit 1) as "created_by", u.id, u.role, u.last_login,
+        u.last_login_local, u.lastname, u.surname, u.tenant_id, u.uuid, u.name, u.email, u.phone, u.lastname, u.active, u.password , un.username,
+        u.locale, b.tax_id
+        FROM ' . $this->schema->table . ' u 
+        inner join "tenants" t on u.tenant_id = t.id 
+        inner join "business" b on b.tenant_id = t.id
+        inner join "usernames" un on un.user_id = u.id
+        WHERE public.unaccent(lower(u.email)) = public.unaccent(lower(?)) or u.phone = ? or public.unaccent(lower(un.username)) = public.unaccent(lower(?)) LIMIT 1;' ;
+        
         $response = $this->getConnection()->Execute($query,[$parameters->login, $parameters->login, $parameters->login]);
 
         $result = $this->fr2Arr($response);
@@ -85,19 +99,22 @@ final class UserModel extends Model
     function find(?string $uuid, array $columns = []) : object|bool {
         $returnColumns = implode(', ', $columns);
         
-        $where = ' WHERE u.uuid = \''.$uuid.'\'';
+        $where = ' where u.uuid = \''.$uuid.'\' and u.active = 1';
         
 
-        $query = 'SELECT ' . $returnColumns . '  
-        FROM ' . $this->schema->table . ' u 
-        INNER JOIN tenants t ON t.id = u.tenant_id 
-        INNER JOIN business b ON b.tenant_id = t.id
-        LEFT JOIN usernames un ON un.user_id = u.id 
+        $query = 'select ' . $returnColumns . '  
+        from ' . $this->schema->table . ' u 
+        inner join tenants t on t.id = u.tenant_id 
+        inner join business b on b.tenant_id = t.id
+        inner join usernames un on un.user_id = u.id 
         '  
         . $where;
-        
-        $response = $this->getConnection()->Execute($query);
-
+        try{
+            $response = $this->getConnection()->Execute($query);
+        }catch(Throwable $th){
+            Response::log(message: $th->getMessage());
+            throw $th;
+        }
         $result = $this->fr2Arr($response, false);
         return (object)$result[0] ?? false;
     }

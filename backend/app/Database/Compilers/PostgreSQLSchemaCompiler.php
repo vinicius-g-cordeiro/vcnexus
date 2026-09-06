@@ -221,7 +221,7 @@ INSERT INTO public.tenants (\"name\", modules, active) VALUES('Cerrado G Studios
             $result = $this->getConnection()->Execute($sql);
 
             if ($this->getConnection()->HasFailedTrans()) {
-                throw new \RuntimeException('Transaction failed.');
+                throw new \RuntimeException('Failed to add initial tenants.');
             }
 
             $this->getConnection()->CompleteTrans();
@@ -302,7 +302,7 @@ insert into public.usernames (\"username\", active, user_id, created_by) VALUES(
             $result = $this->getConnection()->Execute($sql);
 
             if ($this->getConnection()->HasFailedTrans()) {
-                throw new \RuntimeException('Transaction failed.');
+                throw new \RuntimeException('Failed to add default username.');
             }
 
             $this->getConnection()->CompleteTrans();
@@ -318,6 +318,53 @@ insert into public.usernames (\"username\", active, user_id, created_by) VALUES(
         }
 
 
+        $sql = "insert
+    into
+    public.business
+(\"uuid\",
+    created_at,
+    created_at_local,
+    updated_at,
+    updated_at_local,
+    deleted_at,
+    deleted_at_local,
+    created_by,
+    updated_by,
+    deleted_by,
+    tenant_id,
+    active,
+    legal_name,
+    trade_name,
+    description,
+    \"type\",
+    tax_id,
+    municipal_registration,
+    state_registration,
+    email,
+    website,
+    phone)
+values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, null, null, null, 1, 0, 0, 1, 1, 'Cerrado G. Studios', 'Cerrado G. Studios', '', 1, '62.728.369/0001-72', '', '', '', '',null);
+";
+        $this->getConnection()->StartTrans();
+
+        try {
+            $result = $this->getConnection()->Execute($sql);
+
+            if ($this->getConnection()->HasFailedTrans()) {
+                throw new \RuntimeException('Failed to add business.');
+            }
+
+            $this->getConnection()->CompleteTrans();
+
+            return $result;
+
+        } catch (Throwable $e) {
+            Response::log(data: $e);
+            $this->getConnection()->FailTrans();
+            $this->getConnection()->CompleteTrans();
+
+            throw $e;
+        }
 
     }
 

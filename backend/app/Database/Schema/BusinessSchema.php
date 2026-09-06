@@ -12,7 +12,9 @@ declare(strict_types=1);
 namespace App\Database\Schema;
 
 use App\Database\Attributes\Column;
+use App\Database\Attributes\Index;
 
+#[Index(name: 'uq_tenant_business', unique: true, columns: ['tenant_id'], condition: ['active' => '1'], references:'business')]
 final class BusinessSchema extends Schema
 {
     public string $table = 'business';

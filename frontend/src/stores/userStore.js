@@ -11,6 +11,7 @@ import userService from "@/services/userService";
 export const useUserStore = defineStore("users", {
   state: () => ({
     users: null,
+    user: null,
     loading: false,
     error: null,
   }),
@@ -32,6 +33,24 @@ export const useUserStore = defineStore("users", {
         this.loading = false;
       }
     },
+    async fetchUser(params) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await userService.fetchUser(params);
+        this.user = response.data.users
+        return this.user;
+      } catch (error) {
+        console.log(error)
+        this.error = error;
+        this.user = [];
+        return this.user;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async createUser(userInfo) {
       this.loading = true;
       this.error = null;
@@ -52,6 +71,7 @@ export const useUserStore = defineStore("users", {
       this.loading = true;
       this.error = null;
       try {
+        console.log(id,payload)
         const response = await userService.updateUser(id,payload);
         this.user = response.data.user;
         return true;
@@ -84,9 +104,23 @@ export const useUserStore = defineStore("users", {
     async deleteUser(id) {
       this.loading = true;
       this.error = null;
-
       try {
-        const response = await userService.updateUserAvatar(id, formData);
+        const response = await userService.deleteUser(id);
+        this.user = response.data.user;
+        return true;
+      } catch (error) {
+        this.error = error;
+        this.user = [];
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async activateUser(id) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await userService.activateUser(id);
         this.user = response.data.user;
         return true;
       } catch (error) {

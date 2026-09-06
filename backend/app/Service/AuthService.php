@@ -162,8 +162,9 @@ class AuthService extends Service
             $result->last_login = $dateLocal;
             return $result;
         });
-        $this->session->set('user', $response);
 
+        $this->session->set('user', $response === false ?: $response);
+        
         return $response === false ? null : $response;
     }
 
@@ -260,12 +261,11 @@ class AuthService extends Service
 
     public function getSelf(): object|null
     {
-        $uuid = $this->session->get('user')?->uuid;
+        $uuid = $this->session->get('user')->uuid;
         $response = $this->model->find($uuid, ['u.id', 'u.role', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation' , 'b.tax_id', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
         if ($response === false || $response == null || $response == object()) {
             throw new RuntimeException('404 - user not found', 404);
         }
-
         return $response === false ? null : $response;
     }
 
@@ -294,7 +294,5 @@ class AuthService extends Service
         }
 
         return $response === 1 ? object(loggedOut: true) : null;
-
-
     }
 }

@@ -81,12 +81,15 @@ export default {
           actions: 'Ações',
           created_at: 'Criado',
           updated_at: 'Atualizado',
+          deleted_at: 'Desativado',
+          deleted_by: 'Desativado por',
           last_login: 'Último login',
         },
         actions: {
           view: 'Visualizar',
           edit: 'Editar',
           delete: 'Desativar',
+          activate: 'Ativar',
           block: 'Bloquear',
         }
       }
@@ -126,12 +129,15 @@ export default {
           actions: 'Ações',
           created_at: 'Criado',
           updated_at: 'Atualizado',
+          deleted_at: 'Desativado',
+          deleted_by: 'Desativado por',
           last_login: 'Último login',
         },
         actions: {
           view: 'Visualizar',
           edit: 'Editar',
           delete: 'Desativar',
+          activate: 'Ativar',
           block: 'Bloquear',
         }
       }

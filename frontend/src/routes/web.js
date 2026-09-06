@@ -89,21 +89,21 @@ const routes = [
             },
           },
           {
-            path: 'new/',
-            name: 'tenants-new',
-            component: () => import('@/views/tenants/New.vue'),
+            path: "new/",
+            name: "tenants-new",
+            component: () => import("@/views/tenants/New.vue"),
             meta: {
               breadcrumbs: [],
               actions: [],
               title: "Tenants - New",
             },
-          }
+          },
         ],
         meta: {
           requiresSuperAdmin: true,
-        }
+        },
       },
-	  {
+      {
         path: "users/",
         children: [
           {
@@ -124,6 +124,28 @@ const routes = [
               breadcrumbs: [],
               actions: [],
               title: "Users - New",
+            },
+          },
+
+          {
+            path: "view/:uuid",
+            name: "users-view",
+            component: () => import("@/views/users/New.vue"),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "Users - New",
+            },
+          },
+
+          {
+            path: "edit/:uuid",
+            name: "users-edit",
+            component: () => import("@/views/users/New.vue"),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "Users - Edit",
             },
           },
         ],
@@ -156,10 +178,10 @@ router.beforeEach(async (to, from) => {
   const requiresGuest = to.matched.some((r) => r.meta.requiresGuest);
   const requiresSuperAdmin = to.matched.some((r) => r.meta.requiresSuperAdmin);
 
-  if(requiresSuperAdmin && isAdminAccount === false){
+  if (requiresSuperAdmin && isAdminAccount === false) {
     return { name: "dashboard" };
   }
-  
+
   if (requiresAuth && !isAuthenticated) {
     return { name: "login", query: { redirect: to.fullPath } };
   }

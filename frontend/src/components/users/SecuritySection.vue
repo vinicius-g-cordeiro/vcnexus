@@ -1,8 +1,8 @@
 <template>
   <Fieldset legend="Password" description="Your password and multi step verification ">
     <div class="gap-5 grid grid-cols-1 sm:grid-cols-2">
-      <BaseInput type="password" :model-value="form.password" label="Password" placeholder="Fill this if wants to change password" :error="errors.password" required @update:model-value="updateField('password', $event)" aria-autocomplete="new-password" autocomplete="new-password" />
-      <BaseInput type="password" :model-value="form.password_confirmation" label="Password confirmation" placeholder="Confirm password" :error="errors.password_confirmation" required @update:model-value="updateField('password_confirmation', $event)" aria-autocomplete="new-password" autocomplete="new-password" />
+      <BaseInput :disabled="disabled" type="password" :model-value="form.password" label="Password" placeholder="Fill this if wants to change password" :error="errors.password" required @update:model-value="updateField('password', $event)" aria-autocomplete="new-password" autocomplete="new-password" />
+      <BaseInput :disabled="disabled" type="password" :model-value="form.password_confirmation" label="Password confirmation" placeholder="Confirm password" :error="errors.password_confirmation" required @update:model-value="updateField('password_confirmation', $event)" aria-autocomplete="new-password" autocomplete="new-password" />
     </div>
   </Fieldset>
 </template>
@@ -27,6 +27,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  disabled: {
+    type: Boolean,
+    default: false
+  }
 })
 
 const emit = defineEmits(['update:modelValue'])

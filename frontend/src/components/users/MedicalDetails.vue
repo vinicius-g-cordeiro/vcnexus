@@ -1,8 +1,8 @@
 <template>
   <Fieldset legend="Medical Details" description="Your name and contact information.">
     <div class="gap-5 grid grid-cols-1 sm:grid-cols-3">
-      <Select :model-value="form.blood_type" label="Blood Type" placeholder="Select a blood type..." :options="blood_typeOptions" @update:model-value="updateField('blood_type', $event)" />
-      <Select :model-value="form.blood_factor" label="Blood Factor" placeholder="Select a blood factor..." :options="blood_factorOptions" @update:model-value="updateField('blood_factor', $event)" />
+      <Select :disabled="disabled" :model-value="form.blood_type" label="Blood Type" placeholder="Select a blood type..." :options="blood_typeOptions" @update:model-value="updateField('blood_type', $event)" />
+      <Select :disabled="disabled" :model-value="form.blood_factor" label="Blood Factor" placeholder="Select a blood factor..." :options="blood_factorOptions" @update:model-value="updateField('blood_factor', $event)" />
     </div>
 
   </Fieldset>
@@ -48,6 +48,10 @@ const props = defineProps({
       { label: 'A', value: '4' },
     ],
   },
+  disabled: {
+    type: Boolean,
+    default: false
+  }
 })
 
 const emit = defineEmits(['update:modelValue'])

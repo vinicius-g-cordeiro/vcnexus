@@ -1,7 +1,7 @@
 <template>
   <Fieldset legend="Roles" description="Roles determine which parts of the system this user can access.">
     
-    <Select :model-value="modelValue" multiple label="Assigned roles" placeholder="Add roles..." :options="roleOptions" @update:model-value="$emit('update:modelValue', $event)" />
+    <Select :disabled="disabled" :model-value="modelValue" multiple label="Assigned roles" placeholder="Add roles..." :options="roleOptions" @update:model-value="$emit('update:modelValue', $event)" />
 
     <ul v-if="selectedRoleDetails.length" class="flex flex-col gap-2 mt-1">
       <li v-for="role in selectedRoleDetails" :key="role.value" class="flex items-start gap-3 bg-neutral-300/50 dark:bg-neutral-700/50 px-3 py-2.5 rounded-md">
@@ -44,6 +44,10 @@ const props = defineProps({
       { label: 'Viewer', value: 5, description: 'Read-only access.' },
     ],
   },
+  disabled: {
+    type: Boolean,
+    default: false
+  }
 })
 
 defineEmits(['update:modelValue'])

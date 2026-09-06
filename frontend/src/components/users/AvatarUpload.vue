@@ -53,6 +53,10 @@ const props = defineProps({
   modelValue: { type: String, default: '' }, // saved avatar URL
   name: { type: String, default: '' },        // for initials fallback
   maxSizeMb: { type: Number, default: 5 },
+  disabled: {
+    type: Boolean,
+    default: false
+  }
 })
 
 const emit = defineEmits(['update:modelValue', 'update:file'])

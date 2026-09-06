@@ -86,6 +86,7 @@ export default {
           view: 'View',
           edit: 'Edit',
           delete: 'Deactivate',
+          activate: 'Activate',
           block: 'Block',
         }
       }
@@ -125,12 +126,15 @@ export default {
           actions: 'Actions',
           created_at: 'Created',
           updated_at: 'Updated',
+          deleted_at: 'Deleted',
+          deleted_by: 'Deleted By',
           last_login: 'Last Login',
         },
         actions: {
           view: 'View',
           edit: 'Edit',
           delete: 'Deactivate',
+          activate: 'Activate',
           block: 'Block',
         }
       }
