@@ -67,12 +67,11 @@ export const useUserStore = defineStore("users", {
         this.loading = false;
       }
     },
-    async updateUser(id, payload) {
+    async updateUser(uuid, payload) {
       this.loading = true;
       this.error = null;
       try {
-        console.log(id,payload)
-        const response = await userService.updateUser(id,payload);
+        const response = await userService.updateUser(uuid,payload);
         this.user = response.data.user;
         return true;
       } catch (error) {
@@ -84,12 +83,12 @@ export const useUserStore = defineStore("users", {
       }
     },
 
-    async updateUserAvatar(id, formData) {
+    async updateUserAvatar(uuid, formData) {
       this.loading = true;
       this.error = null;
 
       try {
-        const response = await userService.updateUserAvatar(id, formData);
+        const response = await userService.updateUserAvatar(uuid, formData);
         this.user = response.data.user;
         return true;
       } catch (error) {
@@ -101,11 +100,11 @@ export const useUserStore = defineStore("users", {
       }
     },
 
-    async deleteUser(id) {
+    async deactivateUser(uuid) {
       this.loading = true;
       this.error = null;
       try {
-        const response = await userService.deleteUser(id);
+        const response = await userService.deactivateUser(uuid);
         this.user = response.data.user;
         return true;
       } catch (error) {
@@ -116,11 +115,41 @@ export const useUserStore = defineStore("users", {
         this.loading = false;
       }
     },
-    async activateUser(id) {
+    async activateUser(uuid) {
       this.loading = true;
       this.error = null;
       try {
-        const response = await userService.activateUser(id);
+        const response = await userService.activateUser(uuid);
+        this.user = response.data.user;
+        return true;
+      } catch (error) {
+        this.error = error;
+        this.user = [];
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async blockUser(uuid) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await userService.blockUser(uuid);
+        this.user = response.data.user;
+        return true;
+      } catch (error) {
+        this.error = error;
+        this.user = [];
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async unblockUser(uuid) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await userService.unblockUser(uuid);
         this.user = response.data.user;
         return true;
       } catch (error) {

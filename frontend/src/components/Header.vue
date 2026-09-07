@@ -47,7 +47,7 @@
       <div class="flex-1" />
 
       <!-- Search (desktop) -->
-      <SearchBar v-model="searchQuery" class="hidden md:block" max-width="sm" @submit="$emit('search', $event)" />
+      <SearchBar v-model="searchQuery" class="hidden md:block" width="md" @submit="$emit('search', $event)" />
 
       
       <LanguageDropdown/>
@@ -59,7 +59,12 @@
       <Dropdown align="right" v-if="authStore.sessionUser">
         <template #trigger="{ toggle }">
           <button type="button" class="flex justify-center items-center bg-emerald-500 hover:opacity-90 rounded-full w-9 h-9 font-medium text-zinc-100 text-sm transition-opacity" aria-label="Open user menu" @click="toggle">
-            <slot name="avatar">{{ userInitials }}</slot>
+            <slot name="avatar">
+              <img v-if="authStore.sessionUser?.avatar" :src="`${storageBase}/storage/users/avatars/${authStore.sessionUser?.avatar}`" loading="lazy" class="rounded-full w-9 h-9 object-center" alt="avatar" />
+              <span v-else>
+                {{ userInitials }}
+              </span>
+            </slot>
           </button>
         </template>
 
@@ -143,7 +148,7 @@ import LanguageDropdown from '@/components/LanguageDropdown.vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from "@/stores/authStore"
 import { useI18n } from 'vue-i18n'
-
+const storageBase = import.meta.env.VITE_API_URL
 
 const { t } = useI18n()
 const router = useRouter()

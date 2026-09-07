@@ -47,7 +47,7 @@
             },
         ] " user-name="" @search="onSearch">
             <template v-slot:brand>
-                VCNexus
+                {{  authStore.sessionUser?.organization_name ?? 'VCNexus' }}
             </template>
         </Header>
 
@@ -63,8 +63,6 @@ import { useAuthStore } from '@/stores/authStore';
 const { t } = useI18n()
 
 const authStore = useAuthStore();
-
-
 const isSuperAdmin = authStore.isSuperAdmin
 
 </script>

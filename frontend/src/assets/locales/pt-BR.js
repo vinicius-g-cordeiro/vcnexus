@@ -75,14 +75,19 @@ export default {
         loading: 'Carregando...',
         errors: 'Ocorreu um erro...',
         empty: 'Nenhum resultado encontrado..',
+        deactivated: 'Desativado',
+        active: 'Ativado',
+        blocked: 'Bloqueado',
         headers : {
           userInfo: 'Usuário',
           status: 'Status',
+          organization: 'Organização',
           actions: 'Ações',
-          created_at: 'Criado',
-          updated_at: 'Atualizado',
-          deleted_at: 'Desativado',
+          created_at: 'Criado em',
+          updated_at: 'Atualizado em',
+          deleted_at: 'Desativado em',
           deleted_by: 'Desativado por',
+          blocked_at: 'Bloqueado em',
           last_login: 'Último login',
         },
         actions: {
@@ -91,6 +96,7 @@ export default {
           delete: 'Desativar',
           activate: 'Ativar',
           block: 'Bloquear',
+          unblock: 'Desbloquear',
         }
       }
     },

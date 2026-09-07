@@ -87,7 +87,7 @@ class Request {
                     return $this->post;
                 }
                 parse_str($input, $data);
-                $this->post = (object)array_merge($data, filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS | FILTER_SANITIZE_STRING));
+                $this->post = (object)$data;
                 return $this->post;
             default: 
                 break;
@@ -190,8 +190,17 @@ class Request {
     }
 
 
-    public static function files(): object {
-        return self::$files;
+    public function files(string $key = '', $value = ''): object {
+        if(empty($key)) {
+            return $this->files;
+        }
+        if(empty($value)) {
+            return $this->files->{$key} ?? null;
+        } else {
+            $this->files->{$key} = $value;
+        }
+
+        return $this->files;
     }
 
     public function ip() {

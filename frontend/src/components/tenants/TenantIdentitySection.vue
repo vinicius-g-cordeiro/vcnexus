@@ -58,9 +58,7 @@
  */
 import { computed } from 'vue'
 import Fieldset from '@/components/Fieldset.vue'
-import BioSection from '@/components/BioSection.vue'
 import BaseInput from '@/components/BaseInput.vue'
-import Select from '@/components/Select.vue'
 
 const props = defineProps({
   modelValue: {

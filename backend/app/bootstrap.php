@@ -37,6 +37,10 @@ $eventListenerMap = [
     ]
 ];
 
+
+define('BASE_PATH', '/var/www/html');
+define('BASE_URL' , 'http://' . $_SERVER['HTTP_HOST']);
+
 foreach ($eventListenerMap as $eventClass => $listeners) {
     foreach ($listeners as $listener) {
         $events->listen($eventClass, $listener);

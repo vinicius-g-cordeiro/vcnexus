@@ -251,5 +251,44 @@ class Model extends Connection
         return $response;
     }
 
+    function block(string $where): object|bool|int {
+        $fields = [];
 
+        $fields['blocked'] = 1;
+        if (isset($this->session->get('user')->id)) {
+            $date = new DateTime('now', new DateTimeZone('UTC'));
+            $fields['blocked_by'] = $this->session->get('user')->id;
+            $fields['blocked_at'] = $date->getTimestamp();
+            $fields['blocked_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
+        }
+
+        if(empty($where)){
+            throw new AppExceptionHandler('No where provided for update clause', 500);
+        }
+
+        $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'UPDATE', $where);
+
+        $updatedID = (object)$this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
+
+        return (int)$updatedID->id;
+    }
+
+    function unblock(string $where): object|bool|int {
+        $fields = [];
+
+        $fields['blocked'] = null;
+        $fields['blocked_by'] = null;
+        $fields['blocked_at'] = null;
+        $fields['blocked_at_local'] = null;
+        
+        if(empty($where)){
+            throw new AppExceptionHandler('No where provided for update clause', 500);
+        }
+
+        $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'UPDATE', $where);
+
+        $updatedID = (object)$this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
+
+        return (int)$updatedID->id;
+    }
 }

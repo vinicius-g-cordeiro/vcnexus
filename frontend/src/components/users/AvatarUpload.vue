@@ -60,12 +60,12 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'update:file'])
-
+const storageBase = import.meta.env.VITE_API_URL
 const fileInput = ref(null)
 const localPreview = ref('')
 const error = ref('')
-
-const previewUrl = computed(() => localPreview.value || props.modelValue)
+// :src="`${storageBase}/storage/users/avatars/${user.avatar}`"
+const previewUrl = computed(() => (localPreview.value  || (props.modelValue ? `${storageBase}/storage/users/avatars/` + props.modelValue :props.modelValue )))
 
 const initials = computed(() =>
   (props.name || '?')

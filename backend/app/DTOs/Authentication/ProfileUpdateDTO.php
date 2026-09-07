@@ -38,6 +38,7 @@ final readonly class ProfileUpdateDTO implements DTOInterface
         public readonly ?string $address = '',
         public readonly array|string|null $nickname = null,
         public readonly ?int $updated_by = 1,
+        public readonly ?string $avatar = '',
         public readonly ?int $tenant_id = null,
     ) {
     }

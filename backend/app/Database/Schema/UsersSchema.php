@@ -84,6 +84,9 @@ class UsersSchema extends Schema
     #[Column(type: 'VARCHAR(6)', default: null, nullable: true, comment: '')]
     public ?string $locale = null;
 
+    #[Column(type: 'VARCHAR(500)', default: null, nullable: true, comment: 'Filepath for the avatar of the user')]
+    public ?string $avatar = null;
+
 
     #[Column(type: 'TIMESTAMP', default: null, nullable: true, comment: 'Last time the user was logged in on the system')]
     public ?string $last_login = null;

@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\DTOs\Users\AvatarStoreDTO;
 use App\Exceptions\AppExceptionHandler;
 use App\Middleware\AdminMiddleware;
 use App\Middleware\AuthMiddleware;
@@ -29,7 +30,7 @@ use App\Events\Container;
 use Throwable;
 use App\Events\Auth\UserRegistered;
 use App\DTOs\Authentication\ProfileUpdateDTO;
-
+use App\Shared\Helpers\Files;
 
 #[Route('GET', '/users')]
 #[Middleware(AuthMiddleware::class)]
@@ -38,10 +39,14 @@ class UserController extends Controller
 
     /** @var UserService */
     protected ?Service $service = null; 
+
+    protected ?Files $fileHelper = null;
+
     public function __construct(protected ?Connection $dbConnection = null){
         parent::__construct($dbConnection);
         $this->request = Request::instance();
         $this->service = new UserService($dbConnection);
+        $this->fileHelper = new Files();
     }
 
     #[Route('GET', '/list/')]
@@ -77,7 +82,6 @@ class UserController extends Controller
     #[RateLimit(maxAttempts: 5, decaySeconds: 60)]
     public function store() : void {
         $response = null;
-        
         try{
             $userRegisterDTO = new UserRegistrationDTO(
                 name: $this->request->post('name'),
@@ -96,7 +100,8 @@ class UserController extends Controller
                 phone: $this->request->post('phone') ?: null,
                 religion: $this->request->post('religion') ?: null,
                 created_by: (int)$this->session->get('user')->id ?? 1,
-                tenant_id: (int)$this->request->post('business')['tenant'] ?? null
+                tenant_id: (int)$this->request->post('business')['tenant'] ?? null,
+                avatar: $this->request->post('avatar'),
             );
 
             $response = $this->service->store($userRegisterDTO);
@@ -110,6 +115,24 @@ class UserController extends Controller
         }catch(Throwable $er){
             Response::log('error', $er->getMessage(), 500, false, (object)$er->getTraceAsString());
             Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
+        }
+    }
+
+    #[Route('POST', '/{uuid}/avatar')]
+    public function uploadAvatar(string $uuid) : void {
+        $response = null;
+        try{
+            $user = $this->service->getUser($uuid);
+            $avatarResponse = $this->fileHelper->upload_files_to_folder(['.jpg', '.png', '.jpeg'], '/var/www/storage/upload/users/avatars/', '/storage/upload/users/avatars/', 'avatar', $user->username);
+            $avatarStoreDTO = new AvatarStoreDTO(uuid: $uuid, avatar: $avatarResponse['avatar0']['filename'] ?? $user->avatar);
+            $response = $this->service->uploadAvatar($avatarStoreDTO);
+            Response::json(code: 204, status:true, data: object());
+        }catch(Throwable $err){
+            Response::log('error', $err->getMessage(), 500, false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
+        }catch(Exception $err){
+            Response::log('error', $err->getMessage(), $err->getCode(), false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);   
         }
     }
 
@@ -138,6 +161,7 @@ class UserController extends Controller
                 updated_by: (int)$this->session->get('user')->id ?? 1,
                 phone: $this->request->put('phone') ?? '',
                 tenant_id: (int)$this->request->put('tenant') ?? null,
+                avatar: $this->request->put('avatar'),
             );
             $response = $this->service->updateProfile($userUpdateDTO);
             Response::json(message: '', status: true, code: 200, bShouldExit:true, data: object(user: $response));
@@ -150,7 +174,8 @@ class UserController extends Controller
         }
     }
 
-    #[Route('DELETE', '/delete/{uuid}')]
+    #[Route('DELETE', '/deactivate/{uuid}')]
+    #[Middleware(AdminMiddleware::class)]
     public function deactivate(string $uuid) : void {
          $response = null;
         try{
@@ -166,6 +191,7 @@ class UserController extends Controller
     }
 
     #[Route('PUT', '/activate/{uuid}')]
+    #[Middleware(AdminMiddleware::class)]
     public function activate(string $uuid) : void {
          $response = null;
         try{
@@ -180,12 +206,41 @@ class UserController extends Controller
         }   
     }
 
-    #[Route('PUT|GET|PATCH', '/{id}/block/')]
-    public function block(string $id) : void {
-        
+    #[Route('PUT', '/block/{uuid}')]
+    #[Middleware(AdminMiddleware::class)]
+    public function block(string $uuid) : void {
+        $response = null;
+        try{
+            $response = $this->service->block($uuid);
+            Response::json(message: 'User blocked successfully!', status: true, code: 200, bShouldExit:true, data: object(user: $response));
+        }catch(Throwable $err){
+            Response::log('error', $err->getMessage(), 500, false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
+        }catch(Exception $err){
+            Response::log('error', $err->getMessage(), $err->getCode(), false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);   
+        }   
     }
 
+    #[Route('PUT', '/unblock/{uuid}')]
+    #[Middleware(AdminMiddleware::class)]
+    public function unblock(string $uuid) : void {
+        $response = null;
+        try{
+            $response = $this->service->unblock($uuid);
+            Response::json(message: 'User unblocked successfully!', status: true, code: 200, bShouldExit:true, data: object(user: $response));
+        }catch(Throwable $err){
+            Response::log('error', $err->getMessage(), 500, false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
+        }catch(Exception $err){
+            Response::log('error', $err->getMessage(), $err->getCode(), false, (object)$err->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);   
+        }   
+    }
+
+
     #[Route('GET', '/usernames/')]
+    #[Middleware(AdminMiddleware::class)]
     public function getUsername() : void {
         $usernameService = new UsernameService($this->dbConnection);
         try{

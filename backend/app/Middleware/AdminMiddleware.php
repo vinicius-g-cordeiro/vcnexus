@@ -39,7 +39,7 @@ class AdminMiddleware  implements MiddlewareInterface {
             Response::json(message: '403 Unauthorized Access', status: false, code: 403, data: object(), bShouldExit: true);
         }
 
-        if((int)$sessionUser->role !== 1 || (int)$sessionUser->role !== 2){
+        if((int)$sessionUser->role !== 1 && (int)$sessionUser->role !== 2){
             Response::json(message: '403 Unauthorized Access', status: false, code: 403, data: object(), bShouldExit: true);
         }
 

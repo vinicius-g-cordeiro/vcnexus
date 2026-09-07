@@ -111,7 +111,7 @@ import Button from '@/components/Button.vue'
 import SecuritySection from '@/components/users/SecuritySection.vue'
 
 import { useRouter } from 'vue-router'
-
+const storageBase = import.meta.env.VITE_API_URL
 const router = useRouter()
 
 const auth = useAuthStore()
@@ -192,7 +192,7 @@ const fullName = computed(() =>
 function mapApiUserToForm(apiUser) {
   return {
     id: apiUser.id,
-    avatarUrl: apiUser.avatar_url ?? apiUser.avatarUrl ?? '',
+    avatarUrl: apiUser.avatar ?? '',
     personal: {
       name: apiUser.name ?? '',
       lastname: apiUser.lastname ?? '',

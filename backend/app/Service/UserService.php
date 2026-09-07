@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\DTOs\Users\AvatarStoreDTO;
 use App\Model\UserModel;
 use App\Service\Service;
 use App\Shared\Connection;
@@ -110,6 +111,7 @@ final class UserService extends Service
         }
 
         $response = $this->transaction(function () use ($userRegistrationDTO) {
+      
 
             $result = $this->model->store($userRegistrationDTO);
             if (!$result || !isset($result->insertID)) {
@@ -117,6 +119,7 @@ final class UserService extends Service
             }
 
             $usernameModel = new UsernameModel($this->connection);
+
 
             $usernameResult = $usernameModel->store(
                 new UsernameRegistrationDTO(
@@ -129,8 +132,10 @@ final class UserService extends Service
             if ($usernameResult === false || !(isset($usernameResult))) {
                 throw new AppExceptionHandler('Failed to create username.');
             }
+            
 
             return $result;
+
         });
         return $response === false ? null : $response;
     }
@@ -138,7 +143,7 @@ final class UserService extends Service
 
     public function getUser(?string $uuid = null): object|null
     {
-        $response = $this->model->find($uuid, ['u.id', 'u.role', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation', 'b.tax_id', 'u.tenant_id as "tenant"', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
+        $response = $this->model->find($uuid, ['u.id', 'u.avatar', 'u.role', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation', 'b.tax_id', 'u.tenant_id as "tenant"', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
         return $response === false ? null : $response;
     }
 
@@ -279,6 +284,66 @@ final class UserService extends Service
             }
 
             return object(deactivated: true);
+        });
+        return $response === false ? null : $response;
+    }
+
+    function block(string $uuid): object|null
+    {
+        $response = null;
+
+        $response = $this->transaction(function () use ($uuid) {
+
+            $result = $this->model->block('uuid = \''.$uuid.'\'');
+
+            if (!$result || !isset($result)) {
+                throw new AppExceptionHandler('Failed to block user.');
+            }
+
+            $usernameModel = new UsernameModel($this->connection);
+
+            $usernameResult = $usernameModel->deactivate('user_id = \'' . $result . '\'');
+
+            if ($usernameResult === false || !(isset($usernameResult))) {
+                throw new AppExceptionHandler('Failed to block username.');
+            }
+
+            return object(deactivated: true);
+        });
+        return $response === false ? null : $response;
+    }
+
+    function unblock(string $uuid): object|null
+    {
+        $response = null;
+
+        $response = $this->transaction(function () use ($uuid) {
+
+            $result = $this->model->unblock('uuid = \''.$uuid.'\'');
+
+            if (!$result || !isset($result)) {
+                throw new AppExceptionHandler('Failed to block user.');
+            }
+
+            $usernameModel = new UsernameModel($this->connection);
+
+            $usernameResult = $usernameModel->activate('user_id = \'' . $result . '\'');
+
+            if ($usernameResult === false || !(isset($usernameResult))) {
+                throw new AppExceptionHandler('Failed to block username.');
+            }
+
+            return object(deactivated: true);
+        });
+        return $response === false ? null : $response;
+    }
+
+    public function uploadAvatar(?AvatarStoreDTO $avatarStoreDTO) {
+        $response = null;
+
+        $response = $this->transaction(function () use ($avatarStoreDTO) {
+            $result = $this->model->update($avatarStoreDTO, 'uuid = \''.$avatarStoreDTO->uuid.'\'');
+            return $result;
         });
         return $response === false ? null : $response;
     }

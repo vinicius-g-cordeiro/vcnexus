@@ -262,7 +262,7 @@ class AuthService extends Service
     public function getSelf(): object|null
     {
         $uuid = $this->session->get('user')->uuid;
-        $response = $this->model->find($uuid, ['u.id', 'u.role', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation' , 'b.tax_id', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
+        $response = $this->model->find($uuid, ['u.id', 'u.avatar', 'u.role', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation' , 'b.tax_id', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
         if ($response === false || $response == null || $response == object()) {
             throw new RuntimeException('404 - user not found', 404);
         }
@@ -271,7 +271,7 @@ class AuthService extends Service
 
     public function getUser(?string $uuid = null): object|null
     {
-        $response = $this->model->find($uuid, ['u.id', 'u.role', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation' , 'b.tax_id', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
+        $response = $this->model->find($uuid, ['u.id', 'u.avatar', 'u.role', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation' , 'b.tax_id', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
         return $response === false ? null : $response;
     }
 

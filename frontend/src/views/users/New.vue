@@ -2,12 +2,20 @@
   <div class="bg-neutral-200 dark:bg-neutral-800 min-h-screen text-neutral-900 dark:text-neutral-50">
     <div class="mx-auto px-4 sm:px-6 py-10 max-w-5xl">
       <!-- Page header -->
-      <div class="mb-8">
-        <h1 class="font-semibold text-2xl tracking-tight">{{ isView ? 'View User' : (isNew ? 'New User' : 'Edit User') }}</h1>
+      <div class="flex flex-col mb-8">
+        <div class="flex flex-row justify-between">
+          <h1 class="font-semibold text-2xl tracking-tight">{{ isView ? 'View User' : (isNew ? 'New User' : 'Edit User') }}</h1>
+          <span class="ms-auto me-0" v-if="isView">
+            <Button variant="outline" :to="{ name: 'users-edit', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-pencil-square"></i> Edit {{ user.personal.name }}</Button>
+          </span>
+          <span class="ms-auto me-0" v-else>
+            <Button variant="outline" :to="{ name: 'users-view', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-eye"></i> View {{ user.personal.name }}</Button>
+          </span>
+        </div>
         <p class="mt-1 text-neutral-500 dark:text-neutral-400 text-sm">
-          {{ isView ? 'View this profile' : (isNew ? 'Create a new profile' : 'Update this profile') }}
-          <i class="bi" :class="isNew ? 'bi-person-add' : 'bi-pencil-square'"></i>
-        </p>
+            {{ isView ? 'View this profile' : (isNew ? 'Create a new profile' : 'Update this profile') }}
+            <i class="bi" :class="isNew ? 'bi-person-add' : 'bi-pencil-square'"></i>
+         </p>
       </div>
 
       <!-- Loading state -->
@@ -111,7 +119,9 @@ import PermissionsSection from '@/components/users/PermissionsSection.vue'
 import RolesSection from '@/components/users/RolesSection.vue'
 import Button from '@/components/Button.vue'
 import SecuritySection from '@/components/users/SecuritySection.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
@@ -167,7 +177,7 @@ const emptyUser = () => ({
 
 const user = reactive(emptyUser())
 const avatarFile = ref(null)
-
+const storageBase = import.meta.env.VITE_API_URL
 const isLoading = ref(true)
 const loadError = ref('')
 const isSaving = ref(false)
@@ -207,7 +217,7 @@ const fullName = computed(() =>
 function mapApiUserToForm(apiUser) {
   return {
     id: apiUser.id,
-    avatarUrl: apiUser.avatar_url ?? apiUser.avatarUrl ?? '',
+    avatarUrl: apiUser.avatar ?? '',
     personal: {
       name: apiUser.name ?? '',
       lastname: apiUser.lastname ?? '',
@@ -219,7 +229,7 @@ function mapApiUserToForm(apiUser) {
       email: apiUser.email ?? '',
       phone: apiUser.phone ?? '',
       locale: apiUser.locale ?? '',
-      birthDate: apiUser.birthdate ?? '',
+      birthdate: apiUser.birthdate ?? '',
       username: apiUser.username ?? '',
       country: apiUser.country ?? '',
     },
@@ -331,12 +341,10 @@ async function handleSave() {
       ? await userStore.createUser(payload)
       : await userStore.updateUser(targetId.value, payload)
 
-    console.log(saved)
-
-    if (avatarFile.value) {
+    if (avatarFile.value && saved == true) {
       const formData = new FormData()
       formData.append('avatar', avatarFile.value)
-      await userStore.updateUserAvatar(saved.id, formData)
+      await userStore.updateUserAvatar(targetId.value, formData)
     }
 
     saveSuccess.value = true
@@ -347,7 +355,7 @@ async function handleSave() {
     if (isNew.value) {
       // Move to the edit route for the newly created user so a
       // refresh or further edits target the right record.
-      router.replace({ name: 'users.edit', params: { id: saved.id } })
+      router.replace({ name: 'users-list' })
     }
   } catch (err) {
     const fieldErrors = err?.response?.data?.errors

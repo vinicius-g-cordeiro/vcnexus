@@ -1,5 +1,5 @@
 <template>
-  <form role="search" :class="['relative w-full', maxWidthClass]" @submit.prevent="handleSubmit">
+  <form role="search" :class="['relative w-[200px]', maxWidthClass]" @submit.prevent="handleSubmit">
     <label :for="inputId" class="sr-only">{{ t('header.searchbar') }}</label>
 
     <svg xmlns="http://www.w3.org/2000/svg" class="top-1/2 left-3 absolute w-4 h-4 text-zinc-500 dark:text-zinc-400 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

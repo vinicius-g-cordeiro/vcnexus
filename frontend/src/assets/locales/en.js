@@ -74,12 +74,17 @@ export default {
         legend: 'User\'s List',
         loading: 'Loading...',
         errors: 'Something went wrong.',
+        active: 'Active',
+        deactivated: 'Deactivated',
+        blocked: 'Blocked',
         headers : {
           userInfo: 'User',
+          organization: 'Organization',
           status: 'Status',
           actions: 'Actions',
-          created_at: 'Created',
-          updated_at: 'Updated',
+          created_at: 'Created at',
+          updated_at: 'Updated at',
+          blocked_at: 'Blocked at',
           last_login: 'Last Login',
         },
         actions: {
@@ -88,6 +93,7 @@ export default {
           delete: 'Deactivate',
           activate: 'Activate',
           block: 'Block',
+          unblock: 'Unblock',
         }
       }
     },

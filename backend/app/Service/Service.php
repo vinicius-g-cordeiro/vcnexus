@@ -14,6 +14,7 @@ namespace App\Service;
 use App\Model\Model;
 use App\Model\UserModel;
 use App\Shared\Connection;
+use App\Shared\Helpers\Files;
 use App\Shared\Request;
 
 use App\Shared\Session;
@@ -31,6 +32,8 @@ class Service
     protected ?Request $request = null;
 
     protected ?ValidatorInterface $validator = null;
+
+    protected ?Files $fileHelper = null;
     function __construct(protected ?Connection $connection = null, protected ?Model $model = null, protected ?Session $session = null)
     {
         $this->connection = $connection ?: Connection::getInstance();
@@ -38,6 +41,8 @@ class Service
         $this->validator = Validation::createValidator();
         $this->session = $session ?: Session::getInstance();
         $this->request = Request::instance();
+
+        $this->fileHelper = new Files();
     }
 
     function verifyHealth(): void
