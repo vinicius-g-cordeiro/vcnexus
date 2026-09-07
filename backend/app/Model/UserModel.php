@@ -56,6 +56,33 @@ final class UserModel extends Model
             }
         }
 
+
+        if(isset($parameters, $parameters->blocked) && $parameters->blocked !== ''){
+            if(isset($parameters, $parameters->search) && $parameters->search !== ''){
+                
+                if((int)$parameters->blocked === 0){
+                    $sql .= ' and  u.blocked is null ';
+                }else{
+                    $sql .= ' and  u.blocked = ' . $parameters->blocked . ' ';
+                }
+            }else{
+                if(isset($parameters, $parameters->activate) && $parameters->activate !== ''){
+                    if((int)$parameters->blocked === 0){
+                        $sql .= ' and  u.blocked is null ';
+                    }else{
+                        $sql .= ' and  u.blocked = ' . $parameters->blocked . ' ';
+                    }
+                }else{
+                    if((int)$parameters->blocked === 0){
+                        $sql .= ' where u.blocked is null ';
+                    }else{
+                        $sql .= ' where u.blocked = ' . $parameters->blocked . ' ';
+                    }
+                }
+            }
+        }
+
+
         $sql .= ' order by u.name, u.uuid desc';
         try{
             $result = $this->getConnection()->Execute($sql);

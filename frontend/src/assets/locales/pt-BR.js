@@ -61,6 +61,11 @@ export default {
           active: 'Ativo',
           deactivated: 'Desativado' 
         },
+        blocked: {
+          label: 'Bloqueado',
+          blocked: 'Bloqueado',
+          unblocked: 'Desbloqueado' 
+        },
         order_by: 'Ordenar por',
         searchbtn: 'Pesquisar',
         clear: 'Limpar'

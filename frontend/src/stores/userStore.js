@@ -87,7 +87,7 @@ export const useUserStore = defineStore("users", {
       this.loading = true;
       this.error = null;
 
-      try {
+      try {        
         const response = await userService.updateUserAvatar(uuid, formData);
         this.user = response.data.user;
         return true;

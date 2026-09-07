@@ -5,17 +5,19 @@
       <div class="flex flex-col mb-8">
         <div class="flex flex-row justify-between">
           <h1 class="font-semibold text-2xl tracking-tight">{{ isView ? 'View User' : (isNew ? 'New User' : 'Edit User') }}</h1>
-          <span class="ms-auto me-0" v-if="isView">
-            <Button variant="outline" :to="{ name: 'users-edit', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-pencil-square"></i> Edit {{ user.personal.name }}</Button>
-          </span>
-          <span class="ms-auto me-0" v-else>
-            <Button variant="outline" :to="{ name: 'users-view', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-eye"></i> View {{ user.personal.name }}</Button>
-          </span>
+          <template v-if="!isNew">
+            <span class="ms-auto me-0" v-if="isView">
+              <Button variant="outline" :to="{ name: 'users-edit', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-pencil-square"></i> Edit {{ user.personal.name }}</Button>
+            </span>
+            <span class="ms-auto me-0" v-else>
+              <Button variant="outline" :to="{ name: 'users-view', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-eye"></i> View {{ user.personal.name }}</Button>
+            </span>
+          </template>
         </div>
         <p class="mt-1 text-neutral-500 dark:text-neutral-400 text-sm">
-            {{ isView ? 'View this profile' : (isNew ? 'Create a new profile' : 'Update this profile') }}
-            <i class="bi" :class="isNew ? 'bi-person-add' : 'bi-pencil-square'"></i>
-         </p>
+          {{ isView ? 'View this profile' : (isNew ? 'Create a new profile' : 'Update this profile') }}
+          <i class="bi" :class="isNew ? 'bi-person-add' : 'bi-pencil-square'"></i>
+        </p>
       </div>
 
       <!-- Loading state -->
@@ -131,8 +133,8 @@ const userStore = useUserStore()
 
 // --- mode -----------------------------------------------------------
 // route param wins: presence of :id decides create vs edit.
-const targetId = computed(() => route.params.uuid ?? null)
-const isNew = computed(() => !targetId.value)
+const targetId = computed(() => route?.params?.uuid ?? null)
+const isNew = computed(() => !targetId?.value)
 const isView = computed(() => route.name === 'users-view' ?? null)
 
 
@@ -152,6 +154,10 @@ const emptyUser = () => ({
     email: '',
     phone: '',
     birthDate: '',
+    religion: null,
+    gender: null,
+    sexual_orientation: null,
+    marital_status: null,
     country: '',
     username: '',
   },
@@ -266,6 +272,8 @@ function mapFormToApiPayload() {
     birthdate: user.personal.birthdate,
     country: user.personal.country,
     gender: user.personal.gender,
+    religion: user.personal.religion,
+    avatar: user.avatar,
     marital_status: user.personal.marital_status,
     sexual_orientation: user.personal.sexual_orientation,
     locale: user.personal.locale,
@@ -316,7 +324,6 @@ async function loadUser() {
       canManageAccess.value = auth.sessionUser?.role === '1'
     }
   } catch (err) {
-    console.error(err)
     loadError.value = isNew.value
       ? 'Could not prepare the form. Please try again.'
       : 'Could not load this user. Please try again.'

@@ -15,7 +15,7 @@ use App\Shared\Request;
 
 final class Files {
     
-    function upload_file($files, $path = '/var/www/html/storage/upload/', $filename, $newName = '') {
+    function upload_file($files, $path = '/var/www/storage/upload/', $filename, $newName = '') {
         $info = pathinfo($files['name']);
         if (empty($newName)) {
             $response['file_name'] = $filename . uniqid('upload-',true) . time() . "." . $info['extension'];
@@ -39,7 +39,7 @@ final class Files {
             chmod($response['fullpath'], 0777);
             return $response;
         }
-        dd($movedFile);
+
         return null;
     }
 
@@ -68,7 +68,7 @@ final class Files {
         return $file_arr;
     }
 
-    function upload_files($allowedExtensions = ['.jpg', '.png', '.jpeg', '.webp', '.docx', '.pdf'], $folderRoot = '/var/www/html/storage/upload/', $folderUrl = '/storage/upload/', $fileInputName = 'file'){
+    function upload_files($allowedExtensions = ['.jpg', '.png', '.jpeg', '.webp', '.docx', '.pdf'], $folderRoot = '/var/www/storage/upload/', $folderUrl = '/storage/upload/', $fileInputName = 'file'){
         $request = Request::instance();
         $files = $this->rearrange_files($request->files());
         $errors = 0;
@@ -122,7 +122,7 @@ final class Files {
         return $result;
     }
 
-    function upload_files_to_folder($allowedExtensions = ['.jpg', '.png', '.jpeg', '.webp', '.docx', '.pdf'], $folderRoot = '/var/www/html/storage/upload/', $folderUrl = '/storage/upload/', $fileInputName = 'file', $newFilename = 'file'){
+    function upload_files_to_folder($allowedExtensions = ['.jpg', '.png', '.jpeg', '.webp', '.docx', '.pdf'], $folderRoot = '/var/www/storage/upload/', $folderUrl = '/storage/upload/', $fileInputName = 'file', $newFilename = 'file'){
         $errors = 0;
         $result = [];
         for($i = 0; $i < count($_FILES); $i++) {

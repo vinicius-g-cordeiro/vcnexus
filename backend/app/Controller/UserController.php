@@ -95,13 +95,13 @@ class UserController extends Controller
                 gender: (int)($this->request->post('gender') ?: null),
                 sexual_orientation: (int)($this->request->post('sexual_orientation') ?: null),
                 marital_status: (int)($this->request->post('marital_status') ?: null),
+                religion: (int)$this->request->post('religion') ?: null,
                 locale: $this->request->post('locale') ?: null,
                 nickname: $this->request->post('nickname') ?: null,
                 phone: $this->request->post('phone') ?: null,
-                religion: $this->request->post('religion') ?: null,
                 created_by: (int)$this->session->get('user')->id ?? 1,
-                tenant_id: (int)$this->request->post('business')['tenant'] ?? null,
-                avatar: $this->request->post('avatar'),
+                tenant_id: (int)$this->request->post('tenant') ?? null,
+                // avatar: $this->request->post('avatar'),
             );
 
             $response = $this->service->store($userRegisterDTO);
@@ -124,7 +124,7 @@ class UserController extends Controller
         try{
             $user = $this->service->getUser($uuid);
             $avatarResponse = $this->fileHelper->upload_files_to_folder(['.jpg', '.png', '.jpeg'], '/var/www/storage/upload/users/avatars/', '/storage/upload/users/avatars/', 'avatar', $user->username);
-            $avatarStoreDTO = new AvatarStoreDTO(uuid: $uuid, avatar: $avatarResponse['avatar0']['filename'] ?? $user->avatar);
+            $avatarStoreDTO = new AvatarStoreDTO(uuid: $user->uuid, avatar: $avatarResponse['avatar0']['filename'] ?? $user->avatar);
             $response = $this->service->uploadAvatar($avatarStoreDTO);
             Response::json(code: 204, status:true, data: object());
         }catch(Throwable $err){
@@ -161,7 +161,7 @@ class UserController extends Controller
                 updated_by: (int)$this->session->get('user')->id ?? 1,
                 phone: $this->request->put('phone') ?? '',
                 tenant_id: (int)$this->request->put('tenant') ?? null,
-                avatar: $this->request->put('avatar'),
+                // avatar: $this->request->put('avatar'),
             );
             $response = $this->service->updateProfile($userUpdateDTO);
             Response::json(message: '', status: true, code: 200, bShouldExit:true, data: object(user: $response));

@@ -8,12 +8,16 @@
         <!-- Filters -->
         <div class="gap-4 grid grid-cols-1 md:grid-cols-4">
 
-          <div class="md:col-span-3">
+          <div class="md:col-span-2">
             <BaseInput v-model="form.search" type="text" :label="t('users.list.search.search')" placeholder="" autocomplete="off" />
           </div>
 
           <div>
-            <Select v-model="form.active" :label="t('users.list.search.active.label')" placeholder="" :options="options" />
+            <Select v-model="form.active" :label="t('users.list.search.active.label')" placeholder="" :options="activeOptions" />
+          </div>
+
+          <div>
+            <Select v-model="form.blocked" :label="t('users.list.search.blocked.label')" placeholder="" :options="blockedOptions" />
           </div>
 
         </div>
@@ -259,7 +263,7 @@ const form = reactive({
   page: 1,
 })
 
-const options = computed(() => [
+const activeOptions = computed(() => [
   {
     label: t('users.list.search.active.active'),
     value: '1',
@@ -269,6 +273,19 @@ const options = computed(() => [
     value: '0',
   },
 ])
+
+
+const blockedOptions = computed(() => [
+  {
+    label: t('users.list.search.blocked.blocked'),
+    value: '1',
+  },
+  {
+    label: t('users.list.search.blocked.unblocked'),
+    value: '0',
+  },
+])
+
 
 async function handleSubmit() {
   await userStore.search(form)

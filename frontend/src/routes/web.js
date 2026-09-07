@@ -134,7 +134,7 @@ const routes = [
             meta: {
               breadcrumbs: [],
               actions: [],
-              title: "Users - New",
+              title: "Users - View",
             },
           },
 
