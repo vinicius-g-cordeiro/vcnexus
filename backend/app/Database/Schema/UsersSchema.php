@@ -105,6 +105,14 @@ class UsersSchema extends Schema
     #[Column(type: 'SMALLINT', default: 4, nullable: false, comment: '')]
     public ?int $role = 4;
 
+
+    #[Column(type: 'VARCHAR(100) ARRAY', default: 'ARRAY[4]::VARCHAR(100)[]', nullable: false, comment: '')]
+    public ?array $roles = [];
+
+
+    #[Column(type: 'VARCHAR(100) ARRAY', default: 'ARRAY[]::VARCHAR(100)[]', nullable: false, comment: '')]
+    public ?array $permissions = [];
+
     function __construct() {
         parent::__construct();
     }

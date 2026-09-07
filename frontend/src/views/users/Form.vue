@@ -7,10 +7,10 @@
           <h1 class="font-semibold text-2xl tracking-tight">{{ isView ? 'View User' : (isNew ? 'New User' : 'Edit User') }}</h1>
           <template v-if="!isNew">
             <span class="ms-auto me-0" v-if="isView">
-              <Button variant="outline" :to="{ name: 'users-edit', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-pencil-square"></i> Edit {{ user.personal.name }}</Button>
+              <Button variant="outline" :to="{ name: 'users.edit', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-pencil-square"></i> Edit {{ user.personal.name }}</Button>
             </span>
             <span class="ms-auto me-0" v-else>
-              <Button variant="outline" :to="{ name: 'users-view', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-eye"></i> View {{ user.personal.name }}</Button>
+              <Button variant="outline" :to="{ name: 'users.view', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-eye"></i> View {{ user.personal.name }}</Button>
             </span>
           </template>
         </div>
@@ -135,7 +135,7 @@ const userStore = useUserStore()
 // route param wins: presence of :id decides create vs edit.
 const targetId = computed(() => route?.params?.uuid ?? null)
 const isNew = computed(() => !targetId?.value)
-const isView = computed(() => route.name === 'users-view' ?? null)
+const isView = computed(() => route.name === 'users.view' ?? null)
 
 
 // --- access flags -----------------------------------------------
@@ -362,7 +362,7 @@ async function handleSave() {
     if (isNew.value) {
       // Move to the edit route for the newly created user so a
       // refresh or further edits target the right record.
-      router.replace({ name: 'users-list' })
+      router.replace({ name: 'users.list' })
     }
   } catch (err) {
     const fieldErrors = err?.response?.data?.errors

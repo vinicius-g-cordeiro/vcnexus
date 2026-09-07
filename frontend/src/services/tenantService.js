@@ -18,6 +18,11 @@ const tenantService = {
     const response = await api.post("/tenants/save", tenantInfo);
     return response.data;
   },
+
+  async fetchTenant(params) {
+    const response = await api.get(`/tenants/${params}`);
+    return response.data;
+  },
 };
 
 export default tenantService;

@@ -214,7 +214,7 @@ class PostgreSQLSchemaCompiler extends Connection
     {
         $sqlAdminPassword = password_hash(trim(file_get_contents(trim(getenv('ADMIN_PASSWORD')))), PASSWORD_BCRYPT, ['cost' => 12]);
         $sql = "
-INSERT INTO public.tenants (\"name\", modules, active) VALUES('Cerrado G Studios', ARRAY['0'::character varying(4)], 1);
+INSERT INTO public.tenants (\"name\", modules, active, slug) VALUES('VCNexus', ARRAY['1'::character varying(4)], 1, 'vcnexus');
 ";
         $this->getConnection()->StartTrans();
         try {
@@ -272,8 +272,10 @@ insert
     last_login_local,
     last_ip,
     last_agent,
-    role)
-values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, null, null, null, null, 1, 'Super', '" . $sqlAdminPassword . "', 'Admin', '', array[''::character varying(100)], '2026-09-03', 'vinismtpgo@gmail.com', '', 0, 0, 0, 0, 0, 0, null, 0, null, '', null, null, null, '', 1);
+    role,
+    roles,
+    permissions)
+values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, null, null, null, 1, 1, 'SuperAdministrator', '" . $sqlAdminPassword . "', 'Admin', '', array['administrator'::character varying(100)], '1999-04-23', 'vinismtpgo@gmail.com', '', 0, 0, 0, 0, null, null, null, null, null, '', null, null, null, '', 1, array['1'::character varying(100)], array['users.view'::character varying(100)]);
 ";
         $this->getConnection()->StartTrans();
         try {
@@ -294,7 +296,7 @@ values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, nu
         }
         $sql = "
 
-insert into public.usernames (\"username\", active, user_id, created_by) VALUES('admin', 1, 1, 1);";
+insert into public.usernames (\"username\", active, user_id, created_by) VALUES('administrator.vcnexus', 1, 1, 1);";
 
         $this->getConnection()->StartTrans();
 
@@ -306,8 +308,6 @@ insert into public.usernames (\"username\", active, user_id, created_by) VALUES(
             }
 
             $this->getConnection()->CompleteTrans();
-
-            return $result;
 
         } catch (Throwable $e) {
             Response::log(data: $e);
@@ -342,8 +342,9 @@ insert into public.usernames (\"username\", active, user_id, created_by) VALUES(
     state_registration,
     email,
     website,
-    phone)
-values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, null, null, null, 1, 0, 0, 1, 1, 'Cerrado G. Studios', 'Cerrado G. Studios', '', 1, '62.728.369/0001-72', '', '', '', '',null);
+    phone,
+    categories)
+values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, null, null, null, 1, 0, 0, 1, 1, 'VCNexus (MEI)', 'VCNexus', '', 1, '62.728.369/0001-72', '', '', 'cerradogstudio.viniciuscordeiro@gmail.com', 'https://www.vcnexus.com.br',array['+55 61 9 9179-5618'::character varying(20)],'{10}');
 ";
         $this->getConnection()->StartTrans();
 
@@ -356,7 +357,53 @@ values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, null, null, null, 1
 
             $this->getConnection()->CompleteTrans();
 
-            return $result;
+        } catch (Throwable $e) {
+            Response::log(data: $e);
+            $this->getConnection()->FailTrans();
+            $this->getConnection()->CompleteTrans();
+
+            throw $e;
+        }
+
+
+        $sql = "insert
+        into
+        public.business_branding
+    (\"uuid\",
+        created_at,
+        created_at_local,
+        updated_at,
+        updated_at_local,
+        deleted_at,
+        deleted_at_local,
+        created_by,
+        updated_by,
+        deleted_by,
+        tenant_id,
+        active,
+        business_id,
+        logo,
+        app_name,
+        \"primaryColor\",
+        \"accentColor\",
+        \"textColor\",
+        \"backgroundColor\",
+        \"fontStyle\",
+        \"buttonStyle\")
+    values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, null, null, null, 1, 0, 0, 1, 1, 1, '', 'VCNexus', 'emerald-500', 'gold-500', 'zinc-900', 'zinc-100', 'inter', 'rounded-sm');
+    ";
+
+
+        $this->getConnection()->StartTrans();
+
+        try {
+            $result = $this->getConnection()->Execute($sql);
+
+            if ($this->getConnection()->HasFailedTrans()) {
+                throw new \RuntimeException('Failed to add business branding.');
+            }
+
+            $this->getConnection()->CompleteTrans();
 
         } catch (Throwable $e) {
             Response::log(data: $e);
@@ -366,6 +413,8 @@ values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, null, null, null, 1
             throw $e;
         }
 
+        Response::json(message: 'System Initialized', code: 201, status: true, data: object(), bShouldExit: true);
     }
+
 
 }

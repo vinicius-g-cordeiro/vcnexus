@@ -35,7 +35,7 @@ class Schema {
     #[Column(type: 'TIMESTAMP',default: 'CURRENT_TIMESTAMP', nullable: false, comment: 'Created date when the record was set on the database, should never be null')]
     public ?int $created_at = 0;
 
-    #[Column(type: 'TIMESTAMP WITH TIME ZONE',default: 'CURRENT_TIMESTAMP', nullable: false, comment: 'Created date when the record was set on the database, should never be null')]
+    #[Column(type: 'TIMESTAMP',default: 'CURRENT_TIMESTAMP', nullable: false, comment: 'Created date when the record was set on the database, should never be null')]
     public ?int $created_at_local = 0;
 
     #[Column(type: 'TIMESTAMP',default: null, nullable: true, comment: '')]

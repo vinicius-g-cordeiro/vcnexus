@@ -32,13 +32,14 @@ final class UserModel extends Model
     function list(?object $parameters) : object|bool|null|array {
         $response = null;
         
-        $sql = 'select b.legal_name as "organization",un.username , (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from users cu where cu.id = u.created_by limit 1) as "created_by" 
+        $sql = 'select b.trade_name as "organization",un.username , (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from users cu where cu.id = u.created_by limit 1) as "created_by" 
         , (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from users cu where cu.id = u.deleted_by limit 1) as "deleted_by", u.name, u.surname,
         (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from users cu where cu.id = u.blocked_by limit 1) as "blocked_by",
          u.lastname, u.nickname, u.created_at, u.updated_at, u.created_by, u.deleted_at, u.blocked, u.blocked_at, u.email, u.last_login, u.last_login_local, u.uuid, u.id, u.active, u.role, u.avatar
         from "' . $this->schema->table . '" u 
         inner join "tenants" t on u.tenant_id = t.id 
         inner join "business" b on b.tenant_id = t.id
+        inner join "business_branding" bb on bb.business_id = b.id
         inner join "usernames" un on un.user_id = u.id
         ';
 
@@ -96,13 +97,14 @@ final class UserModel extends Model
     }
 
     function login(?object $parameters = null): object|bool {
-        $query = 'SELECT b.legal_name as "organization",(select cu.name from users cu where cu.id = u.created_by limit 1) as "created_by", u.id, u.role, u.last_login,
+        $query = 'SELECT b.trade_name as "organization",(select cu.name from users cu where cu.id = u.created_by limit 1) as "created_by", u.id, u.role, u.last_login,
         u.last_login_local, u.lastname, u.surname, u.tenant_id, u.uuid, u.name, u.email, u.phone, u.lastname, u.active, u.blocked, u.blocked_by, u.password , un.username,
         u.locale, b.tax_id, u.avatar
         FROM ' . $this->schema->table . ' u 
         inner join "tenants" t on u.tenant_id = t.id 
-        inner join "business" b on b.tenant_id = t.id
         inner join "usernames" un on un.user_id = u.id
+        inner join "business" b on b.tenant_id = t.id
+        inner join "business_branding" bb on bb.business_id = b.id
         WHERE 
         (public.unaccent(lower(u.email)) = public.unaccent(lower(?)) 
         or u.phone = ? 

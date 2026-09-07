@@ -20,10 +20,14 @@ use App\Model\Tenants\TenantModel;
 use App\Shared\Connection;
 use App\Model\Model;
 
+use App\Shared\Helpers\Utils;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class TenantService extends Service {
     protected ?BusinessModel $businessModel = null;
+
+    /** @var TenantModel */
+    protected ?Model $model = null;
     function __construct(protected ?Connection $connection = null){
         parent::__construct($connection, new TenantModel($connection));
 
@@ -43,38 +47,38 @@ final class TenantService extends Service {
 
         $assert = new Assert\Collection(fields: [
             'name' =>  [
-                new Assert\NotBlank(message: 'This field is required and cannot be blank'),
+                new Assert\NotBlank(message: 'Name field is required and cannot be blank'),
                 new Assert\Type('string')
             ],
             'email' =>  [
-                new Assert\NotBlank(message: 'This field is required and cannot be blank'),
+                new Assert\NotBlank(message: 'Email field is required and cannot be blank'),
                 new Assert\Type('string'),
                 new Assert\Email()
             ],
-            'slug' =>  new Assert\NotBlank(message: 'This field is required and cannot be blank'),
+            'slug' =>  new Assert\NotBlank(message: 'Slug field is required and cannot be blank'),
             'domain' =>  new Assert\Optional(),
             'type' =>  [
-                new Assert\NotBlank(message: 'This field is required and cannot be blank'),
+                new Assert\NotBlank(message: 'Type field is required and cannot be blank'),
                 new Assert\Type('int'),
             ],
             'tax_id' =>  [
-                new Assert\NotBlank(message: 'This field is required and cannot be blank'),
+                new Assert\NotBlank(message: 'Tax ID field is required and cannot be blank'),
                 new Assert\Type('string'),
             ],
-            'legal_name' =>  new Assert\NotBlank(message: 'This field is required and cannot be blank'),
-            'trade_name' =>  new Assert\NotBlank(message: 'This field is required and cannot be blank'),
+            'legal_name' =>  new Assert\NotBlank(message: 'Legal Name field is required and cannot be blank'),
+            'trade_name' =>  new Assert\NotBlank(message: 'Trade Name field is required and cannot be blank'),
             'municipal_registration' => new Assert\Optional() ,
             'state_registration' =>  new Assert\Optional(),
-            'phone' =>  new Assert\NotBlank(message: 'This field is required and cannot be blank'),
+            'phone' =>  new Assert\NotBlank(message: 'Phone field is required and cannot be blank'),
             'address' =>  new Assert\Optional(),
             'description' =>  new Assert\Optional(),
             'website' =>  new Assert\Optional(),
             'modules' =>  [
-                    new Assert\NotBlank(message: 'This field is required and cannot be blank'),
+                    new Assert\NotBlank(message: 'Modules field is required and cannot be blank'),
                     new Assert\Type('array')
             ],
             'subscriptionPlan' =>  [
-                new Assert\NotBlank(message: 'This field is required and cannot be blank'),
+                new Assert\NotBlank(message: 'Subscription Plan field is required and cannot be blank'),
                 new Assert\Type('int'),
             ],
             'primaryColor' =>  new Assert\Optional(), 
@@ -128,6 +132,18 @@ final class TenantService extends Service {
          });
 
          return $response === false ? null : $response;
+    }
+
+
+    public function getTenant(?string $uuid) : object|array|bool {
+        $response = null;
+        $response = $this->model->getTenant($uuid);
+        foreach($response[0] as $key => $value){
+            if($key === 'modules' || $key === 'phone' || $key === 'categories'){
+                $response[0]->$key = Utils::pgArrayToPhp($value ?? '');
+            }
+        }
+        return $response ?? object();
     }
 
 }

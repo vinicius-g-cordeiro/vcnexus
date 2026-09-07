@@ -27,8 +27,9 @@ class Model extends Connection
 
     private ?Session $session = null;
 
-    function __construct($dbConnection = null, public ?Schema $schema = null) {
-        parent::__construct($dbConnection);        
+    function __construct($dbConnection = null, public ?Schema $schema = null)
+    {
+        parent::__construct($dbConnection);
         $this->schema = $schema;
         $this->sqlCompiler = new PostgreSQLSchemaCompiler($dbConnection, $this->schema);
         $this->session = Session::getInstance();
@@ -39,7 +40,7 @@ class Model extends Connection
 
     private function doesTableExists(): bool
     {
-        
+
         if (isset($this->schema) === false) {
             throw new AppExceptionHandler('Table DTO was not set for model!', 500);
         }
@@ -70,9 +71,9 @@ class Model extends Connection
         $results = false;
         while (!$recordSet->EOF) {
             if ($bStoreOnRecords) {
-                $results['records'][] = (object)$recordSet->fields;
+                $results['records'][] = (object) $recordSet->fields;
             } else {
-                $results[] = (object)$recordSet->fields;
+                $results[] = (object) $recordSet->fields;
             }
             $recordSet->MoveNext();
         }
@@ -80,17 +81,20 @@ class Model extends Connection
         return $results;
     }
 
-    
-    function store(?DTOInterface $dataTransferObject): object|bool|int|string {
 
-        
+    function store(?DTOInterface $dataTransferObject): object|bool|int|string
+    {
+
+
         $fields = [];
         foreach ($dataTransferObject as $key => $value) {
             if ($key == 'id') {
                 continue;
             }
 
-            if($value == null) { continue; }
+            if ($value == null) {
+                continue;
+            }
 
             if ($key == 'password' && password_needs_rehash($value, PASSWORD_BCRYPT, ['cost' => 12])) {
                 $fields['password'] = password_hash($value, PASSWORD_BCRYPT, ['cost' => 12]);
@@ -111,7 +115,7 @@ class Model extends Connection
                     fn(string $val) => '"' . str_replace('"', '\"', $val) . '"',
                     $value
                 )) . '}';
-                
+
                 continue;
             }
             $fields[$key] = $value;
@@ -122,17 +126,18 @@ class Model extends Connection
         $fields['created_at'] = $date->getTimestamp();
         $fields['created_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
 
-        
+
         $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'INSERT');
-        if($return === false){
+        if ($return === false) {
             throw new AppExceptionHandler('500 - Error', 500);
         }
-        $tenant_id = (object)$this->getConnection()->GetRow('SELECT tenant_id FROM ' . $this->schema->table . ' WHERE id = ?', [$this->getConnection()->Insert_ID()]);
-        return object(insertID : $this->getConnection()->Insert_ID(), tenant_id: $tenant_id->tenant_id ?? null) ?: false;
+        $tenant_id = (object) $this->getConnection()->GetRow('SELECT tenant_id FROM ' . $this->schema->table . ' WHERE id = ?', [$this->getConnection()->Insert_ID()]);
+        return object(insertID: $this->getConnection()->Insert_ID(), tenant_id: $tenant_id->tenant_id ?? null) ?: false;
     }
 
 
-    function update(?DTOInterface $dataTransferObject, string $where, bool $bUpdate = true): object|bool|int {
+    function update(?DTOInterface $dataTransferObject, string $where, bool $bUpdate = true): object|bool|int
+    {
         $fields = [];
         foreach ($dataTransferObject as $key => $value) {
 
@@ -142,7 +147,9 @@ class Model extends Connection
             }
 
 
-            if($value == null){ continue; }
+            if ($value == null) {
+                continue;
+            }
 
             if ($key == 'password' && $value !== null && trim($value) !== '' && password_needs_rehash($value, PASSWORD_BCRYPT, ['cost' => 12])) {
                 $fields['password'] = password_hash($value, PASSWORD_BCRYPT, ['cost' => 6]);
@@ -159,13 +166,13 @@ class Model extends Connection
                     fn(string $val) => '"' . str_replace('"', '\"', $val) . '"',
                     $value
                 )) . '}';
-                
+
                 continue;
             }
             $fields[$key] = $value;
         }
 
-        
+
         if (isset($this->session->get('user')->id)) {
             $date = new DateTime('now', new DateTimeZone('UTC'));
             $fields['updated_by'] = $this->session->get('user')->id;
@@ -173,27 +180,28 @@ class Model extends Connection
             $fields['updated_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
         }
 
-        if(empty($where)){
+        if (empty($where)) {
             throw new AppExceptionHandler('No where provided for update clause', 500);
         }
 
         $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'UPDATE', $where);
-        
+
         // if($return === false){
         //     throw new RuntimeException('500 - Error', 500);
         // }
 
-        $updatedID = (object)$this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
-        
-        return (int)$updatedID->id;
+        $updatedID = (object) $this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
+
+        return (int) $updatedID->id;
     }
 
 
-    function deactivate(string $where): object|bool|int {
+    function deactivate(string $where): object|bool|int
+    {
         $fields = [];
 
         $fields['active'] = 0;
-        
+
 
         if (isset($this->session->get('user')->id)) {
             $date = new DateTime('now', new DateTimeZone('UTC'));
@@ -202,19 +210,20 @@ class Model extends Connection
             $fields['deleted_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
         }
 
-        if(empty($where)){
+        if (empty($where)) {
             throw new AppExceptionHandler('No where provided for update clause', 500);
         }
 
         $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'UPDATE', $where);
 
-        $updatedID = (object)$this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
+        $updatedID = (object) $this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
 
-        return (int)$updatedID->id;
+        return (int) $updatedID->id;
     }
 
 
-    function activate(string $where): object|bool|int {
+    function activate(string $where): object|bool|int
+    {
         $fields = [];
 
         $fields['active'] = 1;
@@ -222,7 +231,7 @@ class Model extends Connection
         $fields['deleted_at'] = null;
         $fields['deleted_at_local'] = null;
 
-        if(empty($where)){
+        if (empty($where)) {
             throw new AppExceptionHandler('No where provided for update clause', 500);
         }
 
@@ -232,26 +241,28 @@ class Model extends Connection
             $fields['updated_at'] = $date->getTimestamp();
             $fields['updated_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
         }
-        
+
         $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'UPDATE', $where);
 
-        $updatedID = (object)$this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
+        $updatedID = (object) $this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
 
-        return (int)$updatedID->id;
+        return (int) $updatedID->id;
     }
 
 
-    function list(?object $parameters) : object|bool|null|array {
+    function list(?object $parameters): object|bool|null|array
+    {
         $response = null;
-        if(isset($parameters->paginate) && $parameters->paginate === true) {
-        }else{
+        if (isset($parameters->paginate) && $parameters->paginate === true) {
+        } else {
             $this->getConnection()->Execute('select * from "' . $this->schema->table . '" ;');
         }
 
         return $response;
     }
 
-    function block(string $where): object|bool|int {
+    function block(string $where): object|bool|int
+    {
         $fields = [];
 
         $fields['blocked'] = 1;
@@ -262,33 +273,35 @@ class Model extends Connection
             $fields['blocked_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
         }
 
-        if(empty($where)){
+        if (empty($where)) {
             throw new AppExceptionHandler('No where provided for update clause', 500);
         }
 
         $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'UPDATE', $where);
 
-        $updatedID = (object)$this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
+        $updatedID = (object) $this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
 
-        return (int)$updatedID->id;
+        return (int) $updatedID->id;
     }
 
-    function unblock(string $where): object|bool|int {
+    function unblock(string $where): object|bool|int
+    {
         $fields = [];
 
         $fields['blocked'] = null;
         $fields['blocked_by'] = null;
         $fields['blocked_at'] = null;
         $fields['blocked_at_local'] = null;
-        
-        if(empty($where)){
+
+        if (empty($where)) {
             throw new AppExceptionHandler('No where provided for update clause', 500);
         }
 
         $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'UPDATE', $where);
 
-        $updatedID = (object)$this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
+        $updatedID = (object) $this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
 
-        return (int)$updatedID->id;
+        return (int) $updatedID->id;
     }
+
 }

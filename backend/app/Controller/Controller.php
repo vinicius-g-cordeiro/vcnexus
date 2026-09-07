@@ -30,7 +30,7 @@ class Controller {
         $this->service->verifyHealth();
     }
 
-    #[Route('GET', '/init-tables')]
+    #[Route('GET', '/init-system')]
     public function init() : void{
         $this->service = new Service($this->dbConnection);
         $this->service->initTables();

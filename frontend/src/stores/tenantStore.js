@@ -13,6 +13,7 @@ export const useTenantStore = defineStore("tenants", {
     tenants: null,
     loading: false,
     error: null,
+    tenant: null,
   }),
 
   actions: {
@@ -28,6 +29,24 @@ export const useTenantStore = defineStore("tenants", {
         this.error = error;
         this.tenants = [];
         return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async fetchTenant(params) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await tenantService.fetchTenant(params);
+        this.tenant = response.data.tenants
+        return this.tenant;
+      } catch (error) {
+        console.log(error)
+        this.error = error;
+        this.tenant = [];
+        return this.tenant;
       } finally {
         this.loading = false;
       }

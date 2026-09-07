@@ -11,25 +11,24 @@ declare(strict_types=1);
 
 namespace App\Model\Tenants;
 
-use App\Database\Schema\BusinessSchema;
+use App\Database\Schema\BusinessBrandingSchema;
 use App\Model\Model;
 use App\Exceptions\AppExceptionHandler;
 
 
-final class BusinessModel extends Model
+final class BusinessBrandingModel extends Model
 {
 
     function __construct($dbConnection = null)
     {
-        $businessBranding = new BusinessBrandingModel($dbConnection);
-        parent::__construct($dbConnection, new BusinessSchema());
+        parent::__construct($dbConnection, new BusinessBrandingSchema());
     }
 
     function list(?object $parameters) : object|bool|null|array {
         $response = null;
         
-        $sql = 'select b.id, b.uuid, b.legal_name, b.trade_name, b.active, b.created_at, b.updated_at
-                from "' . $this->schema->table . '" b ';
+        $sql = 'select bb.id, bb.uuid, bb.legal_name, bb.trade_name, bb.active, bb.created_at, bb.updated_at
+                from "' . $this->schema->table . '" bb ';
         try{
             $result = $this->getConnection()->Execute($sql);
             $response = $this->fr2Arr($result, false, 'array');

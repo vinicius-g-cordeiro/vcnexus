@@ -80,22 +80,42 @@ const routes = [
         children: [
           {
             path: "list/",
-            name: "tenants-list",
+            name: "tenants.list",
             component: () => import("@/views/tenants/List.vue"),
             meta: {
               breadcrumbs: [],
               actions: [],
               title: "Tenants - List",
             },
+          },            
+          {
+            path: "view/:uuid",
+            name: "tenants.view",
+            component: () => import("@/views/tenants/Form.vue"),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "Tenants - View",
+            },
           },
           {
             path: "new/",
-            name: "tenants-new",
-            component: () => import("@/views/tenants/New.vue"),
+            name: "tenants.new",
+            component: () => import("@/views/tenants/Form.vue"),
             meta: {
               breadcrumbs: [],
               actions: [],
               title: "Tenants - New",
+            },
+          },
+          {
+            path: "edit/:uuid",
+            name: "tenants.edit",
+            component: () => import("@/views/tenants/Form.vue"),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "Tenants - Edit",
             },
           },
         ],
@@ -108,7 +128,7 @@ const routes = [
         children: [
           {
             path: "list/",
-            name: "users-list",
+            name: "users.list",
             component: () => import("@/views/users/List.vue"),
             meta: {
               breadcrumbs: [],
@@ -118,8 +138,8 @@ const routes = [
           },
           {
             path: "new/",
-            name: "users-new",
-            component: () => import("@/views/users/New.vue"),
+            name: "users.new",
+            component: () => import("@/views/users/Form.vue"),
             meta: {
               breadcrumbs: [],
               actions: [],
@@ -129,8 +149,8 @@ const routes = [
 
           {
             path: "view/:uuid",
-            name: "users-view",
-            component: () => import("@/views/users/New.vue"),
+            name: "users.view",
+            component: () => import("@/views/users/Form.vue"),
             meta: {
               breadcrumbs: [],
               actions: [],
@@ -140,8 +160,8 @@ const routes = [
 
           {
             path: "edit/:uuid",
-            name: "users-edit",
-            component: () => import("@/views/users/New.vue"),
+            name: "users.edit",
+            component: () => import("@/views/users/Form.vue"),
             meta: {
               breadcrumbs: [],
               actions: [],

@@ -52,6 +52,9 @@ final class BusinessSchema extends Schema
     #[Column(type: 'VARCHAR(20) ARRAY', default: 'ARRAY[]::VARCHAR(20)[]', nullable: true, comment: 'Array for phone numbers of the business')]
     public ?array $phone = [];
 
+    #[Column(type: 'SMALLINT ARRAY', default: 'ARRAY[]::SMALLINT[]', nullable: true, comment: 'Array for business category')]
+    public ?array $categories = [];
+
     public function __construct()
     {
         parent::__construct();

@@ -8,7 +8,7 @@
     </div>
 
     <div class="gap-5 grid grid-cols-2 sm:grid-cols-2">
-      <Select v-model="form.category" label="Business Category" :searchable="true" :clearable="false" :options="categoryOptions" />
+      <Select v-model="form.categories" multiple label="Category" placeholder="Add categories..." :options="categoryOptions" />
     </div>
   </Fieldset>
 </template>
@@ -61,29 +61,29 @@ const props = defineProps({
   categoryOptions: {
     type: Array,
     default: () => [
-      { label: 'Agriculture & Farming', value: 0 },
-      { label: 'Automotive', value: 1 },
-      { label: 'Beauty & Personal Care', value: 2 },
-      { label: 'Construction', value: 3 },
-      { label: 'Education', value: 4 },
-      { label: 'Entertainment & Media', value: 5 },
-      { label: 'Finance & Accounting', value: 6 },
-      { label: 'Food & Beverage', value: 7 },
-      { label: 'Healthcare', value: 8 },
-      { label: 'Hospitality & Tourism', value: 9 },
-      { label: 'Information Technology', value: 10 },
-      { label: 'Manufacturing', value: 11 },
-      { label: 'Marketing & Advertising', value: 12 },
-      { label: 'Nonprofit & Associations', value: 13 },
-      { label: 'Professional Services', value: 14 },
-      { label: 'Real Estate', value: 15 },
-      { label: 'Retail', value: 16 },
-      { label: 'Telecommunications', value: 17 },
-      { label: 'Transportation & Logistics', value: 18 },
-      { label: 'Wholesale & Distribution', value: 19 },
-      { label: 'Energy & Utilities', value: 20 },
-      { label: 'Government & Public Services', value: 21 },
-      { label: 'Other', value: 22 },
+      { label: 'Agriculture & Farming', value: '0' },
+      { label: 'Automotive', value: '1' },
+      { label: 'Beauty & Personal Care', value: '2' },
+      { label: 'Construction', value: '3' },
+      { label: 'Education', value: '4' },
+      { label: 'Entertainment & Media', value: '5' },
+      { label: 'Finance & Accounting', value: '6' },
+      { label: 'Food & Beverage', value: '7' },
+      { label: 'Healthcare', value: '8' },
+      { label: 'Hospitality & Tourism', value: '9' },
+      { label: 'Information Technology', value: '10' },
+      { label: 'Manufacturing', value: '11' },
+      { label: 'Marketing & Advertising', value: '12' },
+      { label: 'Nonprofit & Associations', value: '13' },
+      { label: 'Professional Services', value: '14' },
+      { label: 'Real Estate', value: '15' },
+      { label: 'Retail', value: '16' },
+      { label: 'Telecommunications', value: '17' },
+      { label: 'Transportation & Logistics', value: '18' },
+      { label: 'Wholesale & Distribution', value: '19' },
+      { label: 'Energy & Utilities', value: '20' },
+      { label: 'Government & Public Services', value: '21' },
+      { label: 'Other', value: '22' },
     ]
   }
 })

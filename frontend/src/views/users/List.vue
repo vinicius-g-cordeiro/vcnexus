@@ -199,8 +199,8 @@
                   <td class="flex justify-center px-5 py-4">
 
                     <div class="flex flex-wrap gap-1">
-                      <Button variant="ghost" :to="{ name: 'users-view', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.view')"><i class="bi bi-eye"></i></Button>
-                      <Button variant="ghost" :to="{ name: 'users-edit', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-pencil-square"></i></Button>
+                      <Button variant="ghost" :to="{ name: 'users.view', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.view')"><i class="bi bi-eye"></i></Button>
+                      <Button variant="ghost" :to="{ name: 'users.edit', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-pencil-square"></i></Button>
                       <template v-if="(user.role !== '1' && user.role !== '2') && user.uuid !== authStore.sessionUser?.uuid">
                         <template v-if="user.active === '1'">
                           <Button variant="ghost" @click="handleDeactivate(user.uuid)" :title="t('users.list.results.actions.delete')"><i class="text-red-500 bi bi-toggle2-off"></i></Button>
