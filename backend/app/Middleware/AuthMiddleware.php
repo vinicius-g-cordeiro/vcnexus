@@ -18,6 +18,7 @@ use App\Shared\Interfaces\MiddlewareInterface;
 use App\Shared\Request;
 use App\Shared\Response;
 use App\Shared\Connection;
+use App\Shared\Context\AuthContext;
 
 final class AuthMiddleware  implements MiddlewareInterface {
 
@@ -38,6 +39,8 @@ final class AuthMiddleware  implements MiddlewareInterface {
             Response::json(message: '403 Unauthorized Access', status: false, code: 403, data: object());
         }
 
+        AuthContext::set($user->uuid, $user->tenant_id, $user->email ?? null, $user->roles ?? []);
+        
         return $next($request);
     }
 }

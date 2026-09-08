@@ -2,13 +2,13 @@
   <Fieldset legend="Settings" description="Settings for what the tenant can see and not see on the system">
 
     <div class="gap-5 grid grid-cols-2 sm:grid-cols-2">
-      <Select v-model="form.subscriptionPlan" label="Subscription Plan" :searchable="true" :clearable="false" :options="subscriptionPlanOptions" />
+      <Select v-model="form.subscriptionPlan" label="Subscription Plan" :searchable="true" :clearable="false" :options="subscriptionPlanOptions" @update:model-value="updateField('subscriptionPlan', $event)" />
 
-      <Select v-model="form.modules" multiple label="Modules" placeholder="Add modules..." :options="modulesOptions" />
+      <Select v-model="form.modules" multiple label="Modules" placeholder="Add modules..." :options="modulesOptions" @update:model-value="updateField('modules', $event)" />
     </div>
 
     <div class="gap-5 grid grid-cols-2 sm:grid-cols-2">
-      <Select v-model="form.categories" multiple label="Category" placeholder="Add categories..." :options="categoryOptions" />
+      <Select v-model="form.categories" multiple label="Category" placeholder="Add categories..." :options="categoryOptions" @update:model-value="updateField('categories', $event)"/>
     </div>
   </Fieldset>
 </template>
@@ -85,10 +85,20 @@ const props = defineProps({
       { label: 'Government & Public Services', value: '21' },
       { label: 'Other', value: '22' },
     ]
+  },
+  disabled: {
+    type: Boolean,
+    default: false
   }
+
 })
 
 const emit = defineEmits(['update:modelValue'])
 
+function updateField(key, value) {
+  emit('update:modelValue', { ...props.modelValue, [key]: value })
+}
+
 const form = computed(() => props.modelValue)
+
 </script>

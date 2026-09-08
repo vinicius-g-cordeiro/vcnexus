@@ -32,7 +32,7 @@ final class TenantModel extends Model
                 , b.municipal_registration, b.state_registration, b.description, b.categories
                 from "' . $this->schema->table . '" t 
                 inner join business b on b.tenant_id = t.id
-                inner join business_branding bb on bb.business_id = b.id';
+                left join business_branding bb on bb.business_id = b.id';
 
         
         if(isset($parameters, $parameters->search) && $parameters->search !== ''){
@@ -66,7 +66,7 @@ final class TenantModel extends Model
                 , b.state_registration, b.description, b.categories
                 from "' . $this->schema->table . '" t 
                 inner join business b on b.tenant_id = t.id
-                inner join business_branding bb on bb.business_id = b.id
+                left join business_branding bb on bb.business_id = b.id
                 where t.uuid =  \'' . $uuid . '\' and t.active = 1';
 
         try{

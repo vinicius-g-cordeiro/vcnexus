@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\DTOs\Authentication\ProfileUpdateDTO;
-use App\DTOs\Authentication\UserRegistrationDTO;
+use App\DTOs\Authentication\AuthUserRegistrationDTO;
 use App\DTOs\Authentication\AuthLoginDTO;
 use App\Events\Container;
 use App\Events\Auth\UserRegistered;
@@ -49,7 +49,7 @@ class AuthController extends Controller{
     public function store() : void {
         $response = null;
         try{
-            $userRegisterDTO = new UserRegistrationDTO(
+            $userRegisterDTO = new AuthUserRegistrationDTO(
                 name: $this->request->post('name'),
                 surname: $this->request->post('surname'),
                 lastname: $this->request->post('lastname'),

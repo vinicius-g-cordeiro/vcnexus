@@ -15,9 +15,10 @@ use App\DTOs\Users\AvatarStoreDTO;
 use App\Exceptions\AppExceptionHandler;
 use App\Middleware\AdminMiddleware;
 use App\Middleware\AuthMiddleware;
+use App\Middleware\DatabaseContextMiddleware;
 use App\Service\UsernameService;
 use App\Shared\Attributes\Middleware;
-use App\DTOs\Authentication\UserRegistrationDTO;
+use App\DTOs\Users\UserRegistrationDTO;
 use App\Shared\Attributes\Route;
 use App\Shared\Response;
 use App\Shared\Request;
@@ -26,15 +27,14 @@ use App\Service\Service;
 use App\Shared\Attributes\RateLimit;
 use App\Shared\Connection;
 use Exception;
-use App\Events\Container;
 use Throwable;
-use App\Events\Auth\UserRegistered;
-use App\DTOs\Authentication\ProfileUpdateDTO;
+use App\DTOs\Users\UserUpdateDTO;
 use App\Shared\Helpers\Files;
 
 #[Route('GET', '/users')]
 #[Middleware(AuthMiddleware::class)]
-class UserController extends Controller
+#[Middleware(DatabaseContextMiddleware::class)]
+final class UserController extends Controller
 {
 
     /** @var UserService */
@@ -50,6 +50,7 @@ class UserController extends Controller
     }
 
     #[Route('GET', '/list/')]
+    
     public function index(?Request $request) : void {
         $response = null;
         try{
@@ -67,6 +68,9 @@ class UserController extends Controller
          $response = null;
         try{
             $response = $this->service->getUser($uuid);
+            if(isset($response) === false){
+                Response::json(code: 404, status: true, data: object(users: ($response ?: object())));
+            }
             Response::json(code: 200, status: true, data: object(users: ($response ?: object())));
         }catch(AppExceptionHandler $exception) {
             Response::json('There was an error whilst querying for user, try again later', false, 500, object(), [], true);
@@ -98,20 +102,19 @@ class UserController extends Controller
                 religion: (int)$this->request->post('religion') ?: null,
                 locale: $this->request->post('locale') ?: null,
                 nickname: $this->request->post('nickname') ?: null,
+                bio: $this->request->post('bio') ?? '',
                 phone: $this->request->post('phone') ?: null,
                 created_by: (int)$this->session->get('user')->id ?? 1,
-                tenant_id: (int)$this->request->post('tenant') ?? null,
-                // avatar: $this->request->post('avatar'),
+                roles: $this->request->post('roles') ?? [4],
+                permissions: $this->request->post('permissions') ?? [],
+                tenant_id: (int)$this->request->post('tenant') ?? null
             );
 
             $response = $this->service->store($userRegisterDTO);
-
-
-            Container::getInstance()->dispatch(
-                new UserRegistered((int)$response->insertID, $userRegisterDTO->name, $userRegisterDTO->email)
-            );
-
-            Response::json(message: 'User created', status: true, code: 201, bShouldExit: true, data: $response);
+            // Container::getInstance()->dispatch(
+            //     new UserRegistered((int)$response->insertID, $userRegisterDTO->name, $userRegisterDTO->email)
+            // );
+            Response::json(message: 'User created', status: true, code: 201, bShouldExit: true, data: object(users: $response));
         }catch(Throwable $er){
             Response::log('error', $er->getMessage(), 500, false, (object)$er->getTraceAsString());
             Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
@@ -141,7 +144,7 @@ class UserController extends Controller
         $response = null;
         try{
             
-            $userUpdateDTO = new ProfileUpdateDTO(
+            $userUpdateDTO = new UserUpdateDTO(
                 id: (int)$this->request->put('id'),
                 uuid: $uuid,
                 name: $this->request->put('name'),
@@ -160,8 +163,10 @@ class UserController extends Controller
                 nickname: $this->request->put('nickname') ?: null,
                 updated_by: (int)$this->session->get('user')->id ?? 1,
                 phone: $this->request->put('phone') ?? '',
-                tenant_id: (int)$this->request->put('tenant') ?? null,
-                // avatar: $this->request->put('avatar'),
+                roles: $this->request->put('roles') ?? [4],
+                permissions: $this->request->put('permissions') ?? [],
+                bio: $this->request->put('bio') ?? '',
+                tenant_id: (int)$this->request->put('tenant') ?? null
             );
             $response = $this->service->updateProfile($userUpdateDTO);
             Response::json(message: '', status: true, code: 200, bShouldExit:true, data: object(user: $response));

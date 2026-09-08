@@ -47,11 +47,11 @@
 
           <TenantContactSection :disabled="isView === true" v-show="activeSection === 'contact'" v-model="tenant.contact" :errors="errors.contact" />
 
-          <TenantIdentitySection :disabled="isView === true" v-show="activeSection === 'identity'" v-model="tenant.identity" :errors="errors.identity" :base-url="baseUrl" />
+          <TenantIdentitySection :disabled="isView === true" v-show="activeSection === 'identity'" v-model="tenant.identity" :errors="errors.identity" />
 
-          <TenantSettingsSection :disabled="isView === true" v-show="activeSection === 'settings'" v-model="tenant.settings" :tenant-categories="tenant.settings.categories" :errors="errors.settings" />
+          <TenantSettingsSection :disabled="isView === true" v-show="activeSection === 'settings'" v-model="tenant.settings" :errors="errors.settings" />
 
-          <TenantCustomizationSection :disabled="isView === true" v-show="activeSection === 'customization'" v-model="tenant.customization" :tenant-name="tenant.legal.tradeName || tenant.legal.legalName" :tenant-bio="tenant.identity.bio" />
+          <TenantCustomizationSection :disabled="isView === true" v-show="activeSection === 'customization'" v-model="tenant.customization" />
 
           <template v-if="isView === false">
             <p v-if="saveError" class="text-red-500 text-sm">{{ saveError }}</p>
@@ -175,7 +175,7 @@ const emptyTenant = () => ({
   },
 })
 
-// const tenant = reactive(emptyTenant())
+const tenant = reactive(emptyTenant())
 const errors = reactive({ legal: {}, contact: {}, identity: {}, settings: {} })
 
 const isLoading = ref(true)
@@ -255,7 +255,7 @@ function mapFormToApiPayload() {
     },
   }
 }
-const tenant = emptyTenant()
+
 // --- data loading ---------------------------------------------------
 async function loadTenant() {
   isLoading.value = true
@@ -267,7 +267,6 @@ async function loadTenant() {
     } else {
       await tenantStore.fetchTenant(targetId.value)
       Object.assign(tenant, mapApiTenantToForm(tenantStore.tenant[0]))
-      console.log(tenant)
     }
   } catch (err) {
     loadError.value = isNew.value
@@ -317,6 +316,8 @@ async function handleSave() {
   try {
     const payload = mapFormToApiPayload()
 
+    console.log(payload);
+    
     const saved = isNew.value
       ? await tenantStore.createTenant(payload)
       : await tenantStore.updateTenant(targetId.value, payload)

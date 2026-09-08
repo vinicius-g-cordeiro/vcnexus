@@ -14,15 +14,20 @@ const tenantService = {
     });
     return response.data;
   },
-  async register(tenantInfo) {
+  async createTenant(tenantInfo) {
     const response = await api.post("/tenants/save", tenantInfo);
+    return response.data;
+  },
+
+  async updateTenant(uuid, payload) {
+    const response = await api.put(`/tenants/${uuid}`, payload);
     return response.data;
   },
 
   async fetchTenant(params) {
     const response = await api.get(`/tenants/${params}`);
     return response.data;
-  },
+  },  
 };
 
 export default tenantService;

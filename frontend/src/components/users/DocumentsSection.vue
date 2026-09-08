@@ -1,16 +1,14 @@
 <template>
-  <Fieldset legend="Business details" description="Shown on invoices and to clients you work with.">
+  <Fieldset legend="Document details">
 
     <div class="gap-5 grid grid-cols-1 sm:grid-cols-2">
-      <Select :disabled="disabled" :model-value="form.contractType" label="Contract Type" placeholder="Select the type of contract..." :options="contractTypeOptions" @update:model-value="updateField('contractType', $event)" />
-      <Select :disabled="disabled" :model-value="form.tenant" label="Tenant" placeholder="Select a tenant..." :options="tenantOptions" @focus="loadTenants" @update:model-value="updateField('tenant', $event)" />
+      <BaseInput :disabled="disabled" :model-value="form.national_id" type="text" label="National ID" placeholder="" :error="errors.national_id" @update:model-value="updateField('national_id', $event)" />
+      <BaseInput :disabled="disabled" :model-value="form.national_id_issuer" type="text" label="National ID Issuer" placeholder="Ex: SSP/DF" :error="errors.national_id_issuer" @update:model-value="updateField('national_id_issuer', $event)" />
     </div>
     <div class="gap-5 grid grid-cols-1 sm:grid-cols-2">
-      <BaseInput :disabled="disabled" :model-value="form.hourlyRate" type="number" label="Hourly rate" placeholder="0.00" :error="errors.hourlyRate" @update:model-value="updateField('hourlyRate', $event)" />
-      <BaseInput :disabled="disabled" :model-value="form.hireDate" type="date" label="Hire date" :error="errors.hireDate" @update:model-value="updateField('hireDate', $event)" />
+      <BaseInput :disabled="disabled" :model-value="form.taxpayer_id" type="text" label="Registration" placeholder="Ex: 000.000.000-00" :error="errors.taxpayer_id" @update:model-value="updateField('taxpayer_id', $event)" />
+      <BaseInput :disabled="disabled" :model-value="form.drivers_license" type="text" label="Driver's License" :error="errors.drivers_license" @update:model-value="updateField('drivers_license', $event)" />
     </div>
-  <FileUpload name="contract" label="Contract" :disabled="disabled" :model-value="form.contractFile" :accept="'.pdf'" />
-    
   </Fieldset>
 </template>
 
@@ -22,18 +20,19 @@
  * Usage:
  * <BusinessDetailsSection v-model="form.business" :errors="errors.business" />
  */
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import Fieldset from '@/components/Fieldset.vue'
 import BaseInput from '@/components/BaseInput.vue'
+import BaseCheckbox from '@/components/BaseCheckbox.vue'
 import Select from '@/components/Select.vue'
 import { storeToRefs } from 'pinia'
 import { useTenantStore } from '@/stores/tenantStore'
-import FileUpload from '@/components/FileUpload.vue'
+
 
 const props = defineProps({
   modelValue: {
     type: Object,
-    required: true, // { Contract Type, Tenant, Hourly Rate, Hire Date, Contract file. }
+    required: true, // { companyName, taxId, jobTitle, department, hourlyRate, hireDate, isContractor }
   },
   errors: {
     type: Object,
@@ -67,7 +66,7 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false
-  },
+  }
 })
 
 const tenantStore = useTenantStore()

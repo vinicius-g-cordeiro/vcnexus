@@ -20,6 +20,7 @@ use App\Shared\Connection;
 use App\Shared\Session;
 use DateTimeZone;
 use DateTime;
+use App\Shared\Helpers\Utils;
 
 class Model extends Connection
 {
@@ -64,21 +65,47 @@ class Model extends Connection
         return $result;
     }
 
-
     public function fr2Arr(ADORecordSet $recordSet, bool $bStoreOnRecords = false, string $returnType = 'array'): array|bool|object
     {
-        /** @var array|bool  */
+        /** @var array|bool */
         $results = false;
+
+        $arrayColumns = $this->getArrayColumnsFromRecordSet($recordSet);
+
         while (!$recordSet->EOF) {
+            $fields = $recordSet->fields;
+
+            foreach ($arrayColumns as $col) {
+                if (isset($fields[$col]) && is_string($fields[$col])) {
+                    $fields[$col] = Utils::pgArrayToPhp($fields[$col]);
+                }
+            }
+
             if ($bStoreOnRecords) {
-                $results['records'][] = (object) $recordSet->fields;
+                $results['records'][] = (object) $fields;
             } else {
-                $results[] = (object) $recordSet->fields;
+                $results[] = (object) $fields;
             }
             $recordSet->MoveNext();
         }
 
         return $results;
+    }
+
+    private function getArrayColumnsFromRecordSet(ADORecordSet $recordSet): array
+    {
+        $arrayColumns = [];
+        $fieldCount = $recordSet->FieldCount();
+
+        for ($i = 0; $i < $fieldCount; $i++) {
+            $field = $recordSet->FetchField($i);
+            // Postgres internally prefixes array types with "_" (e.g. _text, _int4, _varchar)
+            if (isset($field->type) && str_starts_with($field->type, '_')) {
+                $arrayColumns[] = $field->name;
+            }
+        }
+
+        return $arrayColumns;
     }
 
 
@@ -131,8 +158,8 @@ class Model extends Connection
         if ($return === false) {
             throw new AppExceptionHandler('500 - Error', 500);
         }
-        $tenant_id = (object) $this->getConnection()->GetRow('SELECT tenant_id FROM ' . $this->schema->table . ' WHERE id = ?', [$this->getConnection()->Insert_ID()]);
-        return object(insertID: $this->getConnection()->Insert_ID(), tenant_id: $tenant_id->tenant_id ?? null) ?: false;
+        $saveResult = (object) $this->getConnection()->GetRow('SELECT tenant_id, uuid FROM ' . $this->schema->table . ' WHERE id = ? LIMIT 1 ', [$this->getConnection()->Insert_ID()]);
+        return object(insertID: $this->getConnection()->Insert_ID(), tenant_id: $saveResult->tenant_id ?? null, uuid: $saveResult->uuid) ?: false;
     }
 
 

@@ -13,26 +13,24 @@ namespace App\Middleware;
 
 use App\Shared\Interfaces\MiddlewareInterface;
 use App\Shared\Request;
-use App\Exceptions\BusinessException;
 use App\Shared\Connection;
 use App\Shared\Context\AuthContext;
-use App\Shared\Context\TenantContext;
 
-final class TenantMiddleware implements MiddlewareInterface
-{
-    public function __construct(private Connection $db) {}
-
+final class DatabaseContextMiddleware  implements MiddlewareInterface {
+    
     public function handle(Request $request, callable $next) : mixed
     {
-        
-        if(AuthContext::tenantId() === null){
-            throw new BusinessException('Tenant could not be resolved', 403);
+        $connection = Connection::getInstance();
+        $response = $connection->getConnection()->Execute(
+            "SELECT set_config('app.tenant_id', ?, true)",
+            [AuthContext::tenantId()]
+        );
+     
+        try {
+            return $next($request);
+        } finally {
+            $connection->getConnection()->Execute("SELECT set_config('app.tenant_id', '', true)");
+            AuthContext::clear();
         }
-
-        // user_id typically comes from an earlier Auth middleware
-        TenantContext::set(AuthContext::tenantId(), AuthContext::userId(),null);
-
-        return $next($request);
     }
-
 }

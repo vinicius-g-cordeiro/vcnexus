@@ -57,6 +57,9 @@
           <PermissionsSection :disabled="isView === true" v-show="activeSection === 'permissions' && canManageAccess" v-model="user.permissions" />
 
           <RolesSection :disabled="isView === true" v-show="activeSection === 'roles' && canManageAccess" v-model="user.roles" />
+          
+          <DocumentsSection :disabled="isView === true" v-show="activeSection === 'documents' && canManageAccess" v-model="user.documents" />
+
           <template v-if="isView === false">
             <p v-if="saveError" class="text-red-500 text-sm">{{ saveError }}</p>
             <p v-if="saveSuccess" class="text-emerald-500 text-sm">
@@ -121,6 +124,7 @@ import PermissionsSection from '@/components/users/PermissionsSection.vue'
 import RolesSection from '@/components/users/RolesSection.vue'
 import Button from '@/components/Button.vue'
 import SecuritySection from '@/components/users/SecuritySection.vue'
+import DocumentsSection from '@/components/users/DocumentsSection.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -161,19 +165,22 @@ const emptyUser = () => ({
     country: '',
     username: '',
   },
+  documents: {
+    taxpayer_id: '',
+    national_id: '',
+    national_id_issuer: '',
+    drivers_license: '',
+  },
   security: {
     password: '',
     password_confirmation: '',
   },
   business: {
-    companyName: '',
-    taxId: '',
-    jobTitle: '',
-    department: '',
     hourlyRate: '',
     hireDate: '',
-    isContractor: false,
     tenant: null,
+    contractType: 1,
+    contractFile: null,
   },
   bio: '',
   permissions: [],
@@ -195,6 +202,7 @@ const errors = reactive({ personal: {}, business: {}, bio: '', security: {}, rol
 const allSections = [
   { key: 'avatar', label: 'Avatar' },
   { key: 'personal', label: 'Personal details' },
+  { key: 'documents', label: 'Documents' },
   { key: 'business', label: 'Business details', requires: 'worker' },
   { key: 'bio', label: 'Bio' },
   { key: 'permissions', label: 'Permissions', requires: 'access' },
@@ -239,18 +247,21 @@ function mapApiUserToForm(apiUser) {
       username: apiUser.username ?? '',
       country: apiUser.country ?? '',
     },
+    documents: {
+      taxpayer_id: apiUser.taxpayer_id ?? '',
+      national_id: apiUser.national_id ?? '',
+      national_id_issuer: apiUser.national_id_issuer ?? '',
+      drivers_license: apiUser.drivers_license ?? '',
+    },
     security: {
       password: '',
       password_confirmation: '',
     },
     business: {
-      companyName: apiUser.company_name ?? '',
-      taxId: apiUser.tax_id ?? '',
-      jobTitle: apiUser.job_title ?? '',
-      department: apiUser.department ?? '',
+      contractFile: apiUser.contract_file ?? null,
+      contractType: apiUser.contract_type ?? 1,
       hourlyRate: apiUser.hourly_rate ?? '',
       hireDate: apiUser.hire_date ?? '',
-      isContractor: apiUser.is_contractor ?? false,
       tenant: apiUser.tenant ?? null,
     },
     bio: apiUser.bio ?? '',
@@ -278,6 +289,10 @@ function mapFormToApiPayload() {
     sexual_orientation: user.personal.sexual_orientation,
     locale: user.personal.locale,
     bio: user.bio,
+    taxpayer_id: user.taxpayer_id,
+    national_id: user.national_id,
+    national_id_issuer: user.national_id_issuer,
+    drivers_license: user.drivers_license,
     // Password: required on create, optional on edit (only sent if set).
     ...(isNew.value || user.security.password
       ? {
@@ -287,14 +302,11 @@ function mapFormToApiPayload() {
       : {}),
     ...(isWorker.value
       ? {
-        company_name: user.business.companyName,
-        tax_id: user.business.taxId,
-        job_title: user.business.jobTitle,
-        department: user.business.department,
         hourly_rate: user.business.hourlyRate,
         hire_date: user.business.hireDate,
-        is_contractor: user.business.isContractor,
         tenant: user.business.tenant,
+        contract_file: user.business.contract_file,
+        contract_type: user.business.contract_type,
       }
       : {}),
     ...(canManageAccess.value
@@ -348,10 +360,10 @@ async function handleSave() {
       ? await userStore.createUser(payload)
       : await userStore.updateUser(targetId.value, payload)
 
-    if (avatarFile.value && saved == true) {
+    if (avatarFile.value && saved.ok == true) {
       const formData = new FormData()
       formData.append('avatar', avatarFile.value)
-      await userStore.updateUserAvatar(targetId.value, formData)
+      await userStore.updateUserAvatar(saved.user?.uuid, formData)
     }
 
     saveSuccess.value = true

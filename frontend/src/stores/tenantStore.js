@@ -52,13 +52,30 @@ export const useTenantStore = defineStore("tenants", {
       }
     },
 
-    async register(tenantInfo) {
+    async createTenant(tenantInfo) {
       this.loading = true;
       this.error = null;
       try {
-        const response = await tenantService.register(tenantInfo);
+        const response = await tenantService.createTenant(tenantInfo);
         return true;
       } catch (e) {
+        console.log(e);
+        this.error = e.response.data.message || "Erro ao registrar";
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+
+    async updateTenant(tenantInfo) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await tenantService.updateTenant(tenantInfo);
+        return true;
+      } catch (e) {
+        console.log(e);
         this.error = e.response.data.message || "Erro ao registrar";
         return false;
       } finally {

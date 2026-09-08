@@ -97,14 +97,14 @@ final class UserModel extends Model
     }
 
     function login(?object $parameters = null): object|bool {
-        $query = 'SELECT b.trade_name as "organization",(select cu.name from users cu where cu.id = u.created_by limit 1) as "created_by", u.id, u.role, u.last_login,
+        $query = 'SELECT b.trade_name as "organization", b.legal_name as "organization_legal_name",(select cu.name from users cu where cu.id = u.created_by limit 1) as "created_by", u.id, u.role, u.last_login,
         u.last_login_local, u.lastname, u.surname, u.tenant_id, u.uuid, u.name, u.email, u.phone, u.lastname, u.active, u.blocked, u.blocked_by, u.password , un.username,
-        u.locale, b.tax_id, u.avatar
+        u.locale, b.tax_id, u.avatar, u.roles, u.permissions
         FROM ' . $this->schema->table . ' u 
         inner join "tenants" t on u.tenant_id = t.id 
         inner join "usernames" un on un.user_id = u.id
         inner join "business" b on b.tenant_id = t.id
-        inner join "business_branding" bb on bb.business_id = b.id
+        left join "business_branding" bb on bb.business_id = b.id
         WHERE 
         (public.unaccent(lower(u.email)) = public.unaccent(lower(?)) 
         or u.phone = ? 
@@ -137,13 +137,14 @@ final class UserModel extends Model
         // remove the password from the response
         unset($result[0]->password);
 
+        
         return (object)$result[0] ?? false;
     }
 
     function find(?string $uuid, array $columns = []) : object|bool {
         $returnColumns = implode(', ', $columns);
         
-        $where = ' where u.uuid = \''.$uuid.'\' and u.active = 1';
+        $where = ' where u.uuid = \''.$uuid.'\'';
         
 
         $query = 'select ' . $returnColumns . '  

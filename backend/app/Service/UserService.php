@@ -12,17 +12,18 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\DTOs\Users\AvatarStoreDTO;
+use App\DTOs\Users\UserUpdateDTO;
 use App\Model\UserModel;
 use App\Service\Service;
 use App\Shared\Connection;
 use App\Model\Model;
 use App\DTOs\Users\UsernameRegistrationDTO;
-use App\DTOs\Authentication\ProfileUpdateDTO;
 use App\Exceptions\AppExceptionHandler;
 use App\Model\UsernameModel;
-use App\DTOs\Authentication\UserRegistrationDTO;
+use App\DTOs\Users\UserRegistrationDTO;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use App\Shared\Helpers\Utils;
 
 final class UserService extends Service
 {
@@ -39,7 +40,6 @@ final class UserService extends Service
     {
         $response = null;
         $parameters ??= $this->request->params();
-
 
         $response = $this->model->list($parameters);
         return $response;
@@ -143,12 +143,16 @@ final class UserService extends Service
 
     public function getUser(?string $uuid = null): object|null
     {
-        $response = $this->model->find($uuid, ['u.id', 'u.avatar', 'u.role', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation', 'b.tax_id', 'u.tenant_id as "tenant"', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
-        return $response === false ? null : $response;
+        $response = $this->model->find($uuid, ['u.id', 'u.avatar', 'u.role', 'u.roles' , 'u.permissions', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation', 'b.tax_id', 'u.tenant_id as "tenant"', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
+        if((isset($response->uuid) !== false)){
+            $response->roles = Utils::pgArrayToPhp($response->roles);
+            $response->permissions = Utils::pgArrayToPhp($response->permissions);
+        }
+        return ($response === false || isset($response->uuid) === false) ? null : $response;
     }
 
 
-    function updateProfile(ProfileUpdateDTO $profileUpdateDTO): object|null
+    function updateProfile(UserUpdateDTO $userUpdateDTO): object|null
     {
         $response = null;
 
@@ -189,14 +193,14 @@ final class UserService extends Service
                 new Assert\Optional(),
                 new Assert\PasswordStrength()
             ],
-            'password_confirmation' => new Assert\Callback(function ($value, ExecutionContextInterface $context) use ($profileUpdateDTO) {
-                if ($profileUpdateDTO->password !== $profileUpdateDTO->password_confirmation) {
+            'password_confirmation' => new Assert\Callback(function ($value, ExecutionContextInterface $context) use ($userUpdateDTO) {
+                if ($userUpdateDTO->password !== $userUpdateDTO->password_confirmation) {
                     $context->buildViolation('Passwords does not match')->atPath('password_confirmation')->addViolation();
                 }
             })
         ], allowMissingFields: false, allowExtraFields: true);
 
-        $violations = $this->validator->validate((array) $profileUpdateDTO, [$assert]);
+        $violations = $this->validator->validate((array) $userUpdateDTO, [$assert]);
 
         if ($violations->count() > 0) {
             $errors = [];
@@ -208,9 +212,9 @@ final class UserService extends Service
             throw new AppExceptionHandler(implode('##,##', $errors), 400, null);
         }
 
-        $response = $this->transaction(function () use ($profileUpdateDTO) {
+        $response = $this->transaction(function () use ($userUpdateDTO) {
 
-            $result = $this->model->update($profileUpdateDTO, 'uuid = \'' . $profileUpdateDTO->uuid . '\'');
+            $result = $this->model->update($userUpdateDTO, 'uuid = \'' . $userUpdateDTO->uuid . '\'');
 
             if (!$result || !isset($result)) {
                 throw new AppExceptionHandler('Failed to update user.');
@@ -220,9 +224,9 @@ final class UserService extends Service
 
             $usernameResult = $usernameModel->update(
                 new UsernameRegistrationDTO(
-                    $profileUpdateDTO->username,
+                    $userUpdateDTO->username,
                     (string) $result,
-                    (string) $profileUpdateDTO->tenant_id
+                    (string) $userUpdateDTO->tenant_id
                 )
                 ,
                 'user_id = \'' . $result . '\''
@@ -232,7 +236,7 @@ final class UserService extends Service
                 throw new AppExceptionHandler('Failed to create username.');
             }
 
-            return $profileUpdateDTO;
+            return $userUpdateDTO;
         });
         return $response === false ? null : $response;
     }

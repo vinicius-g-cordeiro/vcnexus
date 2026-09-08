@@ -57,11 +57,11 @@ export const useUserStore = defineStore("users", {
 
       try {
         const response = await userService.create(userInfo);
-        this.users = response.data.users;
-        return true;
+        this.user = response.data.users;
+        return {ok: true, user: this.user};
       } catch (error) {
         this.error = error;
-        this.users = [];
+        this.user = [];
         return false;
       } finally {
         this.loading = false;
@@ -73,7 +73,7 @@ export const useUserStore = defineStore("users", {
       try {
         const response = await userService.updateUser(uuid,payload);
         this.user = response.data.user;
-        return true;
+        return {ok: true, user: this.user};
       } catch (error) {
         this.error = error;
         this.user = [];
