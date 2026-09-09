@@ -80,6 +80,7 @@ WITH CHECK (
 );
 
 COMMIT;
+drop function authenticate_user(text)
 
 CREATE OR REPLACE FUNCTION public.authenticate_user(p_email TEXT)
 RETURNS TABLE (
@@ -87,7 +88,7 @@ RETURNS TABLE (
     organization_legal_name TEXT,
     created_by TEXT,
     id BIGINT,
-    role BIGINT,
+    role SMALLINT,
     last_login TIMESTAMP,
     last_login_local TIMESTAMP,
     lastname TEXT,
@@ -97,16 +98,16 @@ RETURNS TABLE (
     name TEXT,
     email TEXT,
     phone TEXT,
-    active BOOLEAN,
-    blocked BOOLEAN,
+    active SMALLINT,
+    blocked SMALLINT,
     blocked_by BIGINT,
     password TEXT,
     username TEXT,
     locale TEXT,
     tax_id TEXT,
     avatar TEXT,
-    roles JSONB,
-    permissions JSONB
+    roles varchar[],
+    permissions varchar[]
 )
 LANGUAGE sql
 SECURITY DEFINER
@@ -138,9 +139,7 @@ AS $$
         u.blocked,
         u.blocked_by,
         u.password,
-
         un.username,
-
         u.locale,
         b.tax_id,
         u.avatar,
