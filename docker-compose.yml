@@ -6,11 +6,14 @@ services:
       - 5432:5432
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init-user.sh:/docker-entrypoint-initdb.d/01-init-user.sh:ro
+      - ./infrastructure/postgres/init-user.sql:/docker-entrypoint-initdb.d/02-init-user.sql:ro
     environment:
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_root_password
+      POSTGRES_USER: app_root
       POSTGRES_DB: app_db
       PGDATA: /var/lib/postgresql/data/pgdata
+      APP_DB_USER: ${DB_USERNAME-app_user}
     healthcheck:
       interval: 10s
       timeout: 5s
@@ -19,6 +22,7 @@ services:
     secrets:
       - db_root_password
       - db_password
+      - db_app_password
     networks:
       - app_network
 
@@ -71,7 +75,7 @@ services:
         PHP_VERSION: ${PHP_VERSION-8.4}
         ENV_FILE: ./infrastructure/php/.env
     environment:
-      - DB_PASSWORD=/run/secrets/db_password
+      - DB_PASSWORD=/run/secrets/db_app_password
       - REDIS_PASSWORD=/run/secrets/redis_password
       - JWT_SECRET=/run/secrets/jwt_secret
       - SMTP_USERNAME=/run/secrets/smtp_user
@@ -112,6 +116,7 @@ services:
       - smtp_password
       - smtp_user
       - admin_password
+      - db_app_password
     networks:
       - app_network
 
@@ -211,6 +216,8 @@ secrets:
     file: ./secrets/smtp_user
   admin_password:
     file: ./secrets/admin_password
+  db_app_password:
+    file: ./secrets/db_app_password
 
 volumes:
   db_data:

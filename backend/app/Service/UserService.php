@@ -144,10 +144,6 @@ final class UserService extends Service
     public function getUser(?string $uuid = null): object|null
     {
         $response = $this->model->find($uuid, ['u.id', 'u.avatar', 'u.role', 'u.roles' , 'u.permissions', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation', 'b.tax_id', 'u.tenant_id as "tenant"', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
-        if((isset($response->uuid) !== false)){
-            $response->roles = Utils::pgArrayToPhp($response->roles);
-            $response->permissions = Utils::pgArrayToPhp($response->permissions);
-        }
         return ($response === false || isset($response->uuid) === false) ? null : $response;
     }
 

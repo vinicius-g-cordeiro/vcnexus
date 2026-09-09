@@ -9,16 +9,18 @@
 
 declare(strict_types=1);
 
-namespace App\Model;
+namespace App\Model\Tenants;
 
 use App\Database\Schema\UsersSchema;
 use App\Exceptions\AppExceptionHandler;
 use App\Model\Tenants\BusinessModel;
 use App\Model\Tenants\TenantModel;
+use App\Model\UsernameModel;
+use App\Model\Model;
 use Throwable;
 use App\Shared\Response;
 
-final class UserModel extends Model
+final class TenantUserModel extends Model
 {
 
     function __construct($dbConnection = null)
@@ -98,29 +100,24 @@ final class UserModel extends Model
 
     function login(?object $parameters = null): object|bool {
         
-        // $query = 'SELECT b.trade_name as "organization", b.legal_name as "organization_legal_name",(select cu.name from users cu where cu.id = u.created_by limit 1) as "created_by", u.id, u.role, u.last_login,
-        // u.last_login_local, u.lastname, u.surname, u.tenant_id, u.uuid, u.name, u.email, u.phone, u.lastname, u.active, u.blocked, u.blocked_by, u.password , un.username,
-        // u.locale, b.tax_id, u.avatar, u.roles, u.permissions
-        // FROM ' . $this->schema->table . ' u 
-        // inner join "tenants" t on u.tenant_id = t.id 
-        // inner join "usernames" un on un.user_id = u.id
-        // inner join "business" b on b.tenant_id = t.id
-        // left join "business_branding" bb on bb.business_id = b.id
-        // WHERE 
-        // (public.unaccent(lower(u.email)) = public.unaccent(lower(?)) 
-        // or u.phone = ? 
-        // or public.unaccent(lower(un.username)) = public.unaccent(lower(?)))
-        // and u.active = 1 
-        //  LIMIT 1;' ;
+        $query = 'SELECT b.trade_name as "organization", b.legal_name as "organization_legal_name",(select cu.name from users cu where cu.id = u.created_by limit 1) as "created_by", u.id, u.role, u.last_login,
+        u.last_login_local, u.lastname, u.surname, u.tenant_id, u.uuid, u.name, u.email, u.phone, u.lastname, u.active, u.blocked, u.blocked_by, u.password , un.username,
+        u.locale, b.tax_id, u.avatar, u.roles, u.permissions
+        FROM ' . $this->schema->table . ' u 
+        inner join "tenants" t on u.tenant_id = t.id 
+        inner join "usernames" un on un.user_id = u.id
+        inner join "business" b on b.tenant_id = t.id
+        left join "business_branding" bb on bb.business_id = b.id
+        WHERE 
+        (public.unaccent(lower(u.email)) = public.unaccent(lower(?)) 
+        or u.phone = ? 
+        or public.unaccent(lower(un.username)) = public.unaccent(lower(?)))
+        and u.active = 1 
+         LIMIT 1;' ;
         
-        // $response = $this->getConnection()->Execute($query,[$parameters->login, $parameters->login, $parameters->login]);
-
-        $query = 'select * from authenticate_user(?)';
-        $response = $this->getConnection()->Execute($query, [$parameters->login]);
-
-        
+        $response = $this->getConnection()->Execute($query,[$parameters->login, $parameters->login, $parameters->login]);
+    
         $result = $this->fr2Arr($response);
-        
 
         if (is_bool($result) || (is_bool($result) === false && count($result) == 0)) {
             throw new AppExceptionHandler(message: 'No result found', code: 404);

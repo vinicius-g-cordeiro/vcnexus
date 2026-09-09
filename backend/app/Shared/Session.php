@@ -75,7 +75,7 @@ class Session {
         if(session_status() === PHP_SESSION_NONE){
             
             $password = trim(file_get_contents(getenv('DB_PASSWORD')));
-            ADODB_Session::config('pgsql', getenv('DB_HOST'), getenv('DB_USERNAME'), $password , getenv('DB_DATABASE'));
+            ADODB_Session::config(getenv("DB_DRIVER"), getenv('DB_HOST'), getenv('DB_USERNAME'), $password , getenv('DB_DATABASE'));
             Connection::getInstance()->getConnection()->Execute("CREATE TABLE IF NOT EXISTS sessions2 (sesskey VARCHAR( 64 ) NOT NULL DEFAULT '', expiry timestamp NOT NULL , expireref VARCHAR( 250 ) DEFAULT '', created timestamp NOT NULL , modified timestamp NOT NULL , sessdata TEXT, PRIMARY KEY ( sesskey ) );");
             ADODB_Session::open('/tmp', 'sessions', null);
 

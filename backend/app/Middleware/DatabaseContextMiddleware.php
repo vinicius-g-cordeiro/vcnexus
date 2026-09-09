@@ -22,14 +22,14 @@ final class DatabaseContextMiddleware  implements MiddlewareInterface {
     {
         $connection = Connection::getInstance();
         $response = $connection->getConnection()->Execute(
-            "SELECT set_config('app.tenant_id', ?, true)",
+            "SELECT set_config('app.tenant_id', ?, false)",
             [AuthContext::tenantId()]
         );
      
         try {
             return $next($request);
         } finally {
-            $connection->getConnection()->Execute("SELECT set_config('app.tenant_id', '', true)");
+            $connection->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false)");
             AuthContext::clear();
         }
     }

@@ -40,7 +40,7 @@ class Connection {
                 $connection->Execute('CREATE EXTENSION IF NOT EXISTS unaccent;');
                 $connection->autoCommit = false;
                 $connection->raiseExceptions = true;
-                $connection->Execute("ALTER TABLE users FORCE ROW LEVEL SECURITY;");
+                // $connection->Execute("ALTER TABLE users FORCE ROW LEVEL SECURITY;");
 //                 $connection->Execute("
 // CREATE POLICY tenant_isolation ON users
 //     USING (tenant_id = current_setting('app.tenant_id', true)::bigint)
