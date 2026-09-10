@@ -38,6 +38,11 @@ class Model extends Connection
         if ($this->doesTableExists() === false) {
             $this->sqlCompiler->createTable();
         }
+
+        $contextUserID = $this->getConnection()->Execute(
+            "SELECT set_config('app.user_id', ?, true), set_config('app.tenant_id', ?, false)",
+            [$this->session->get('user')->id ?? '', $this->session->get('user')->tenant_id ?? '']
+        );
     }
 
     private function doesTableExists(): bool

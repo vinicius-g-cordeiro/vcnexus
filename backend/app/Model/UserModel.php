@@ -29,8 +29,6 @@ final class UserModel extends Model
         $businessBrandingModel = new BusinessBrandingModel($dbConnection);
         parent::__construct($dbConnection, new UsersSchema());
 
-
-
     }
 
     function list(?object $parameters) : object|bool|null|array {
