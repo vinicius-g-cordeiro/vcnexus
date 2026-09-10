@@ -11,10 +11,11 @@ declare(strict_types=1);
 
 namespace App\Model\Tenants;
 
-use App\Database\Schema\UsersSchema;
+use App\Database\Schema\TenantUsersSchema;
 use App\Exceptions\AppExceptionHandler;
 use App\Model\Tenants\BusinessModel;
 use App\Model\Tenants\TenantModel;
+use App\Model\UserModel;
 use App\Model\UsernameModel;
 use App\Model\Model;
 use Throwable;
@@ -27,17 +28,19 @@ final class TenantUserModel extends Model
     {
         $tenantModel = new TenantModel($dbConnection);
         $businessModel = new BusinessModel($dbConnection);
-        parent::__construct($dbConnection, new UsersSchema());
+        $businessBrandingModel = new BusinessBrandingModel($dbConnection);
+        $userModel = new UserModel($dbConnection);
+        parent::__construct($dbConnection, new TenantUsersSchema());
         $usernamesModel = new UsernameModel($dbConnection);
     }
 
     function list(?object $parameters) : object|bool|null|array {
         $response = null;
         
-        $sql = 'select b.trade_name as "organization",un.username , (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from users cu where cu.id = u.created_by limit 1) as "created_by" 
-        , (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from users cu where cu.id = u.deleted_by limit 1) as "deleted_by", u.name, u.surname,
-        (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from users cu where cu.id = u.blocked_by limit 1) as "blocked_by",
-         u.lastname, u.nickname, u.created_at, u.updated_at, u.created_by, u.deleted_at, u.blocked, u.blocked_at, u.email, u.last_login, u.last_login_local, u.uuid, u.id, u.active, u.role, u.avatar
+        $sql = 'select b.trade_name as "organization",un.username , (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from tenant_users cu where cu.id = u.created_by limit 1) as "created_by" 
+        , (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from tenant_users cu where cu.id = u.deleted_by limit 1) as "deleted_by", u.name, u.surname,
+        (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from tenant_users cu where cu.id = u.blocked_by limit 1) as "blocked_by",
+         u.lastname, u.nickname, u.created_at, u.updated_at, u.created_by, u.deleted_at, u.blocked, u.blocked_at, u.email, u.uuid, u.id, u.active, u.role, u.avatar
         from "' . $this->schema->table . '" u 
         inner join "tenants" t on u.tenant_id = t.id 
         inner join "business" b on b.tenant_id = t.id
@@ -118,6 +121,8 @@ final class TenantUserModel extends Model
         $response = $this->getConnection()->Execute($query,[$parameters->login, $parameters->login, $parameters->login]);
     
         $result = $this->fr2Arr($response);
+
+        dd($result);
 
         if (is_bool($result) || (is_bool($result) === false && count($result) == 0)) {
             throw new AppExceptionHandler(message: 'No result found', code: 404);

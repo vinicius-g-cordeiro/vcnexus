@@ -11,9 +11,12 @@ declare(strict_types=1);
 
 namespace App\Service\Tenants;
 
+use App\DTOs\Business\Branding\BusinessBrandingStoreDTO;
 use App\DTOs\DTOInterface;
 use App\DTOs\Business\BusinessRegistrationDTO;
+use App\DTOs\Tenants\TenantRegistrationDTO;
 use App\Exceptions\AppExceptionHandler;
+use App\Model\Tenants\BusinessBrandingModel;
 use App\Model\Tenants\BusinessModel;
 use App\Service\Service;
 use App\Model\Tenants\TenantModel;
@@ -25,6 +28,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 final class TenantService extends Service {
     protected ?BusinessModel $businessModel = null;
+    protected ?BusinessBrandingModel $businessBrandingModel = null;
 
     /** @var TenantModel */
     protected ?Model $model = null;
@@ -32,6 +36,7 @@ final class TenantService extends Service {
         parent::__construct($connection, new TenantModel($connection));
 
         $this->businessModel = new BusinessModel($this->connection);
+        $this->businessBrandingModel = new BusinessBrandingModel($this->connection);
     }
 
     public function list(?object $parameters = null) : object|array|bool {
@@ -43,7 +48,7 @@ final class TenantService extends Service {
         return $response ?? object();
     }
 
-    public function store(?DTOInterface $tenantRegisterDTO) : object|array|bool {
+    public function store(?TenantRegistrationDTO $tenantRegisterDTO) : object|array|bool {
 
         $assert = new Assert\Collection(fields: [
             'name' =>  [
@@ -127,7 +132,14 @@ final class TenantService extends Service {
                 throw new AppExceptionHandler('Failed to create business.');
             }
 
+            $businessBrandingDTO = new BusinessBrandingStoreDTO(business_id: (int)$businessResult->insertID, app_name: $tenantRegisterDTO->name, accentColor: $tenantRegisterDTO->accentColor, primaryColor: $tenantRegisterDTO->primaryColor, textColor: $tenantRegisterDTO->textColor, buttonStyle: $tenantRegisterDTO->buttonStyle, fontStyle: $tenantRegisterDTO->fontFamily, logo: null);
+            $businessBrandResult = $this->businessBrandingModel->store($businessBrandingDTO);
+
+            if(!$businessBrandResult || !isset($businessBrandResult->insertID)){
+                throw new AppExceptionHandler('Failed to create business branding!');
+            }
             $result->business_id = $businessResult->insertID;
+            $result->business_branding_id = $businessBrandResult->insertID;
             return $result;
          });
 
@@ -138,11 +150,11 @@ final class TenantService extends Service {
     public function getTenant(?string $uuid) : object|array|bool {
         $response = null;
         $response = $this->model->getTenant($uuid);
-        foreach($response[0] as $key => $value){
-            if($key === 'modules' || $key === 'phone' || $key === 'categories'){
-                $response[0]->$key = Utils::pgArrayToPhp($value ?? '');
-            }
-        }
+        // foreach($response[0] as $key => $value){
+        //     if($key === 'modules' || $key === 'phone' || $key === 'categories'){
+        //         $response[0]->$key = Utils::pgArrayToPhp($value ?? '');
+        //     }
+        // }
         return $response ?? object();
     }
 

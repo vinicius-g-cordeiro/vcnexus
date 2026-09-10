@@ -16,6 +16,7 @@ use App\DTOs\Authentication\AuthUserRegistrationDTO;
 use App\DTOs\Authentication\AuthLoginDTO;
 use App\Events\Container;
 use App\Events\Auth\UserRegistered;
+use App\Middleware\DatabaseContextMiddleware;
 use App\Middleware\GuestMiddleware;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\OwnerMiddleware;
@@ -106,6 +107,7 @@ class AuthController extends Controller{
 
     #[Route('GET', '/me/')]
     #[Middleware(AuthMiddleware::class)]
+    #[Middleware(DatabaseContextMiddleware::class)]
     public function getSelf() {
         $response = null;
         try{

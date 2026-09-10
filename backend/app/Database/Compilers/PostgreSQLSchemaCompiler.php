@@ -11,10 +11,13 @@ declare(strict_types=1);
 
 namespace App\Database\Compilers;
 
+use App\Database\Attributes\FunctionAtt;
+use App\Database\Attributes\RowLevelSecurity;
 use App\Shared\Connection;
 use App\Database\Attributes\ForeignKeyConstraint;
 use App\Database\Attributes\Index;
 use App\Database\Attributes\UniqueConstraint;
+use App\Database\Attributes\Policy;
 use App\Database\Schema\Schema;
 use App\Exceptions\DatabaseNotCreatedException;
 use App\Shared\Response;
@@ -77,9 +80,86 @@ class PostgreSQLSchemaCompiler extends Connection
         return sprintf('CREATE TABLE IF NOT EXISTS "%s" (' . "\r\n" . '%s' . "\r\n" . ");\r\n", $tableName, implode(",\r\n", $definitions));
     }
 
+    public function createPolicy() : string {        
+        $definitions = [];
+        $policy = '';
+        foreach (Schema::policies($this->schema) as $attribute) {
+            if (!isset($attribute->name))
+                continue;
+
+            $policy .= 'DROP POLICY IF EXISTS ' . $attribute->name . ' ON public.' . $attribute->table . ';' . "\r\n\r\n";
+            $policy .= $this->buildPolicyDefinition($attribute);
+        }
+
+        return $policy . "\r\n";
+    }
+
+    public function buildPolicyDefinition(?Policy $policy) : string {
+
+        $definition = sprintf("CREATE POLICY %s \r\nON public.%s \r\nAS ". (($policy->restrictive === true) ? 'RESTRICTIVE' : 'PERMISSIVE') ." \r\n %s \r\nTO %s \r\nUSING ( %s ) ", $policy->name, $policy->table, (isset($policy->withCheck) === false ? ( 'FOR ' . $policy->for) : 'FOR ALL') , $policy->toUser, $this->buildPolicyUsing($policy->using));
+
+        if(isset($policy->withCheck)){
+            $definition .= sprintf("\r\nWITH CHECK ( %s ) ", $this->buildPolicyWithCheck($policy->withCheck));
+        }
+
+        return $definition . ";\r\n";
+    }
+
+    public function buildPolicyUsing(?array $usingArray) : string {
+        $usingPolicy = '';
+        $using = [];
+            
+        foreach($usingArray as $key => $value){
+            $using[$key] = sprintf('%s = NULLIF(current_setting(\'%s\', true),\'\')::%s', $key , $value['key'], $value['type']);
+        }
+
+        $usingPolicy = implode(",\r\n", $using);
+
+        return trim($usingPolicy, ',');
+    }
+
+    public function buildPolicyWithCheck(?array $withCheckArray) : string {
+        $withCheckPolicy = '';
+        $withCheck = [];
+            
+        foreach($withCheckArray as $key => $value){
+            $withCheck[$key] = sprintf('%s = NULLIF(current_setting(\'%s\', true),\'\')::%s', $key , $value['key'], $value['type']);
+        }
+
+        $withCheckPolicy = implode(",\r\n", $withCheck);
+
+        return trim($withCheckPolicy, ',');
+    }
+
+    public function createRowLevelSecurity() : string {
+        $rls = '';
+        foreach (Schema::rls($this->schema) as $attribute) {
+            if (!isset($attribute->table))
+                continue;
+            
+            $rls .= ($attribute->forced === false ? $this->buildRowLevelSecurityDefinition($attribute) : $this->buildForcedRowLevelSecurityDefinition($attribute)) . ";\r\n";
+        }
+
+        return $rls;
+    }
+
+    public function buildRowLevelSecurityDefinition(?RowLevelSecurity $rowLevelSecurity) : string {
+        $definition = sprintf('ALTER TABLE public.%s ENABLE ROW LEVEL SECURITY', $rowLevelSecurity->table);
+        return $definition;
+    }
+
+    public function buildForcedRowLevelSecurityDefinition(?RowLevelSecurity $rowLevelSecurity) : string {
+        $definition = sprintf('ALTER TABLE public.%s FORCE ROW LEVEL SECURITY', $rowLevelSecurity->table);
+        return $definition;
+    }
+
     private function buildColumnDefinition(?object $column): string
     {
         $definition = sprintf('"%s" %s', $column->name, $column->type);
+
+        if($column->inherit === false){ // if we should not inherit we just return an empty string 
+            return '';
+        }
 
         if ($column->nullable === false) {
             $definition .= ' NOT NULL ';
@@ -210,9 +290,59 @@ class PostgreSQLSchemaCompiler extends Connection
         }, $columns));
     }
 
+    private function createFunctions() : string {
+        $definitions = [];
+        $functions = '';
+        foreach (Schema::functionAtt($this->schema) as $attribute) {
+            if (!isset($attribute->name))
+                continue;
+
+            $functions .= 'DROP FUNCTION IF EXISTS ' . $attribute->name . ';' . "\r\n\r\n";
+            $functions .= $this->buildFunctionQuery($attribute);
+        }
+
+        return $functions . "\r\n";
+    }
+
+    private function buildFunctionQuery(?FunctionAtt $function) : string {
+        $query = $function->tsql;
+
+        return trim($query . ";", ';');
+    }
+
     public function initDefaultsUsers()
     {
         $sqlAdminPassword = password_hash(trim(file_get_contents(trim(getenv('ADMIN_PASSWORD')))), PASSWORD_BCRYPT, ['cost' => 12]);
+
+        
+        /// @TODO this needs to be run with the root user... 
+        // $this->getConnection()->StartTrans();
+        // try{
+        //     $sql = $this->createFunctions();
+
+        //     $this->getConnection()->Execute($sql);
+
+        //     if($this->getConnection()->HasFailedTrans()) {
+        //         throw new \RuntimeException('Failed to add the default functions ');
+        //     }
+
+        //     $this->getConnection()->CompleteTrans();
+        // } catch (Throwable $e) {
+        //     Response::log(data: $e);
+        //     $this->getConnection()->FailTrans();
+        //     $this->getConnection()->CompleteTrans();
+        //     throw $e;
+        // }finally {
+        //     $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
+        // }
+
+
+
+        $response = $this->getConnection()->Execute(
+            "SELECT set_config('app.tenant_id', ?, false), set_config('app.user_id', ?, false);",
+            ['1', '1']
+        );
+
         $sql = "
 INSERT INTO public.tenants (\"name\", modules, active, slug) VALUES('VCNexus', ARRAY['1'::character varying(4)], 1, 'vcnexus');
 ";
@@ -232,12 +362,15 @@ INSERT INTO public.tenants (\"name\", modules, active, slug) VALUES('VCNexus', A
             $this->getConnection()->CompleteTrans();
 
             throw $e;
+        }finally {
+            $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
         }
+        
 
         $sql = "
 insert
     into
-    public.users
+    public.tenant_users
 (\"uuid\",
     created_at,
     created_at_local,
@@ -251,7 +384,6 @@ insert
     tenant_id,
     active,
     \"name\",
-    \"password\",
     surname,
     lastname,
     nickname,
@@ -268,14 +400,11 @@ insert
     blood_type,
     blood_factor,
     locale,
-    last_login,
-    last_login_local,
-    last_ip,
-    last_agent,
     role,
     roles,
-    permissions)
-values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, null, null, null, 1, 1, 'SuperAdministrator', '" . $sqlAdminPassword . "', 'Admin', '', array['administrator'::character varying(100)], '1999-04-23', 'vinismtpgo@gmail.com', '', 0, 0, 0, 0, null, null, null, null, null, '', null, null, null, '', 1, array['1'::character varying(100)], array['users.view'::character varying(100)]);
+    permissions,
+    user_id)
+values(uuidv7(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, null, null, null, 1, 1, 'SuperAdministrator', 'Admin', '', array['administrator'::character varying(100)], '1999-04-23', 'vinismtpgo@gmail.com', '', 0, 0, 0, 0, null, null, null, null, null, '', 1, array['1'::character varying(100)], array['users.view'::character varying(100)], 1);
 ";
         $this->getConnection()->StartTrans();
         try {
@@ -293,6 +422,8 @@ values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, nu
             $this->getConnection()->CompleteTrans();
 
             throw $e;
+        }finally {
+            $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
         }
         $sql = "
 
@@ -315,6 +446,8 @@ insert into public.usernames (\"username\", active, user_id, created_by) VALUES(
             $this->getConnection()->CompleteTrans();
 
             throw $e;
+        }finally {
+            $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
         }
 
 
@@ -344,7 +477,7 @@ insert into public.usernames (\"username\", active, user_id, created_by) VALUES(
     website,
     phone,
     categories)
-values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, null, null, null, 1, 0, 0, 1, 1, 'VCNexus (MEI)', 'VCNexus', '', 1, '62.728.369/0001-72', '', '', 'cerradogstudio.viniciuscordeiro@gmail.com', 'https://www.vcnexus.com.br',array['+55 61 9 9179-5618'::character varying(20)],'{10}');
+values(uuidv7(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, null, null, null, 1, 0, 0, 1, 1, 'VCNexus (MEI)', 'VCNexus', '', 1, '62.728.369/0001-72', '', '', 'cerradogstudio.viniciuscordeiro@gmail.com', 'https://www.vcnexus.com.br',array['+55 61 9 9179-5618'::character varying(20)],'{10}');
 ";
         $this->getConnection()->StartTrans();
 
@@ -363,7 +496,57 @@ values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, null, null, null, 1
             $this->getConnection()->CompleteTrans();
 
             throw $e;
+        }finally {
+            $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
         }
+
+
+
+        $sql = "
+insert
+    into
+    public.users
+(\"uuid\",
+    created_at,
+    created_at_local,
+    updated_at,
+    updated_at_local,
+    deleted_at,
+    deleted_at_local,
+    created_by,
+    updated_by,
+    deleted_by,
+    active,
+    \"name\",
+    \"password\",
+    \"username\",
+    email,
+    phone,
+    \"blocked\",
+    blocked_by,
+    blocked_at)
+values(uuidv7(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, null, null, null, 1, 'SuperAdministrator', '" . $sqlAdminPassword . "', 'administrator.vcnexus', 'vinismtpgo@gmail.com', '+55 61 9 9179-5618', null, null, null);
+";
+        $this->getConnection()->StartTrans();
+        try {
+            $result = $this->getConnection()->Execute($sql);
+
+            if ($this->getConnection()->HasFailedTrans()) {
+                throw new \RuntimeException('Transaction failed.');
+            }
+
+            $this->getConnection()->CompleteTrans();
+
+        } catch (Throwable $e) {
+            Response::log(data: $e);
+            $this->getConnection()->FailTrans();
+            $this->getConnection()->CompleteTrans();
+
+            throw $e;
+        }finally {
+            $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
+        }
+
 
 
         $sql = "insert
@@ -411,7 +594,36 @@ values(uuidv4(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, null, null, null, 1
             $this->getConnection()->CompleteTrans();
 
             throw $e;
+        }finally {
+            $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
         }
+
+
+        $this->getConnection()->StartTrans();
+        try{
+            $sql = $this->createPolicy();
+            $sql .= $this->createRowLevelSecurity();
+
+            $this->getConnection()->Execute($sql);
+
+            if($this->getConnection()->HasFailedTrans()) {
+                throw new \RuntimeException('Failed to add the RLS and policies');
+            }
+
+            $this->getConnection()->CompleteTrans();
+        } catch (Throwable $e) {
+            Response::log(data: $e);
+            $this->getConnection()->FailTrans();
+            $this->getConnection()->CompleteTrans();
+            throw $e;
+        }finally {
+            $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
+        }
+
+
+
+
+
 
         Response::json(message: 'System Initialized', code: 201, status: true, data: object(), bShouldExit: true);
     }

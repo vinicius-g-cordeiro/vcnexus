@@ -12,9 +12,8 @@ declare(strict_types=1);
 namespace App\DTOs\Authentication;
 
 use App\DTOs\DTOInterface;
-use Traversable;
 
-final readonly class AuthUserRegistrationDTO implements DTOInterface, Traversable
+final readonly class TenantUserStoreDTO implements DTOInterface
 {
 
 

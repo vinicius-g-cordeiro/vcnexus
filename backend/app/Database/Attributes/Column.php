@@ -23,7 +23,7 @@ final class Column {
         }
     }
 
-    function __construct(public readonly string $type, public readonly mixed $default = null, public readonly bool $nullable = false, public readonly string $comment = '', public readonly bool $bIsUnique = false, public readonly bool $inherit = true) { 
+    function __construct(public readonly string $type, public readonly mixed $default = null, public readonly bool $nullable = false, public readonly string $comment = '', public readonly bool $inherit = true) { 
         
     }
 }

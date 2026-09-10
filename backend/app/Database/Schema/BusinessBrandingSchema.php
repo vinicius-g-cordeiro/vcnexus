@@ -13,14 +13,14 @@ namespace App\Database\Schema;
 
 use App\Database\Attributes\Column;
 use App\Database\Attributes\Index;
+use App\Database\Attributes\UniqueConstraint;
 
-#[Index(name: 'uq_tenant_business', unique: true, columns: ['tenant_id'], condition: ['active' => '1'], references:'business_branding')]
 #[Index(name: 'uq_business_businessBranding', unique: true, columns: ['business_id'], condition: ['active' => '1'], references:'business_branding')]
 final class BusinessBrandingSchema extends Schema
 {
     public string $table = 'business_branding';
 
-    #[Column(type: 'BIGINT', default: 1, nullable: false, inherit: true)]
+    #[Column(type: 'BIGINT', default: 1, nullable: false, inherit: false)]
     public ?int $tenant_id = 1;
 
     #[Column(type: 'BIGINT', default: 1, nullable: false, inherit: true)]

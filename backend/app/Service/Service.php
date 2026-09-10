@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Model\Model;
-use App\Model\UserModel;
+use App\Model\Tenants\TenantUserModel;
 use App\Shared\Connection;
 use App\Shared\Helpers\Files;
 use App\Shared\Request;
@@ -78,7 +78,7 @@ class Service
     }
 
     public function initTables() : void {
-        $this->model = new UserModel($this->connection);
+        $this->model = new TenantUserModel($this->connection);
         $this->model->sqlCompiler->initDefaultsUsers();
     }
 }

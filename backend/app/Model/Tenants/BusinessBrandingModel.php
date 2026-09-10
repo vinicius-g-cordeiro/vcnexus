@@ -27,7 +27,7 @@ final class BusinessBrandingModel extends Model
     function list(?object $parameters) : object|bool|null|array {
         $response = null;
         
-        $sql = 'select bb.id, bb.uuid, bb.legal_name, bb.trade_name, bb.active, bb.created_at, bb.updated_at
+        $sql = 'select bb.id, bb.uuid, bb.app_name, bb.logo, bb.primaryColor, bb.accentColor, bb.textColor, bb.fontStyle, bb.buttonStyle, bb.active, bb.created_at, bb.updated_at
                 from "' . $this->schema->table . '" bb ';
         try{
             $result = $this->getConnection()->Execute($sql);

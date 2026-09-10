@@ -17,6 +17,7 @@ use App\Database\Schema\Schema;
 use App\DTOs\DTOInterface;
 use App\Exceptions\AppExceptionHandler;
 use App\Shared\Connection;
+use App\Shared\Context\AuthContext;
 use App\Shared\Session;
 use DateTimeZone;
 use DateTime;
@@ -30,7 +31,7 @@ class Model extends Connection
 
     function __construct($dbConnection = null, public ?Schema $schema = null)
     {
-        parent::__construct($dbConnection);
+        parent::__construct();
         $this->schema = $schema;
         $this->sqlCompiler = new PostgreSQLSchemaCompiler($dbConnection, $this->schema);
         $this->session = Session::getInstance();

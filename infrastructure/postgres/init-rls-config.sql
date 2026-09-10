@@ -58,17 +58,17 @@ TO app_user;
 -- USERS TABLE
 -- ============================================================
 
-ALTER TABLE public.users
+ALTER TABLE public.tenant_users
     ENABLE ROW LEVEL SECURITY;
 
-ALTER TABLE public.users
+ALTER TABLE public.tenant_users
     FORCE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS tenant_isolation
-ON public.users;
+ON public.tenant_users;
 
 CREATE POLICY tenant_isolation
-ON public.users
+ON public.tenant_users
 AS RESTRICTIVE
 FOR ALL
 TO app_user
@@ -80,85 +80,86 @@ WITH CHECK (
 );
 
 COMMIT;
-drop function authenticate_user(text)
 
-CREATE OR REPLACE FUNCTION public.authenticate_user(p_email TEXT)
-RETURNS TABLE (
-    organization TEXT,
-    organization_legal_name TEXT,
-    created_by TEXT,
-    id BIGINT,
-    role SMALLINT,
-    last_login TIMESTAMP,
-    last_login_local TIMESTAMP,
-    lastname TEXT,
-    surname TEXT,
-    tenant_id BIGINT,
-    uuid UUID,
-    name TEXT,
-    email TEXT,
-    phone TEXT,
-    active SMALLINT,
-    blocked SMALLINT,
-    blocked_by BIGINT,
-    password TEXT,
-    username TEXT,
-    locale TEXT,
-    tax_id TEXT,
-    avatar TEXT,
-    roles varchar[],
-    permissions varchar[]
-)
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-    SELECT
-        b.trade_name AS organization,
-        b.legal_name AS organization_legal_name,
+-- drop function if exists authenticate_user(text)
 
-        (
-            SELECT cu.name
-            FROM public.users cu
-            WHERE cu.id = u.created_by
-            LIMIT 1
-        ) AS created_by,
+-- CREATE OR REPLACE FUNCTION public.authenticate_user(p_email TEXT)
+-- RETURNS TABLE (
+--     organization TEXT,
+--     organization_legal_name TEXT,
+--     created_by TEXT,
+--     id BIGINT,
+--     role SMALLINT,
+--     last_login TIMESTAMP,
+--     last_login_local TIMESTAMP,
+--     lastname TEXT,
+--     surname TEXT,
+--     tenant_id BIGINT,
+--     uuid UUID,
+--     name TEXT,
+--     email TEXT,
+--     phone TEXT,
+--     active SMALLINT,
+--     blocked SMALLINT,
+--     blocked_by BIGINT,
+--     password TEXT,
+--     username TEXT,
+--     locale TEXT,
+--     tax_id TEXT,
+--     avatar TEXT,
+--     roles varchar[],
+--     permissions varchar[]
+-- )
+-- LANGUAGE sql
+-- SECURITY DEFINER
+-- SET search_path = public
+-- AS $$
+--     SELECT
+--         b.trade_name AS organization,
+--         b.legal_name AS organization_legal_name,
 
-        u.id,
-        u.role,
-        u.last_login,
-        u.last_login_local,
-        u.lastname,
-        u.surname,
-        u.tenant_id,
-        u.uuid,
-        u.name,
-        u.email,
-        u.phone,
-        u.active,
-        u.blocked,
-        u.blocked_by,
-        u.password,
-        un.username,
-        u.locale,
-        b.tax_id,
-        u.avatar,
-        u.roles,
-        u.permissions
+--         (
+--             SELECT cu.name
+--             FROM public.users cu
+--             WHERE cu.id = u.created_by
+--             LIMIT 1
+--         ) AS created_by,
 
-    FROM public.users u
+--         u.id,
+--         u.role,
+--         u.last_login,
+--         u.last_login_local,
+--         u.lastname,
+--         u.surname,
+--         u.tenant_id,
+--         u.uuid,
+--         u.name,
+--         u.email,
+--         u.phone,
+--         u.active,
+--         u.blocked,
+--         u.blocked_by,
+--         u.password,
+--         un.username,
+--         u.locale,
+--         b.tax_id,
+--         u.avatar,
+--         u.roles,
+--         u.permissions
 
-    INNER JOIN public.tenants t
-        ON u.tenant_id = t.id
+--     FROM public.users u
 
-    INNER JOIN public.usernames un
-        ON un.user_id = u.id
+--     INNER JOIN public.tenants t
+--         ON u.tenant_id = t.id
 
-    INNER JOIN public.business b
-        ON b.tenant_id = t.id
+--     INNER JOIN public.usernames un
+--         ON un.user_id = u.id
 
-    LEFT JOIN public.business_branding bb
-        ON bb.business_id = b.id
+--     INNER JOIN public.business b
+--         ON b.tenant_id = t.id
 
-    WHERE u.email = p_email;
-$$;
+--     LEFT JOIN public.business_branding bb
+--         ON bb.business_id = b.id
+
+--     WHERE u.email = p_email;
+-- $$;

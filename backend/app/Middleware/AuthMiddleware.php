@@ -39,7 +39,7 @@ final class AuthMiddleware  implements MiddlewareInterface {
             Response::json(message: '403 Unauthorized Access', status: false, code: 403, data: object());
         }
 
-        AuthContext::set($user->uuid, $user->tenant_id, $user->email ?? null, $user->roles ?? []);
+        AuthContext::set($user->id, $user->tenant_id, $user->email ?? null, $user->roles ?? []);
         
         return $next($request);
     }

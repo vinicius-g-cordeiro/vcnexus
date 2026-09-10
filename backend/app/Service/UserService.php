@@ -11,8 +11,10 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\DTOs\Authentication\TenantUserStoreDTO;
 use App\DTOs\Users\AvatarStoreDTO;
 use App\DTOs\Users\UserUpdateDTO;
+use App\Model\Tenants\TenantUserModel;
 use App\Model\UserModel;
 use App\Service\Service;
 use App\Shared\Connection;
@@ -23,17 +25,16 @@ use App\Model\UsernameModel;
 use App\DTOs\Users\UserRegistrationDTO;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use App\Shared\Helpers\Utils;
 
 final class UserService extends Service
 {
     /**
-     * @var UserModel
+     * @var TenantUserModel
      */
     protected ?Model $model = null;
     function __construct(protected ?Connection $connection = null)
     {
-        parent::__construct($connection, new UserModel($connection));
+        parent::__construct($connection, new TenantUserModel($connection));
     }
 
     public function list(?object $parameters = null): object|array|bool
@@ -111,15 +112,39 @@ final class UserService extends Service
         }
 
         $response = $this->transaction(function () use ($userRegistrationDTO) {
-      
+            $userModel = new UserModel($this->connection);            
 
-            $result = $this->model->store($userRegistrationDTO);
-            if (!$result || !isset($result->insertID)) {
+            $resultUser = $userModel->store($userRegistrationDTO);
+
+            if (!$resultUser || !isset($resultUser->insertID)) {
                 throw new AppExceptionHandler('Failed to create user.');
+            }
+            
+
+            $userRegisterDTO = new TenantUserStoreDTO(
+                name: $userRegistrationDTO->name,
+                surname: $userRegistrationDTO->surname,
+                lastname: $userRegistrationDTO->lastname,
+                username: $userRegistrationDTO->username,
+                email: $userRegistrationDTO->email,
+                password: $userRegistrationDTO->password,
+                password_confirmation: $userRegistrationDTO->password_confirmation,
+                birthdate: $userRegistrationDTO->birthdate,
+                gender: (int)($userRegistrationDTO->gender ?: null),
+                sexual_orientation: (int)($userRegistrationDTO->sexual_orientation ?: null),
+                marital_status: (int)($userRegistrationDTO->marital_status ?: null),
+                locale: $userRegistrationDTO->locale ?: null,
+                nickname: $userRegistrationDTO->nickname ?: null,
+                created_by: (int)$this->session->get('user')->id ?? 1,
+                user_id: $resultUser->insertID
+            );
+
+            $result = $this->model->store($userRegisterDTO);
+            if (!$result || !isset($result->insertID)) {
+                throw new AppExceptionHandler('Failed to create tenant\'s ser.');
             }
 
             $usernameModel = new UsernameModel($this->connection);
-
 
             $usernameResult = $usernameModel->store(
                 new UsernameRegistrationDTO(
@@ -132,7 +157,6 @@ final class UserService extends Service
             if ($usernameResult === false || !(isset($usernameResult))) {
                 throw new AppExceptionHandler('Failed to create username.');
             }
-            
 
             return $result;
 
@@ -143,7 +167,7 @@ final class UserService extends Service
 
     public function getUser(?string $uuid = null): object|null
     {
-        $response = $this->model->find($uuid, ['u.id', 'u.avatar', 'u.role', 'u.roles' , 'u.permissions', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation', 'b.tax_id', 'u.tenant_id as "tenant"', 'u.uuid', 'u.lastname', 'u.surname', 'u.email', 'u.last_login', 'u.last_login_local']);
+        $response = $this->model->find($uuid, ['u.id', 'u.avatar', 'u.role', 'u.roles' , 'u.permissions', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation', 'b.tax_id', 'u.tenant_id as "tenant"', 'u.uuid', 'u.lastname', 'u.surname', 'u.email']);
         return ($response === false || isset($response->uuid) === false) ? null : $response;
     }
 

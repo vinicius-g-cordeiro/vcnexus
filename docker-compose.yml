@@ -7,7 +7,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./infrastructure/postgres/init-user.sh:/docker-entrypoint-initdb.d/01-init-user.sh:ro
-      - ./infrastructure/postgres/init-user.sql:/docker-entrypoint-initdb.d/02-init-user.sql:ro
+      # - ./infrastructure/postgres/init-user.sql:/docker-entrypoint-initdb.d/02-init-user.sql:ro
     environment:
       POSTGRES_PASSWORD_FILE: /run/secrets/db_root_password
       POSTGRES_USER: app_root
@@ -18,7 +18,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      test: [ 'CMD', 'pg_isready', '-U', 'app_user', '-h', 'localhost', '-p', '5432']
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
     secrets:
       - db_root_password
       - db_password

@@ -21,15 +21,12 @@ class Connection {
     protected ?ADOConnection  $connection = null;
     public static ?Connection $instance = null;
 
-    function __construct($dbConnection = null){
-        if($this->connection == null){
-            $this->init();
-        }
-        
+    function __construct() {
+        $this->init();
     }
 
-    function init(?ADOConnection $dbConnection = null) {
-        if(isset($dbConnection, $this->connection) === false){
+    function init(?ADOConnection $dbConnection = null) : ADOConnection {
+        if(isset($this->connection) === false){
             try{
                 $connection = ADONewConnection(getenv("DB_DRIVER"));
                 $passwd = trim(file_get_contents(getenv("DB_PASSWORD")));
@@ -37,14 +34,8 @@ class Connection {
                 $connection->SetFetchMode(ADODB_FETCH_ASSOC);
                 $connection->SetCharSet('utf8');
                 $connection->enableLastInsertID(true);
-                $connection->Execute('CREATE EXTENSION IF NOT EXISTS unaccent;');
                 $connection->autoCommit = false;
                 $connection->raiseExceptions = true;
-                // $connection->Execute("ALTER TABLE users FORCE ROW LEVEL SECURITY;");
-//                 $connection->Execute("
-// CREATE POLICY tenant_isolation ON users
-//     USING (tenant_id = current_setting('app.tenant_id', true)::bigint)
-//     WITH CHECK (tenant_id = current_setting('app.tenant_id', true)::bigint);");
             } catch (ADODB_Exception $e) {
                 Response::log(file: 'errors', message: $e->getMessage(), status: 500, success: false);
                 throw $e;
@@ -53,10 +44,10 @@ class Connection {
                 throw $e;
             }
 
-            $this->connection = $connection;
-        }else{
-            $this->connection = $dbConnection;
         }
+        $this->connection = $connection;
+
+        return $this->connection;
     }
 
     static function close() : void {
@@ -64,10 +55,7 @@ class Connection {
     }
 
     static function getInstance(): Connection {
-        if (self::$instance === null) {
-            self::$instance = new Connection();
-        }
-        return self::$instance;
+        return self::$instance ??= new self();
     }
 
     function getConnection() : ADOConnection {

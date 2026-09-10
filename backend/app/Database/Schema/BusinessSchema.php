@@ -19,7 +19,7 @@ final class BusinessSchema extends Schema
 {
     public string $table = 'business';
 
-    #[Column(type: 'BIGINT', default: 1, nullable: false, inherit: true)]
+    #[Column(type: 'BIGINT', default: 1, nullable: false, inherit: false)]
     public ?int $tenant_id = 1;
 
     #[Column(type: 'VARCHAR(100)', default: '', nullable: false, comment: '')]
