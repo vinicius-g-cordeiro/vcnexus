@@ -80,75 +80,199 @@ class PostgreSQLSchemaCompiler extends Connection
         return sprintf('CREATE TABLE IF NOT EXISTS "%s" (' . "\r\n" . '%s' . "\r\n" . ");\r\n", $tableName, implode(",\r\n", $definitions));
     }
 
-    public function createPolicy() : string {        
-        $definitions = [];
+    public function createPolicy(): string
+    {
         $policy = '';
-        foreach (Schema::policies($this->schema) as $attribute) {
-            if (!isset($attribute->name))
-                continue;
 
-            $policy .= 'DROP POLICY IF EXISTS ' . $attribute->name . ' ON public.' . $attribute->table . ';' . "\r\n\r\n";
+        foreach (Schema::policies($this->schema) as $attribute) {
+
+            if (!isset($attribute->name)) {
+                continue;
+            }
+
+            $policy .= "\r\n\r\n"
+                . 'DROP POLICY IF EXISTS '
+                . $attribute->name
+                . ' ON public.'
+                . $attribute->table
+                . ";\r\n\r\n";
+
             $policy .= $this->buildPolicyDefinition($attribute);
         }
 
         return $policy . "\r\n";
     }
 
-    public function buildPolicyDefinition(?Policy $policy) : string {
 
-        $definition = sprintf("CREATE POLICY %s \r\nON public.%s \r\nAS ". (($policy->restrictive === true) ? 'RESTRICTIVE' : 'PERMISSIVE') ." \r\n %s \r\nTO %s \r\nUSING ( %s ) ", $policy->name, $policy->table, (isset($policy->withCheck) === false ? ( 'FOR ' . $policy->for) : 'FOR ALL') , $policy->toUser, $this->buildPolicyUsing($policy->using));
 
-        if(isset($policy->withCheck)){
-            $definition .= sprintf("\r\nWITH CHECK ( %s ) ", $this->buildPolicyWithCheck($policy->withCheck));
+
+    public function buildPolicyDefinition(?Policy $policy): string
+    {
+        $definition = sprintf(
+            "CREATE POLICY %s \r\n" .
+            "ON public.%s \r\n" .
+            "AS %s \r\n" .
+            "%s \r\n" .
+            "TO %s \r\n" .
+            "USING ( %s ) ",
+            $policy->name,
+            $policy->table,
+            $policy->restrictive === true
+            ? 'RESTRICTIVE'
+            : 'PERMISSIVE',
+            isset($policy->withCheck)
+            ? 'FOR ALL'
+            : 'FOR ' . $policy->for,
+            $policy->toUser,
+            $this->buildPolicyUsing($policy->using)
+        );
+
+        if (isset($policy->withCheck)) {
+            $definition .= sprintf(
+                "\r\nWITH CHECK ( %s ) ",
+                $this->buildPolicyWithCheck($policy->withCheck)
+            );
         }
 
         return $definition . ";\r\n";
     }
 
-    public function buildPolicyUsing(?array $usingArray) : string {
-        $usingPolicy = '';
-        $using = [];
-            
-        foreach($usingArray as $key => $value){
-            $using[$key] = sprintf('%s = NULLIF(current_setting(\'%s\', true),\'\')::%s', $key , $value['key'], $value['type']);
-        }
-
-        $usingPolicy = implode(",\r\n", $using);
-
-        return trim($usingPolicy, ',');
+    public function buildPolicyUsing(?array $usingArray): string
+    {
+        return $this->buildPolicyConditions($usingArray);
     }
 
-    public function buildPolicyWithCheck(?array $withCheckArray) : string {
-        $withCheckPolicy = '';
-        $withCheck = [];
-            
-        foreach($withCheckArray as $key => $value){
-            $withCheck[$key] = sprintf('%s = NULLIF(current_setting(\'%s\', true),\'\')::%s', $key , $value['key'], $value['type']);
+    public function buildPolicyWithCheck(?array $withCheckArray): string
+    {
+        return $this->buildPolicyConditions($withCheckArray);
+    }
+    private function buildPolicyConditions(?array $conditions): string
+    {
+        if (empty($conditions)) {
+            return '';
         }
 
-        $withCheckPolicy = implode(",\r\n", $withCheck);
+        $expressions = [];
 
-        return trim($withCheckPolicy, ',');
+        foreach ($conditions as $key => $value) {
+
+            $setting = sprintf(
+                "current_setting('%s', true)",
+                $value['key']
+            );
+
+            /*
+             * NULLIF(current_setting(...), '')
+             */
+            if (($value['nullIf'] ?? false) === true) {
+                $setting = sprintf(
+                    "NULLIF(%s, '')",
+                    $setting
+                );
+            }
+
+            /*
+             * Cast
+             *
+             * ::bigint
+             * ::varchar[]
+             * ::integer[]
+             * etc.
+             */
+            if (!empty($value['type'])) {
+                $setting .= '::' . $value['type'];
+            }
+
+            /*
+             * Array condition
+             *
+             * Example:
+             *
+             * '1' = ANY(current_setting('app.roles', true)::varchar[])
+             */
+            if (($value['array'] ?? false) === true) {
+
+                $condition = $this->quotePolicyValue(
+                    $value['condition']
+                );
+
+                $operator = $value['operator'] ?? '= ANY';
+
+                $expressions[] = sprintf(
+                    '%s %s(%s)',
+                    $condition,
+                    $operator,
+                    $setting
+                );
+
+                continue;
+            }
+
+            /*
+             * Normal boolean condition
+             *
+             * current_setting('app.role', true) = '1'
+             */
+            if (
+                isset($value['condition']) &&
+                $value['condition'] !== ''
+            ) {
+                $expressions[] = sprintf(
+                    '%s = %s',
+                    $setting,
+                    $this->quotePolicyValue($value['condition'])
+                );
+
+                continue;
+            }
+
+            /*
+             * Column comparison
+             *
+             * tenant_id = NULLIF(
+             *     current_setting('app.tenant_id', true),
+             *     ''
+             * )::bigint
+             */
+            if ($key !== '') {
+                $expressions[] = sprintf(
+                    '%s = %s',
+                    $key,
+                    $setting
+                );
+            }
+        }
+
+        return implode(" OR \r\n", $expressions);
     }
 
-    public function createRowLevelSecurity() : string {
+
+    private function quotePolicyValue(mixed $value): string
+    {
+        return "'" . str_replace("'", "''", (string) $value) . "'";
+    }
+
+    public function createRowLevelSecurity(): string
+    {
         $rls = '';
         foreach (Schema::rls($this->schema) as $attribute) {
             if (!isset($attribute->table))
                 continue;
-            
+
             $rls .= ($attribute->forced === false ? $this->buildRowLevelSecurityDefinition($attribute) : $this->buildForcedRowLevelSecurityDefinition($attribute)) . ";\r\n";
         }
 
         return $rls;
     }
 
-    public function buildRowLevelSecurityDefinition(?RowLevelSecurity $rowLevelSecurity) : string {
+    public function buildRowLevelSecurityDefinition(?RowLevelSecurity $rowLevelSecurity): string
+    {
         $definition = sprintf('ALTER TABLE public.%s ENABLE ROW LEVEL SECURITY', $rowLevelSecurity->table);
         return $definition;
     }
 
-    public function buildForcedRowLevelSecurityDefinition(?RowLevelSecurity $rowLevelSecurity) : string {
+    public function buildForcedRowLevelSecurityDefinition(?RowLevelSecurity $rowLevelSecurity): string
+    {
         $definition = sprintf('ALTER TABLE public.%s FORCE ROW LEVEL SECURITY', $rowLevelSecurity->table);
         return $definition;
     }
@@ -157,7 +281,7 @@ class PostgreSQLSchemaCompiler extends Connection
     {
         $definition = sprintf('"%s" %s', $column->name, $column->type);
 
-        if($column->inherit === false){ // if we should not inherit we just return an empty string 
+        if ($column->inherit === false) { // if we should not inherit we just return an empty string 
             return '';
         }
 
@@ -290,7 +414,8 @@ class PostgreSQLSchemaCompiler extends Connection
         }, $columns));
     }
 
-    private function createFunctions() : string {
+    private function createFunctions(): string
+    {
         $definitions = [];
         $functions = '';
         foreach (Schema::functionAtt($this->schema) as $attribute) {
@@ -304,7 +429,8 @@ class PostgreSQLSchemaCompiler extends Connection
         return $functions . "\r\n";
     }
 
-    private function buildFunctionQuery(?FunctionAtt $function) : string {
+    private function buildFunctionQuery(?FunctionAtt $function): string
+    {
         $query = $function->tsql;
 
         return trim($query . ";", ';');
@@ -313,30 +439,6 @@ class PostgreSQLSchemaCompiler extends Connection
     public function initDefaultsUsers()
     {
         $sqlAdminPassword = password_hash(trim(file_get_contents(trim(getenv('ADMIN_PASSWORD')))), PASSWORD_BCRYPT, ['cost' => 12]);
-
-        
-        /// @TODO this needs to be run with the root user... 
-        // $this->getConnection()->StartTrans();
-        // try{
-        //     $sql = $this->createFunctions();
-
-        //     $this->getConnection()->Execute($sql);
-
-        //     if($this->getConnection()->HasFailedTrans()) {
-        //         throw new \RuntimeException('Failed to add the default functions ');
-        //     }
-
-        //     $this->getConnection()->CompleteTrans();
-        // } catch (Throwable $e) {
-        //     Response::log(data: $e);
-        //     $this->getConnection()->FailTrans();
-        //     $this->getConnection()->CompleteTrans();
-        //     throw $e;
-        // }finally {
-        //     $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
-        // }
-
-
 
         $response = $this->getConnection()->Execute(
             "SELECT set_config('app.tenant_id', ?, false), set_config('app.user_id', ?, false);",
@@ -362,10 +464,10 @@ INSERT INTO public.tenants (\"name\", modules, active, slug) VALUES('VCNexus', A
             $this->getConnection()->CompleteTrans();
 
             throw $e;
-        }finally {
+        } finally {
             $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
         }
-        
+
 
         $sql = "
 insert
@@ -422,7 +524,7 @@ values(uuidv7(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, nu
             $this->getConnection()->CompleteTrans();
 
             throw $e;
-        }finally {
+        } finally {
             $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
         }
         $sql = "
@@ -446,7 +548,7 @@ insert into public.usernames (\"username\", active, user_id, created_by) VALUES(
             $this->getConnection()->CompleteTrans();
 
             throw $e;
-        }finally {
+        } finally {
             $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
         }
 
@@ -496,7 +598,7 @@ values(uuidv7(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null, null, null, null, 1
             $this->getConnection()->CompleteTrans();
 
             throw $e;
-        }finally {
+        } finally {
             $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
         }
 
@@ -543,7 +645,7 @@ values(uuidv7(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, nu
             $this->getConnection()->CompleteTrans();
 
             throw $e;
-        }finally {
+        } finally {
             $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
         }
 
@@ -594,19 +696,19 @@ values(uuidv7(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, nu
             $this->getConnection()->CompleteTrans();
 
             throw $e;
-        }finally {
+        } finally {
             $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
         }
 
 
         $this->getConnection()->StartTrans();
-        try{
+        try {
             $sql = $this->createPolicy();
             $sql .= $this->createRowLevelSecurity();
 
             $this->getConnection()->Execute($sql);
 
-            if($this->getConnection()->HasFailedTrans()) {
+            if ($this->getConnection()->HasFailedTrans()) {
                 throw new \RuntimeException('Failed to add the RLS and policies');
             }
 
@@ -616,7 +718,7 @@ values(uuidv7(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null,null, null, null, nu
             $this->getConnection()->FailTrans();
             $this->getConnection()->CompleteTrans();
             throw $e;
-        }finally {
+        } finally {
             $this->getConnection()->Execute("SELECT set_config('app.tenant_id', '', false), set_config('app.user_id', '', false);");
         }
 

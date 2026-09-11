@@ -14,12 +14,13 @@ namespace App\Model\Tenants;
 use App\Model\Model;
 use App\Exceptions\AppExceptionHandler;
 use App\Database\Schema\TenantSchema;
+use ADOConnection;
 
 
 final class TenantModel extends Model
 {
 
-    function __construct($dbConnection = null)
+    function __construct(?ADOConnection $dbConnection = null)
     {
         parent::__construct($dbConnection, new TenantSchema());
     }

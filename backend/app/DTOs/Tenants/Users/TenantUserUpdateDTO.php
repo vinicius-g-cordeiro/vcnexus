@@ -9,11 +9,11 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Users;
+namespace App\DTOs\Tenants\Users;
 
 use App\DTOs\DTOInterface;
 
-final readonly class UserUpdateDTO implements DTOInterface
+final readonly class TenantUserUpdateDTO implements DTOInterface
 {
 
 

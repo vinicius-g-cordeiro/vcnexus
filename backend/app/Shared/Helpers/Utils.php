@@ -5,6 +5,13 @@ namespace App\Shared\Helpers;
 class Utils
 {
 
+    static function PhpArrayToPg(?array $phpArray) : string {
+        return '{' . implode(',', array_map(
+            fn(string $val) => '"' . str_replace('"', '\"', $val) . '"',
+            $phpArray
+        )) . '}';
+    }
+
     static function pgArrayToPhp(string $pgArray): array
     {
         $pgArray = trim($pgArray);

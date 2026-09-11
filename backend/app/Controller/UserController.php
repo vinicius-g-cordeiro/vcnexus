@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\DTOs\Tenants\Users\TenantUserUpdateDTO;
 use App\DTOs\Users\AvatarStoreDTO;
 use App\Exceptions\AppExceptionHandler;
 use App\Middleware\AdminMiddleware;
@@ -144,7 +145,7 @@ final class UserController extends Controller
         $response = null;
         try{
             
-            $userUpdateDTO = new UserUpdateDTO(
+            $userUpdateDTO = new TenantUserUpdateDTO(
                 id: (int)$this->request->put('id'),
                 uuid: $uuid,
                 name: $this->request->put('name'),
@@ -162,6 +163,7 @@ final class UserController extends Controller
                 locale: $this->request->put('locale') ?: null,
                 nickname: $this->request->put('nickname') ?: null,
                 updated_by: (int)$this->session->get('user')->id ?? 1,
+                user_id: (int)$this->session->get('user_id')->id ?? 1,
                 phone: $this->request->put('phone') ?? '',
                 roles: $this->request->put('roles') ?? [4],
                 permissions: $this->request->put('permissions') ?? [],

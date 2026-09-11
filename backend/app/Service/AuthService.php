@@ -22,7 +22,7 @@ use App\Model\Tenants\TenantUserModel;
 use App\Model\UserModel;
 use App\Model\UsernameModel;
 use App\Service\Service;
-use App\Shared\Connection;
+use ADOConnection;
 use App\Model\Model;
 use App\Shared\Session;
 use DateTimeZone;
@@ -37,7 +37,7 @@ class AuthService extends Service
      * @var UserModel
      */
     protected ?Model $model = null;
-    function __construct(protected ?Connection $connection = null)
+    function __construct(protected ?ADOConnection $connection = null)
     {
         parent::__construct($connection, new UserModel($connection), Session::getInstance());
 
@@ -185,6 +185,7 @@ class AuthService extends Service
         }
 
         $response = $this->transaction(function () use ($authLoginDTO) {
+            
             $result = $this->model->login($authLoginDTO);
 
             if(isset($result->id) === false){

@@ -17,11 +17,11 @@ use App\Database\Schema\Schema;
 use App\DTOs\DTOInterface;
 use App\Exceptions\AppExceptionHandler;
 use App\Shared\Connection;
-use App\Shared\Context\AuthContext;
 use App\Shared\Session;
 use DateTimeZone;
 use DateTime;
 use App\Shared\Helpers\Utils;
+use ADOConnection;
 
 class Model extends Connection
 {
@@ -29,22 +29,30 @@ class Model extends Connection
 
     private ?Session $session = null;
 
-    function __construct($dbConnection = null, public ?Schema $schema = null)
+    function __construct(?ADOConnection $dbConnection = null, public ?Schema $schema = null)
     {
-        parent::__construct();
+        parent::__construct($dbConnection);
         $this->schema = $schema;
         $this->sqlCompiler = new PostgreSQLSchemaCompiler($dbConnection, $this->schema);
         $this->session = Session::getInstance();
         if ($this->doesTableExists() === false) {
             $this->sqlCompiler->createTable();
         }
+    }
 
-        $contextUserID = $this->getConnection()->Execute(
-            "SELECT set_config('app.user_id', ?, true), set_config('app.tenant_id', ?, false)",
-            [$this->session->get('user')->id ?? '', $this->session->get('user')->tenant_id ?? '']
+    public function setAuthContext() : void {
+        $this->getConnection()->Execute(
+            "SELECT set_config('app.user_id', ?, false), set_config('app.tenant_id', ?, false), set_config('app.roles', ? , false)",
+            [$this->session->get('user')->id, $this->session->get('user')->tenant_id, Utils::PhpArrayToPg($this->session->get('user')->roles??[]) ]
         );
     }
 
+    public function clearAuthContext() : void {
+        $this->getConnection()->Execute(
+            "SELECT set_config('app.user_id', '', false), set_config('app.tenant_id', '', false), set_config('app.roles', '' , false)",
+        );
+    }
+    
     private function doesTableExists(): bool
     {
 
@@ -144,10 +152,7 @@ class Model extends Connection
             }
 
             if (is_array($value)) {
-                $fields[$key] = '{' . implode(',', array_map(
-                    fn(string $val) => '"' . str_replace('"', '\"', $val) . '"',
-                    $value
-                )) . '}';
+                $fields[$key] = Utils::PhpArrayToPg($value);
 
                 continue;
             }
@@ -159,8 +164,11 @@ class Model extends Connection
         $fields['created_at'] = $date->getTimestamp();
         $fields['created_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
 
-
+        try{
         $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'INSERT');
+        }catch(\Throwable $th){
+            dd($th);
+        }
         if ($return === false) {
             throw new AppExceptionHandler('500 - Error', 500);
         }
@@ -195,11 +203,7 @@ class Model extends Connection
             }
 
             if (is_array($value)) {
-                $fields[$key] = '{' . implode(',', array_map(
-                    fn(string $val) => '"' . str_replace('"', '\"', $val) . '"',
-                    $value
-                )) . '}';
-
+                $fields[$key] = Utils::PhpArrayToPg($value);
                 continue;
             }
             $fields[$key] = $value;

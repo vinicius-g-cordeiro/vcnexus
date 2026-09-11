@@ -26,8 +26,142 @@ use App\Database\Attributes\RowLevelSecurity;
 #[ForeignKeyConstraint(name: 'fk_tenant_users_deleted_by', foreignKeys: ['deleted_by'], references: 'tenant_users', columns: ['id'], actionOnDelete: true, deleteAction: 'SET NULL', deferred:true)]
 #[UniqueConstraint(name: 'uq_tenant_users_id_tenant', columns: ['id', 'tenant_id']),]
 #[UniqueConstraint(name: 'uq_tenant_users_email', columns: ['email'])]
-#[Policy(name: 'tenant_membership', table: 'tenant_users', restrictive: false,for: 'SELECT', toUser: 'app_user', using:  ['user_id' => ['key' => 'app.user_id' , 'type' => 'bigint']])]
-#[Policy(name: 'tenant_isolation', table: 'tenant_users', restrictive: true,for: 'ALL', toUser: 'app_user', using:  ['tenant_id' => ['key' => 'app.tenant_id' , 'type' => 'bigint']], withCheck:  ['tenant_id' => ['key' => 'app.tenant_id' , 'type' => 'bigint']])]
+#[Policy(name: 'tenant_membership', table: 'tenant_users', restrictive: false,for: 'SELECT', toUser: 'app_user',
+     using:  [
+        '' => [
+            'key' => 'app.roles',
+            'type' => 'varchar[]',
+            'array' => true,
+            'condition' => '1', // if the user is a super admin we allow it 
+            'operator' => '= ANY',
+        ],
+        'user_id' => [
+            'key' => 'app.user_id' ,
+            'type' => 'bigint',
+            'nullIf' => true
+        ]
+    ]
+)]
+#[Policy(name: 'tenant_isolation', table: 'tenant_users', restrictive: true,for: 'ALL', toUser: 'app_user',
+     using:  [
+        '' => [
+            'key' => 'app.roles',
+            'type' => 'varchar[]',
+            'array' => true,
+            'condition' => '1',
+            'operator' => '= ANY',
+        ],
+        'tenant_id' => [
+            'key' => 'app.tenant_id' ,
+            'type' => 'bigint',
+            'nullIf' => true
+        ]
+    ], 
+    withCheck: [
+        '' => [
+            'key' => 'app.roles',
+            'type' => 'varchar[]',
+            'array' => true,
+            'condition' => '1',
+            'operator' => '= ANY',
+        ],
+        'tenant_id' => [
+            'key' => 'app.tenant_id' ,
+            'type' => 'bigint',
+            'nullIf' => true
+        ]
+    ]
+)]
+#[Policy(name: 'tenant_update_isolation', table: 'tenant_users', restrictive: false,for: 'UPDATE', toUser: 'app_user',
+     using:  [
+        '' => [
+            'key' => 'app.roles',
+            'type' => 'varchar[]',
+            'array' => true,
+            'condition' => '1',
+            'operator' => '= ANY',
+        ],
+        'tenant_id' => [
+            'key' => 'app.tenant_id' ,
+            'type' => 'bigint',
+            'nullIf' => true
+        ]
+    ], 
+    withCheck: [
+        '' => [
+            'key' => 'app.roles',
+            'type' => 'varchar[]',
+            'array' => true,
+            'condition' => '1',
+            'operator' => '= ANY',
+        ],
+        'tenant_id' => [
+            'key' => 'app.tenant_id' ,
+            'type' => 'bigint',
+            'nullIf' => true
+        ]
+    ]
+)]
+#[Policy(name: 'tenant_insert_isolation', table: 'tenant_users', restrictive: false,for: 'INSERT', toUser: 'app_user',
+     using:  [
+        '' => [
+            'key' => 'app.roles',
+            'type' => 'varchar[]',
+            'array' => true,
+            'condition' => '1',
+            'operator' => '= ANY',
+        ],
+        'tenant_id' => [
+            'key' => 'app.tenant_id' ,
+            'type' => 'bigint',
+            'nullIf' => true
+        ]
+    ], 
+    withCheck: [
+        '' => [
+            'key' => 'app.roles',
+            'type' => 'varchar[]',
+            'array' => true,
+            'condition' => '1',
+            'operator' => '= ANY',
+        ],
+        'tenant_id' => [
+            'key' => 'app.tenant_id' ,
+            'type' => 'bigint',
+            'nullIf' => true
+        ]
+    ]
+)]
+#[Policy(name: 'tenant_delete_isolation', table: 'tenant_users', restrictive: false,for: 'DELETE', toUser: 'app_user',
+     using:  [
+        '' => [
+            'key' => 'app.roles',
+            'type' => 'varchar[]',
+            'array' => true,
+            'condition' => '1',
+            'operator' => '= ANY',
+        ],
+        'tenant_id' => [
+            'key' => 'app.tenant_id' ,
+            'type' => 'bigint',
+            'nullIf' => true
+        ]
+    ], 
+    withCheck: [
+        '' => [
+            'key' => 'app.roles',
+            'type' => 'varchar[]',
+            'array' => true,
+            'condition' => '1',
+            'operator' => '= ANY',
+        ],
+        'tenant_id' => [
+            'key' => 'app.tenant_id' ,
+            'type' => 'bigint',
+            'nullIf' => true
+        ]
+    ]
+)]
 #[RowLevelSecurity(table: 'tenant_users', forced: true)]
 #[RowLevelSecurity(table: 'tenant_users', forced: false)]
 #[FunctionAtt(name: 'get_user_tenants', tsql: 'CREATE OR REPLACE FUNCTION public.get_user_tenants(p_user_id BIGINT)

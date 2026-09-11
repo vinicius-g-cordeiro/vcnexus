@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace App\Service\Tenants;
 
 use App\DTOs\Business\Branding\BusinessBrandingStoreDTO;
-use App\DTOs\DTOInterface;
 use App\DTOs\Business\BusinessRegistrationDTO;
 use App\DTOs\Tenants\TenantRegistrationDTO;
 use App\Exceptions\AppExceptionHandler;
@@ -20,10 +19,8 @@ use App\Model\Tenants\BusinessBrandingModel;
 use App\Model\Tenants\BusinessModel;
 use App\Service\Service;
 use App\Model\Tenants\TenantModel;
-use App\Shared\Connection;
+use ADOConnection;
 use App\Model\Model;
-
-use App\Shared\Helpers\Utils;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class TenantService extends Service {
@@ -32,7 +29,7 @@ final class TenantService extends Service {
 
     /** @var TenantModel */
     protected ?Model $model = null;
-    function __construct(protected ?Connection $connection = null){
+    function __construct(protected ?ADOConnection $connection = null){
         parent::__construct($connection, new TenantModel($connection));
 
         $this->businessModel = new BusinessModel($this->connection);

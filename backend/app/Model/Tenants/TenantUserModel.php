@@ -20,11 +20,12 @@ use App\Model\UsernameModel;
 use App\Model\Model;
 use Throwable;
 use App\Shared\Response;
+use ADOConnection;
 
 final class TenantUserModel extends Model
 {
 
-    function __construct($dbConnection = null)
+    function __construct(?ADOConnection $dbConnection = null)
     {
         $tenantModel = new TenantModel($dbConnection);
         $businessModel = new BusinessModel($dbConnection);
@@ -91,62 +92,17 @@ final class TenantUserModel extends Model
 
         $sql .= ' order by u.name, u.uuid desc';
         try{
+            $this->setAuthContext();
             $result = $this->getConnection()->Execute($sql);
             $response = $this->fr2Arr($result, false);
         }catch(\Exception $err){
             throw new AppExceptionHandler($err->getMessage(), $err->getCode(), $err->getPrevious());
+        }finally{
+            $this->clearAuthContext();
         }
 
         
         return $response;
-    }
-
-    function login(?object $parameters = null): object|bool {
-        
-        $query = 'SELECT b.trade_name as "organization", b.legal_name as "organization_legal_name",(select cu.name from users cu where cu.id = u.created_by limit 1) as "created_by", u.id, u.role, u.last_login,
-        u.last_login_local, u.lastname, u.surname, u.tenant_id, u.uuid, u.name, u.email, u.phone, u.lastname, u.active, u.blocked, u.blocked_by, u.password , un.username,
-        u.locale, b.tax_id, u.avatar, u.roles, u.permissions
-        FROM ' . $this->schema->table . ' u 
-        inner join "tenants" t on u.tenant_id = t.id 
-        inner join "usernames" un on un.user_id = u.id
-        inner join "business" b on b.tenant_id = t.id
-        left join "business_branding" bb on bb.business_id = b.id
-        WHERE 
-        (public.unaccent(lower(u.email)) = public.unaccent(lower(?)) 
-        or u.phone = ? 
-        or public.unaccent(lower(un.username)) = public.unaccent(lower(?)))
-        and u.active = 1 
-         LIMIT 1;' ;
-        
-        $response = $this->getConnection()->Execute($query,[$parameters->login, $parameters->login, $parameters->login]);
-    
-        $result = $this->fr2Arr($response);
-
-        dd($result);
-
-        if (is_bool($result) || (is_bool($result) === false && count($result) == 0)) {
-            throw new AppExceptionHandler(message: 'No result found', code: 404);
-        }
-
-        if(isset($result[0]) & $result[0]->blocked !== null){
-            throw new AppExceptionHandler(message: 'User is blocked', code: 403);
-        }
-
-        if(isset($result[0]) & (int)$result[0]->active !== 1){
-            throw new AppExceptionHandler(message: 'User is deactivated', code: 403);
-        }
-
-        
-        if (!password_verify($parameters->password, $result[0]->password)) {
-            throw new AppExceptionHandler(message: 'No result found', code: 404);
-        }
-
-
-        // remove the password from the response
-        unset($result[0]->password);
-
-        
-        return (object)$result[0] ?? false;
     }
 
     function find(?string $uuid, array $columns = []) : object|bool {
@@ -163,10 +119,13 @@ final class TenantUserModel extends Model
         '  
         . $where;
         try{
+            $this->setAuthContext();
             $response = $this->getConnection()->Execute($query);
         }catch(Throwable $th){
             Response::log(message: $th->getMessage());
             throw $th;
+        }finally{
+            $this->clearAuthContext();
         }
         $result = $this->fr2Arr($response, false);
         return (object)$result[0] ?? false;

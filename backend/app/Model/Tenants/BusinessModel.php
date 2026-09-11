@@ -14,12 +14,13 @@ namespace App\Model\Tenants;
 use App\Database\Schema\BusinessSchema;
 use App\Model\Model;
 use App\Exceptions\AppExceptionHandler;
+use ADOConnection;
 
 
 final class BusinessModel extends Model
 {
 
-    function __construct($dbConnection = null)
+    function __construct(?ADOConnection $dbConnection = null)
     {
         $businessBranding = new BusinessBrandingModel($dbConnection);
         parent::__construct($dbConnection, new BusinessSchema());

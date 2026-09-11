@@ -16,15 +16,14 @@ use App\Model\Tenants\TenantUserModel;
 use App\Shared\Connection;
 use App\Shared\Helpers\Files;
 use App\Shared\Request;
-
 use App\Shared\Session;
 use App\Shared\Response;
-
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 use Closure;
 use RuntimeException;
+use ADOConnection;
 
 class Service
 {
@@ -34,10 +33,9 @@ class Service
     protected ?ValidatorInterface $validator = null;
 
     protected ?Files $fileHelper = null;
-    function __construct(protected ?Connection $connection = null, protected ?Model $model = null, protected ?Session $session = null)
+    function __construct(protected ?ADOConnection $connection = null, protected ?Model $model = null, protected ?Session $session = null)
     {
-        $this->connection = $connection ?: Connection::getInstance();
-        // $this->model = $model ?: new Model();
+        $this->connection = $connection ?: Connection::getInstance()->getConnection();
         $this->validator = Validation::createValidator();
         $this->session = $session ?: Session::getInstance();
         $this->request = Request::instance();
@@ -58,6 +56,7 @@ class Service
     {
         $this->model->getConnection()->StartTrans();
 
+
         try {
             $result = $callback();
 
@@ -72,8 +71,11 @@ class Service
         } catch (Throwable $e) {
             $this->model->getConnection()->FailTrans();
             $this->model->getConnection()->CompleteTrans();
-
+            $this->model->clearAuthContext();
+            dd($e->getMessage());
             throw $e;
+        }finally{
+            $this->model->clearAuthContext();
         }
     }
 

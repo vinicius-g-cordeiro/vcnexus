@@ -25,7 +25,7 @@ class AdminMiddleware  implements MiddlewareInterface {
     protected ?AuthService $authService;
     public function __construct() {
         $this->session = Session::getInstance();
-        $this->authService = new AuthService(Connection::getInstance());
+        $this->authService = new AuthService(Connection::getInstance()->getConnection());
     }
     public function handle(Request $request, callable $next): mixed {
 

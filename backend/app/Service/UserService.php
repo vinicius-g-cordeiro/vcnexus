@@ -12,12 +12,12 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\DTOs\Authentication\TenantUserStoreDTO;
+use App\DTOs\Tenants\Users\TenantUserUpdateDTO;
 use App\DTOs\Users\AvatarStoreDTO;
 use App\DTOs\Users\UserUpdateDTO;
 use App\Model\Tenants\TenantUserModel;
 use App\Model\UserModel;
 use App\Service\Service;
-use App\Shared\Connection;
 use App\Model\Model;
 use App\DTOs\Users\UsernameRegistrationDTO;
 use App\Exceptions\AppExceptionHandler;
@@ -25,6 +25,7 @@ use App\Model\UsernameModel;
 use App\DTOs\Users\UserRegistrationDTO;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use ADOConnection;
 
 final class UserService extends Service
 {
@@ -32,7 +33,7 @@ final class UserService extends Service
      * @var TenantUserModel
      */
     protected ?Model $model = null;
-    function __construct(protected ?Connection $connection = null)
+    function __construct(protected ?ADOConnection $connection = null)
     {
         parent::__construct($connection, new TenantUserModel($connection));
     }
@@ -111,8 +112,12 @@ final class UserService extends Service
             throw new AppExceptionHandler(implode('##,##', $errors), 400, null);
         }
 
-        $response = $this->transaction(function () use ($userRegistrationDTO) {
-            $userModel = new UserModel($this->connection);            
+        $userModel = new UserModel($this->connection);            
+        $usernameModel = new UsernameModel($this->connection);
+
+        $response = $this->transaction(function () use ($userRegistrationDTO, $userModel, $usernameModel) {
+
+            $this->model->setAuthContext();
 
             $resultUser = $userModel->store($userRegistrationDTO);
 
@@ -121,7 +126,7 @@ final class UserService extends Service
             }
             
 
-            $userRegisterDTO = new TenantUserStoreDTO(
+            $tenantUserRegisterDTO = new TenantUserStoreDTO(
                 name: $userRegistrationDTO->name,
                 surname: $userRegistrationDTO->surname,
                 lastname: $userRegistrationDTO->lastname,
@@ -136,15 +141,16 @@ final class UserService extends Service
                 locale: $userRegistrationDTO->locale ?: null,
                 nickname: $userRegistrationDTO->nickname ?: null,
                 created_by: (int)$this->session->get('user')->id ?? 1,
-                user_id: $resultUser->insertID
+                user_id: (int)$resultUser->insertID,
+                tenant_id: (int)$userRegistrationDTO->tenant_id ?? 1,
+                roles: $userRegistrationDTO->roles ?? [4],
+                permissions: $userRegistrationDTO->permissions ?? ['users.view']
             );
 
-            $result = $this->model->store($userRegisterDTO);
+            $result = $this->model->store($tenantUserRegisterDTO);
             if (!$result || !isset($result->insertID)) {
                 throw new AppExceptionHandler('Failed to create tenant\'s ser.');
             }
-
-            $usernameModel = new UsernameModel($this->connection);
 
             $usernameResult = $usernameModel->store(
                 new UsernameRegistrationDTO(
@@ -161,18 +167,21 @@ final class UserService extends Service
             return $result;
 
         });
+        
+        
+
         return $response === false ? null : $response;
     }
 
 
     public function getUser(?string $uuid = null): object|null
     {
-        $response = $this->model->find($uuid, ['u.id', 'u.avatar', 'u.role', 'u.roles' , 'u.permissions', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation', 'b.tax_id', 'u.tenant_id as "tenant"', 'u.uuid', 'u.lastname', 'u.surname', 'u.email']);
+        $response = $this->model->find($uuid, ['u.id', 'u.avatar', 'u.role', 'u.user_id', 'u.roles' , 'u.permissions', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation', 'b.tax_id', 'u.tenant_id as "tenant"', 'u.uuid', 'u.lastname', 'u.surname', 'u.email']);
         return ($response === false || isset($response->uuid) === false) ? null : $response;
     }
 
 
-    function updateProfile(UserUpdateDTO $userUpdateDTO): object|null
+    function updateProfile(TenantUserUpdateDTO $userUpdateDTO): object|null
     {
         $response = null;
 
@@ -232,16 +241,20 @@ final class UserService extends Service
             throw new AppExceptionHandler(implode('##,##', $errors), 400, null);
         }
 
-        $response = $this->transaction(function () use ($userUpdateDTO) {
+        $usernameModel = new UsernameModel($this->connection);
+        $userModel = new UserModel($this->connection);
+
+        $response = $this->transaction(function () use ($userUpdateDTO, $usernameModel, $userModel) {
+
+            $this->model->setAuthContext();
 
             $result = $this->model->update($userUpdateDTO, 'uuid = \'' . $userUpdateDTO->uuid . '\'');
 
             if (!$result || !isset($result)) {
-                throw new AppExceptionHandler('Failed to update user.');
+                throw new AppExceptionHandler('Failed to update tenant user.');
             }
 
-            $usernameModel = new UsernameModel($this->connection);
-
+            
             $usernameResult = $usernameModel->update(
                 new UsernameRegistrationDTO(
                     $userUpdateDTO->username,
@@ -366,6 +379,7 @@ final class UserService extends Service
         $response = null;
 
         $response = $this->transaction(function () use ($avatarStoreDTO) {
+            $this->model->setAuthContext();
             $result = $this->model->update($avatarStoreDTO, 'uuid = \''.$avatarStoreDTO->uuid.'\'');
             return $result;
         });

@@ -24,3 +24,19 @@ TO app_user
 USING (
     user_id = current_setting('app.user_id')::bigint
 );
+
+CREATE FUNCTION public.get_user_tenants(p_user_id BIGINT)
+RETURNS TABLE (
+    tenant_id BIGINT,
+    roles varchar[]
+)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+    SELECT
+        tu.tenant_id,
+        tu.roles
+    FROM public.tenant_users tu
+    WHERE tu.user_id = p_user_id;
+$$;

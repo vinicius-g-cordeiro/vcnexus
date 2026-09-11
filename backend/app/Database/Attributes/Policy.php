@@ -26,9 +26,10 @@ class Policy
      *  key => 'app.user_id'
      *  type => bigint
      * ]]
-     * @param array<string>[string:string[]] $withCheck = [<string>user_id => [
+     * @param array<string>[string:string[string, string, bool]] $withCheck = [<string>user_id => [
      *  key => 'app.user_id'
      *  type => bigint
+     *  nullIf => bool
      * ]]
      * @example FKConstraint:         
         CREATE POLICY tenant_membership

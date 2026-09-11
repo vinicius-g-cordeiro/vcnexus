@@ -16,88 +16,22 @@ use App\Exceptions\AppExceptionHandler;
 use App\Model\Tenants\BusinessBrandingModel;
 use App\Model\Tenants\BusinessModel;
 use App\Model\Tenants\TenantModel;
+use App\Shared\Helpers\Utils;
 use Throwable;
 use App\Shared\Response;
+use App\Shared\Session;
+use ADOConnection;
 
 final class UserModel extends Model
 {
 
-    function __construct($dbConnection = null)
+    function __construct(?ADOConnection $dbConnection = null)
     {
         $tenantModel = new TenantModel($dbConnection);
         $businessModel = new BusinessModel($dbConnection);
         $businessBrandingModel = new BusinessBrandingModel($dbConnection);
         parent::__construct($dbConnection, new UsersSchema());
 
-    }
-
-    function list(?object $parameters) : object|bool|null|array {
-        $response = null;
-        
-        $sql = 'select b.trade_name as "organization",un.username 
-        , (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from tenant_users cu where cu.id = u.created_by limit 1) as "created_by" 
-        , (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from tenant_users cu where cu.id = u.deleted_by limit 1) as "deleted_by"
-        , (select concat(cu.name, \' \' , cu.lastname, \' \', cu.surname) from tenant_users cu where cu.id = u.blocked_by limit 1) as "blocked_by"
-        , u.name, u.surname, u.lastname, u.nickname, u.created_at, u.updated_at, u.deleted_at, u.blocked, u.blocked_at, u.email, u.last_login
-        , u.last_login_local, u.uuid, u.id, u.active, u.role, u.avatar
-        from tenant_users u 
-        inner join "tenants" t on u.tenant_id = t.id 
-        inner join "business" b on b.tenant_id = t.id
-        left join "business_branding" bb on bb.business_id = b.id
-        inner join "usernames" un on un.user_id = u.id
-        ';
-
-        if(isset($parameters, $parameters->search) && $parameters->search !== ''){
-            $sql .= 'where (public.unaccent(lower(u.name)) like public.unaccent(lower(\'%'.$parameters->search.'%\')) or public.unaccent(lower(u.surname)) like public.unaccent(lower(\'%'.$parameters->search.'%\')) 
-            or public.unaccent(lower(u.lastname)) like public.unaccent(lower(\'%'.$parameters->search.'%\')) or public.unaccent(lower(un.username)) like public.unaccent(lower(\'%'.$parameters->search.'%\')) 
-            or public.unaccent(lower(u.phone)) like public.unaccent(lower(\'%'.$parameters->search.'%\')) or public.unaccent(lower(u.email)) like public.unaccent(lower(\'%'.$parameters->search.'%\')))';
-        }
-
-        if(isset($parameters, $parameters->active) && $parameters->active !== ''){
-            if(isset($parameters, $parameters->search) && $parameters->search !== ''){
-                $sql .= ' and  u.active = ' . $parameters->active . ' ';
-            }else{
-                $sql .= ' where  u.active = ' . $parameters->active . ' ';
-            }
-        }
-
-
-        if(isset($parameters, $parameters->blocked) && $parameters->blocked !== ''){
-            if(isset($parameters, $parameters->search) && $parameters->search !== ''){
-                
-                if((int)$parameters->blocked === 0){
-                    $sql .= ' and  u.blocked is null ';
-                }else{
-                    $sql .= ' and  u.blocked = ' . $parameters->blocked . ' ';
-                }
-            }else{
-                if(isset($parameters, $parameters->activate) && $parameters->activate !== ''){
-                    if((int)$parameters->blocked === 0){
-                        $sql .= ' and  u.blocked is null ';
-                    }else{
-                        $sql .= ' and  u.blocked = ' . $parameters->blocked . ' ';
-                    }
-                }else{
-                    if((int)$parameters->blocked === 0){
-                        $sql .= ' where u.blocked is null ';
-                    }else{
-                        $sql .= ' where u.blocked = ' . $parameters->blocked . ' ';
-                    }
-                }
-            }
-        }
-
-
-        $sql .= ' order by u.name, u.uuid desc';
-        try{
-            $result = $this->getConnection()->Execute($sql);
-            $response = $this->fr2Arr($result, false);
-        }catch(\Exception $err){
-            throw new AppExceptionHandler($err->getMessage(), $err->getCode(), $err->getPrevious());
-        }
-
-        
-        return $response;
     }
 
     function login(?object $parameters = null): object|bool {
@@ -147,8 +81,8 @@ final class UserModel extends Model
         try{
    
             $contextUserID = $this->getConnection()->Execute(
-                "SELECT set_config('app.user_id', ?, true), set_config('app.tenant_id', ?, false)",
-                [$result[0]->id, $resultTenantID[0]->tenant_id]
+                "SELECT set_config('app.user_id', ?, true), set_config('app.tenant_id', ?, false), set_config('app.roles', ?, false)",
+                [$result[0]->id, $resultTenantID[0]->tenant_id, Utils::PhpArrayToPg($resultTenantID[0]->roles)]
             );
 
             if($this->getConnection()->HasFailedTrans()){
@@ -204,6 +138,13 @@ final class UserModel extends Model
         return (object)$result[0] ?? false;
     }
 
+    /**
+     * auth/me/ <br/>
+     * Function called to get the current user or the user with given uuid with the specified columns. 
+     * @param mixed $uuid
+     * @param array $columns
+     * @return bool|object
+     */
     function find(?string $uuid, array $columns = []) : object|bool {
         $returnColumns = implode(', ', $columns);
         
@@ -211,19 +152,30 @@ final class UserModel extends Model
         
         $query = 'select ' . $returnColumns . '
         from tenant_users u 
-        left join users uu on uu.id = u.user_id
-        left join tenants t on t.id = u.tenant_id 
-        left join business b on b.tenant_id = t.id
-        left join usernames un on un.user_id = u.id 
+        inner join users uu on uu.id = u.user_id
+        inner join tenants t on t.id = u.tenant_id 
+        inner join business b on b.tenant_id = t.id
+        inner join usernames un on un.user_id = u.id 
         '  
         . $where;
         
         try{
+
+            $session = Session::getInstance();
+            $contextUserID = $this->getConnection()->Execute(
+                "SELECT set_config('app.user_id', ?, false), set_config('app.tenant_id', ?, false), set_config('app.roles', ? , false)",
+                [$session->get('user')->id, $session->get('user')->tenant_id, Utils::PhpArrayToPg($session->get('user')->roles??[]) ]
+            );
+            
             $response = $this->getConnection()->Execute($query);
         }catch(Throwable $th){
             Response::log(message: $th->getMessage());
             throw $th;
-        }
+        }finally{
+            $contextUserID = $this->getConnection()->Execute(
+                "SELECT set_config('app.user_id', '', true), set_config('app.tenant_id', '', false), set_config('app.roles', '' , false)",
+            );
+        }        
         $result = $this->fr2Arr($response, false);
         return (object)$result[0] ?? false;
     }

@@ -14,10 +14,10 @@ namespace App\Service;
 use App\Exceptions\AppExceptionHandler;
 use App\Model\UsernameModel;
 use App\Service\Service;
-use App\Shared\Connection;
+use ADOConnection;
 
 final class UsernameService extends Service {
-    function __construct(protected ?Connection $connection = null){
+    function __construct(protected ?ADOConnection $connection = null){
         parent::__construct($connection, new UsernameModel($connection));
     }
 

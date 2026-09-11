@@ -21,30 +21,39 @@ class Connection {
     protected ?ADOConnection  $connection = null;
     public static ?Connection $instance = null;
 
-    function __construct() {
-        $this->init();
+    function __construct(?ADOConnection $dbConnection = null) {
+        $this->init($dbConnection);
     }
 
     function init(?ADOConnection $dbConnection = null) : ADOConnection {
-        if(isset($this->connection) === false){
-            try{
-                $connection = ADONewConnection(getenv("DB_DRIVER"));
-                $passwd = trim(file_get_contents(getenv("DB_PASSWORD")));
-                $connection->PConnect(getenv("DB_HOST"), getenv("DB_USERNAME"), $passwd, getenv("DB_DATABASE"));
-                $connection->SetFetchMode(ADODB_FETCH_ASSOC);
-                $connection->SetCharSet('utf8');
-                $connection->enableLastInsertID(true);
-                $connection->autoCommit = false;
-                $connection->raiseExceptions = true;
-            } catch (ADODB_Exception $e) {
-                Response::log(file: 'errors', message: $e->getMessage(), status: 500, success: false);
-                throw $e;
-            }catch (Throwable $e) {
-                Response::log(file: 'errors', message: $e->getMessage(), status: 500, success: false);
-                throw $e;
-            }
 
+        if(isset($dbConnection) === true){
+            $this->connection = $dbConnection;
+            return $this->connection;
         }
+
+        if(isset($this->connection) === true){
+            return $this->connection;
+        }
+
+        try{
+            $connection = ADONewConnection(getenv("DB_DRIVER"));
+            $passwd = trim(file_get_contents(getenv("DB_PASSWORD")));
+            $connection->PConnect(getenv("DB_HOST"), getenv("DB_USERNAME"), $passwd, getenv("DB_DATABASE"));
+            $connection->SetFetchMode(ADODB_FETCH_ASSOC);
+            $connection->SetCharSet('utf8');
+            $connection->enableLastInsertID(true);
+            $connection->autoCommit = false;
+            $connection->raiseExceptions = true;
+        } catch (ADODB_Exception $e) {
+            Response::log(file: 'errors', message: $e->getMessage(), status: 500, success: false);
+            throw $e;
+        }catch (Throwable $e) {
+            Response::log(file: 'errors', message: $e->getMessage(), status: 500, success: false);
+            throw $e;
+        }
+
+        
         $this->connection = $connection;
 
         return $this->connection;

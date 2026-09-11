@@ -14,9 +14,10 @@ namespace App\Model;
 use App\Database\Schema\UsernamesSchema;
 use App\Exceptions\AppExceptionHandler;
 
+use ADOConnection;
 final class UsernameModel extends Model {
 
-    function __construct($dbConnection = null){
+    function __construct(?ADOConnection $dbConnection = null){
         parent::__construct($dbConnection, new UsernamesSchema());
     }
 
