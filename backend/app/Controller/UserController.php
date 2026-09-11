@@ -29,7 +29,6 @@ use App\Shared\Attributes\RateLimit;
 use App\Shared\Connection;
 use Exception;
 use Throwable;
-use App\DTOs\Users\UserUpdateDTO;
 use App\Shared\Helpers\Files;
 
 #[Route('GET', '/users')]

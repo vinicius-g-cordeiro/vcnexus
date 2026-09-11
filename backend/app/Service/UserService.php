@@ -14,7 +14,6 @@ namespace App\Service;
 use App\DTOs\Authentication\TenantUserStoreDTO;
 use App\DTOs\Tenants\Users\TenantUserUpdateDTO;
 use App\DTOs\Users\AvatarStoreDTO;
-use App\DTOs\Users\UserUpdateDTO;
 use App\Model\Tenants\TenantUserModel;
 use App\Model\UserModel;
 use App\Service\Service;
