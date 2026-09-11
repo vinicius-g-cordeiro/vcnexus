@@ -18,9 +18,10 @@ export const useAuthStore = defineStore("auth", {
 
   getters: {
     isAuthenticated: (state) => !!state.sessionUser,
-    isSuperAdmin: (state) => !!state.sessionUser && state.sessionUser?.roles.indexOf(3),
-    isWorker: (state) =>  !!state.sessionUser && state.sessionUser.role === "1",
-    canManageAccess: (state) =>  !!state.sessionUser && state.sessionUser.role === "1",
+    isSuperAdmin: (state) => !!state.sessionUser && state.sessionUser?.roles.indexOf('1') >= 0,
+    isWorker: (state) =>  !!state.sessionUser && state.sessionUser?.roles.indexOf('3') >= 0,
+    canManageAccess: (state) =>  !!state.sessionUser && (state.sessionUser.roles.indexOf('2') >= 0 || state.sessionUser?.roles.indexOf('1') >= 0),
+    userPermissions: (state) =>  state?.sessionUser?.permissions,
   },
 
   actions: {

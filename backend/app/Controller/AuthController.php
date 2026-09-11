@@ -147,6 +147,8 @@ class AuthController extends Controller{
                 nickname: $this->request->put('nickname') ?: null,
                 updated_by: (int)$this->session->get('user')->id ?? 1,
                 phone: $this->request->put('phone') ?? '',
+                permissions: $this->request->put('permissions') ?? [],
+                roles: $this->request->put('roles') ?? [],
             );
             $response = $this->service->updateProfile($userUpdateDTO);
             Response::json(message: '', status: true, code: 200, bShouldExit:true, data: object(user: $response));

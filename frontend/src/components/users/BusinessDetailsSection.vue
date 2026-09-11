@@ -1,16 +1,20 @@
 <template>
   <Fieldset legend="Business details" description="Shown on invoices and to clients you work with.">
 
-    <div class="gap-5 grid grid-cols-1 sm:grid-cols-2">
+    <div class="flex-wrap gap-5 grid grid-cols-1 sm:grid-cols-2">
       <Select :disabled="disabled" :model-value="form.contractType" label="Contract Type" placeholder="Select the type of contract..." :options="contractTypeOptions" @update:model-value="updateField('contractType', $event)" />
-      <Select :disabled="disabled" :model-value="form.tenant" label="Tenant" placeholder="Select a tenant..." :options="tenantOptions" @focus="loadTenants" @update:model-value="updateField('tenant', $event)" />
-    </div>
-    <div class="gap-5 grid grid-cols-1 sm:grid-cols-2">
+      <template v-if="authStore.isSuperAdmin">
+        <Select :disabled="disabled" :model-value="form.tenant" label="Tenant" placeholder="Select a tenant..." :options="tenantOptions" @focus="loadTenants" @update:model-value="updateField('tenant', $event)" />
+      </template>
+      <template v-else>
+        <Select :disabled="disabled" v-show="false" :model-value="form.tenant" label="Tenant" placeholder="Select a tenant..." :options="[{ 'value': authStore.sessionUser.tenant_id }]" @update:model-value="updateField('tenant', $event)" />
+      </template>
+
       <BaseInput :disabled="disabled" :model-value="form.hourlyRate" type="number" label="Hourly rate" placeholder="0.00" :error="errors.hourlyRate" @update:model-value="updateField('hourlyRate', $event)" />
       <BaseInput :disabled="disabled" :model-value="form.hireDate" type="date" label="Hire date" :error="errors.hireDate" @update:model-value="updateField('hireDate', $event)" />
     </div>
-  <FileUpload name="contract" label="Contract" :disabled="disabled" :model-value="form.contractFile" :accept="'.pdf'" />
-    
+    <FileUpload name="contract" label="Contract" :disabled="disabled" :model-value="form.contractFile" :accept="'.pdf'" />
+
   </Fieldset>
 </template>
 
@@ -28,6 +32,7 @@ import BaseInput from '@/components/BaseInput.vue'
 import Select from '@/components/Select.vue'
 import { storeToRefs } from 'pinia'
 import { useTenantStore } from '@/stores/tenantStore'
+import { useAuthStore } from '@/stores/authStore'
 import FileUpload from '@/components/FileUpload.vue'
 
 const props = defineProps({
@@ -71,6 +76,7 @@ const props = defineProps({
 })
 
 const tenantStore = useTenantStore()
+const authStore = useAuthStore()
 
 const emit = defineEmits(['update:modelValue'])
 
@@ -84,10 +90,10 @@ const tenantOptions = computed(() =>
 )
 
 async function loadTenants() {
+  if (!authStore.sessionUser.roles.includes('1')) { return }
   if (tenants?.length > 0) {
     return
   }
-
   await tenantStore.search({})
 }
 

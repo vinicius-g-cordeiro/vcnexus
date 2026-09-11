@@ -44,10 +44,6 @@
 
           <BioSection v-show="activeSection === 'bio'" v-model="user.bio" :error="errors.bio" />
 
-          <PermissionsSection v-show="activeSection === 'permissions' && auth.canManageAccess" v-model="user.permissions" />
-
-          <RolesSection v-show="activeSection === 'roles' && auth.canManageAccess" v-model="user.roles" />
-
           <p v-if="saveError" class="text-red-500 text-sm">{{ saveError }}</p>
           <p v-if="saveSuccess" class="text-emerald-500 text-sm">Changes saved.</p>
 
@@ -166,8 +162,6 @@ const allSections = [
   { key: 'personal', label: 'Personal details' },
   { key: 'business', label: 'Business details', requires: 'worker' },
   { key: 'bio', label: 'Bio' },
-  { key: 'permissions', label: 'Permissions', requires: 'access' },
-  { key: 'roles', label: 'Roles', requires: 'access' },
   { key: 'security', label: 'Security' },
 ]
 

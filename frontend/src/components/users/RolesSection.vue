@@ -1,7 +1,12 @@
 <template>
   <Fieldset legend="Roles" description="Roles determine which parts of the system this user can access.">
     
-    <Select :disabled="disabled" :model-value="modelValue" multiple label="Assigned roles" placeholder="Add roles..." :options="roleOptions" @update:model-value="$emit('update:modelValue', $event)" />
+    <template v-if="canManageRoles">
+      <Select :disabled="disabled" :model-value="modelValue" multiple label="Assigned roles" placeholder="Add roles..." :options="roleOptions" @update:model-value="$emit('update:modelValue', $event)" />
+    </template>
+    <template v-else>
+      <Select v-show="false" :disabled="disabled" :model-value="modelValue" multiple label="Assigned roles" placeholder="Add roles..." :options="roleOptions" @update:model-value="$emit('update:modelValue', $event)" />
+    </template>
 
     <ul v-if="selectedRoleDetails.length" class="flex flex-col gap-2 mt-1">
       <li v-for="role in selectedRoleDetails" :key="role.value" class="flex items-start gap-3 bg-neutral-300/50 dark:bg-neutral-700/50 px-3 py-2.5 rounded-md">
@@ -25,9 +30,12 @@
  * Usage:
  * <RolesSection v-model="form.roles" :role-options="roles" />
  */
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Fieldset from '@/components/Fieldset.vue'
 import Select from '@/components/Select.vue'
+import { useAuthStore } from '@/stores/authStore'
+
+const auth = useAuthStore()
 
 const props = defineProps({
   modelValue: {
@@ -55,4 +63,12 @@ defineEmits(['update:modelValue'])
 const selectedRoleDetails = computed(() =>
   props.roleOptions.filter((r) => props.modelValue.includes(r.value))
 )
+
+const canManageRoles = ref(false)
+
+
+onMounted(async() => {
+  canManageRoles.value = auth.isSuperAdmin
+});
+
 </script>

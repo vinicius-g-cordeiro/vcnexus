@@ -267,6 +267,9 @@ class AuthService extends Service
 
         $response = $this->transaction(function () use ($profileUpdateDTO) {
             
+            $this->model->setAuthContext();
+
+            dd($profileUpdateDTO);
             
             $result = $this->model->update($profileUpdateDTO, 'uuid = \'' . $profileUpdateDTO->uuid. '\'');
             
@@ -298,7 +301,7 @@ class AuthService extends Service
     public function getSelf(): object|null
     {
         $uuid = $this->session->get('user')->uuid;
-        $response = $this->model->find($uuid, ['u.id', 'u.avatar', 'u.role' , 'u.roles', 'u.permissions', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.legal_name as "organization_name"', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation' , 'b.tax_id', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email']);
+        $response = $this->model->find($uuid, ['u.id', 'u.avatar', 'u.role' , 'u.roles', 'u.permissions', 'un.username', 'u.name', 'u.birthdate', 'u.phone', 'u.locale', 'b.trade_name as "organization_name"' , 'b.legal_name', 'u.gender', 'u.marital_status', 'u.religion', 'u.sexual_orientation' , 'b.tax_id', 'u.tenant_id', 'u.uuid', 'u.lastname', 'u.surname', 'u.email']);
         if ($response === false || $response == null || $response == object()) {
             throw new RuntimeException('404 - user not found', 404);
         }

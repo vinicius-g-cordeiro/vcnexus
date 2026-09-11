@@ -164,11 +164,9 @@ class Model extends Connection
         $fields['created_at'] = $date->getTimestamp();
         $fields['created_at_local'] = $date->setTimezone(new DateTimeZone('America/Sao_Paulo'))->getTimestamp();
 
-        try{
+        
         $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'INSERT');
-        }catch(\Throwable $th){
-            dd($th);
-        }
+        
         if ($return === false) {
             throw new AppExceptionHandler('500 - Error', 500);
         }
@@ -221,15 +219,12 @@ class Model extends Connection
             throw new AppExceptionHandler('No where provided for update clause', 500);
         }
 
-        $return = $this->getConnection()->AutoExecute($this->schema->table, $fields, 'UPDATE', $where);
+        $this->getConnection()->AutoExecute($this->schema->table, $fields, 'UPDATE', $where);
 
-        // if($return === false){
-        //     throw new RuntimeException('500 - Error', 500);
-        // }
 
-        $updatedID = (object) $this->getConnection()->GetRow('SELECT id FROM ' . $this->schema->table . ' WHERE ' . $where);
+        $updatedResult = (object) $this->getConnection()->GetRow('SELECT id, uuid, tenant_id FROM ' . $this->schema->table . ' WHERE ' . $where);
 
-        return (int) $updatedID->id;
+        return object(id: $updatedResult->id ?? null, tenant_id: $updatedResult->tenant_id ?? null, uuid: $updatedResult->uuid ?? null, user_id: $updatedResult->user_id ?? null) ?: false;
     }
 
 

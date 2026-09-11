@@ -54,11 +54,11 @@
 
           <BioSection :disabled="isView === true" v-show="activeSection === 'bio'" v-model="user.bio" :error="errors.bio" />
 
-          <PermissionsSection :disabled="isView === true" v-show="activeSection === 'permissions' && canManageAccess" v-model="user.permissions" />
+          <PermissionsSection :disabled="isView === true" v-show="activeSection === 'permissions' && canChangePermissions" v-model="user.permissions" />
 
-          <RolesSection :disabled="isView === true" v-show="activeSection === 'roles' && canManageAccess" v-model="user.roles" />
+          <RolesSection :disabled="isView === true" v-show="activeSection === 'roles' && canChangeRoles" v-model="user.roles" />
           
-          <DocumentsSection :disabled="isView === true" v-show="activeSection === 'documents' && canManageAccess" v-model="user.documents" />
+          <DocumentsSection :disabled="isView === true" v-show="activeSection === 'documents'" v-model="user.documents" />
 
           <template v-if="isView === false">
             <p v-if="saveError" class="text-red-500 text-sm">{{ saveError }}</p>
@@ -145,8 +145,10 @@ const isView = computed(() => route.name === 'users.view' ?? null)
 // --- access flags -----------------------------------------------
 // In create mode: what can the CURRENT (logged-in) user grant?
 // In edit mode: what does the TARGET user already have?
-const isWorker = ref(true)
-const canManageAccess = ref(true)
+const isWorker = ref(false)
+const canManageAccess = ref(false)
+const canChangeRoles = ref(false)
+const canChangePermissions = ref(false)
 
 // --- local state ---------------------------------------------------
 const emptyUser = () => ({
@@ -202,11 +204,11 @@ const errors = reactive({ personal: {}, business: {}, bio: '', security: {}, rol
 const allSections = [
   { key: 'avatar', label: 'Avatar' },
   { key: 'personal', label: 'Personal details' },
-  { key: 'documents', label: 'Documents' },
+  { key: 'documents', label: 'Documents'},
   { key: 'business', label: 'Business details', requires: 'worker' },
   { key: 'bio', label: 'Bio' },
-  { key: 'permissions', label: 'Permissions', requires: 'access' },
-  { key: 'roles', label: 'Roles', requires: 'access' },
+  { key: 'permissions', label: 'Permissions', requires: 'permissions' },
+  { key: 'roles', label: 'Roles', requires: 'roles' },
   { key: 'security', label: 'Security' },
 ]
 
@@ -214,6 +216,8 @@ const visibleSections = computed(() =>
   allSections.filter((s) => {
     if (s.requires === 'worker') return isWorker.value
     if (s.requires === 'access') return canManageAccess.value
+    if (s.requires === 'roles') return canChangeRoles.value
+    if (s.requires === 'permissions') return canChangePermissions.value
     return true
   })
 )
@@ -327,18 +331,23 @@ async function loadUser() {
       // Nothing to fetch: start from a blank record. Permission
       // flags reflect what the logged-in admin is allowed to grant.
       Object.assign(user, emptyUser())
-      isWorker.value = true
-      canManageAccess.value = auth.sessionUser?.role === '1'
+      isWorker.value = auth.sessionUser?.roles?.includes('2')
+      canManageAccess.value = auth.isSuperAdmin
+      canChangeRoles.value = auth.isSuperAdmin || auth.userPermissions.includes('users.roles')
+      canChangePermissions.value = auth.isSuperAdmin || auth.userPermissions.includes('users.permissions')
     } else {
       const ok = await userStore.fetchUser(targetId.value)
       Object.assign(user, mapApiUserToForm(userStore.user))
-      isWorker.value = auth.sessionUser?.role === '1'
-      canManageAccess.value = auth.sessionUser?.role === '1'
+      isWorker.value = auth.sessionUser?.roles?.includes('3')
+      canManageAccess.value = auth.isSuperAdmin
+      canChangeRoles.value = auth.isSuperAdmin || auth.userPermissions.includes('users.roles')
+      canChangePermissions.value = auth.isSuperAdmin || auth.userPermissions.includes('users.permissions')
     }
-  } catch (err) {
+  } catch (err) {    
     loadError.value = isNew.value
       ? 'Could not prepare the form. Please try again.'
       : 'Could not load this user. Please try again.'
+
   } finally {
     isLoading.value = false
   }

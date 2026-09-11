@@ -23,8 +23,6 @@
 import { computed, onMounted } from 'vue'
 import Fieldset from '@/components/Fieldset.vue'
 import BaseInput from '@/components/BaseInput.vue'
-import BaseCheckbox from '@/components/BaseCheckbox.vue'
-import Select from '@/components/Select.vue'
 import { storeToRefs } from 'pinia'
 import { useTenantStore } from '@/stores/tenantStore'
 
@@ -73,23 +71,6 @@ const tenantStore = useTenantStore()
 
 const emit = defineEmits(['update:modelValue'])
 
-const { tenants } = storeToRefs(tenantStore)
-
-const tenantOptions = computed(() =>
-  (tenants.value ?? []).map(tenant => ({
-    label: tenant.legal_name ?? tenant.trade_name ?? tenant.name,
-    value: tenant.id,
-  }))
-)
-
-async function loadTenants() {
-  if (tenants?.length > 0) {
-    return
-  }
-
-  await tenantStore.search({})
-}
-
 function updateField(key, value) {
   emit('update:modelValue', {
     ...props.modelValue,
@@ -98,7 +79,5 @@ function updateField(key, value) {
 }
 
 const form = computed(() => props.modelValue)
-onMounted(async () => {
-  await loadTenants()
-})
+
 </script>

@@ -179,6 +179,7 @@ const routes = [
   },
 ];
 
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
@@ -193,12 +194,12 @@ router.beforeEach(async (to, from) => {
   }
 
   const isAuthenticated = authStore.isAuthenticated;
-  const isAdminAccount = authStore.isSuperAdmin;
+  const isSuperAdminAccount = authStore.isSuperAdmin;
   const requiresAuth = to.matched.some((r) => r.meta.requiresAuth);
   const requiresGuest = to.matched.some((r) => r.meta.requiresGuest);
-  const requiresSuperAdmin = to.matched.some((r) => r.meta.requiresSuperAdmin);
+  const requiresSuperAdmin = to.matched.some((r) => r.meta.requiresSuperAdmin);  
 
-  if (requiresSuperAdmin && isAdminAccount === false) {
+  if (requiresSuperAdmin && isSuperAdminAccount === false) {
     return { name: "dashboard" };
   }
 

@@ -114,6 +114,7 @@ final class UserService extends Service
         $userModel = new UserModel($this->connection);            
         $usernameModel = new UsernameModel($this->connection);
 
+        
         $response = $this->transaction(function () use ($userRegistrationDTO, $userModel, $usernameModel) {
 
             $this->model->setAuthContext();
@@ -249,7 +250,8 @@ final class UserService extends Service
 
             $result = $this->model->update($userUpdateDTO, 'uuid = \'' . $userUpdateDTO->uuid . '\'');
 
-            if (!$result || !isset($result)) {
+
+            if (!$result || !isset($result->id)) {
                 throw new AppExceptionHandler('Failed to update tenant user.');
             }
 
@@ -257,11 +259,10 @@ final class UserService extends Service
             $usernameResult = $usernameModel->update(
                 new UsernameRegistrationDTO(
                     $userUpdateDTO->username,
-                    (string) $result,
-                    (string) $userUpdateDTO->tenant_id
-                )
-                ,
-                'user_id = \'' . $result . '\''
+                    (string) $result->id,
+                    (string) $userUpdateDTO->tenant_id ?: $result->tenant_id
+                ),
+                'user_id = \'' . $result->id . '\''
             );
 
             if ($usernameResult === false || !(isset($usernameResult))) {
@@ -278,6 +279,8 @@ final class UserService extends Service
         $response = null;
 
         $response = $this->transaction(function () use ($uuid) {
+
+            $this->model->setAuthContext();
 
             $result = $this->model->deactivate('uuid = \''.$uuid.'\'');
 
@@ -304,6 +307,7 @@ final class UserService extends Service
         $response = null;
 
         $response = $this->transaction(function () use ($uuid) {
+            $this->model->setAuthContext();
 
             $result = $this->model->activate('uuid = \''.$uuid.'\'');
 
@@ -329,6 +333,7 @@ final class UserService extends Service
         $response = null;
 
         $response = $this->transaction(function () use ($uuid) {
+            $this->model->setAuthContext();
 
             $result = $this->model->block('uuid = \''.$uuid.'\'');
 
@@ -354,6 +359,8 @@ final class UserService extends Service
         $response = null;
 
         $response = $this->transaction(function () use ($uuid) {
+            $this->model->setAuthContext();
+
 
             $result = $this->model->unblock('uuid = \''.$uuid.'\'');
 

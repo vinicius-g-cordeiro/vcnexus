@@ -107,7 +107,7 @@ final class UserController extends Controller
                 created_by: (int)$this->session->get('user')->id ?? 1,
                 roles: $this->request->post('roles') ?? [4],
                 permissions: $this->request->post('permissions') ?? [],
-                tenant_id: (int)$this->request->post('tenant') ?? null
+                tenant_id: (int)$this->request->post('tenant') ?: (int)$this->session->get('user')->tenant_id,
             );
 
             $response = $this->service->store($userRegisterDTO);
@@ -145,7 +145,7 @@ final class UserController extends Controller
         try{
             
             $userUpdateDTO = new TenantUserUpdateDTO(
-                id: (int)$this->request->put('id'),
+                id: null,
                 uuid: $uuid,
                 name: $this->request->put('name'),
                 surname: $this->request->put('surname') ?? null,
@@ -162,13 +162,14 @@ final class UserController extends Controller
                 locale: $this->request->put('locale') ?: null,
                 nickname: $this->request->put('nickname') ?: null,
                 updated_by: (int)$this->session->get('user')->id ?? 1,
-                user_id: (int)$this->session->get('user_id')->id ?? 1,
+                user_id: (int)$this->request->put('user_id') ?? null,
                 phone: $this->request->put('phone') ?? '',
                 roles: $this->request->put('roles') ?? [4],
                 permissions: $this->request->put('permissions') ?? [],
                 bio: $this->request->put('bio') ?? '',
                 tenant_id: (int)$this->request->put('tenant') ?? null
             );
+
             $response = $this->service->updateProfile($userUpdateDTO);
             Response::json(message: '', status: true, code: 200, bShouldExit:true, data: object(user: $response));
         }catch(Throwable $err){

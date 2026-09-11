@@ -248,20 +248,18 @@ class TenantUsersSchema extends Schema
     public ?string $blood_factor = null;
 
 
+    #[Column(type: 'TEXT', default: null, nullable: true, comment: '')]
+    public ?string $bio = null;
+
+
     #[Column(type: 'VARCHAR(6)', default: null, nullable: true, comment: '')]
     public ?string $locale = null;
 
     #[Column(type: 'VARCHAR(500)', default: null, nullable: true, comment: 'Filepath for the avatar of the user')]
     public ?string $avatar = null;
 
-
-    #[Column(type: 'SMALLINT', default: 4, nullable: false, comment: '')]
-    public ?int $role = 4;
-
-
     #[Column(type: 'VARCHAR(100) ARRAY', default: 'ARRAY[4]::VARCHAR(100)[]', nullable: false, comment: '')]
     public ?array $roles = [];
-
 
     #[Column(type: 'VARCHAR(100) ARRAY', default: 'ARRAY[]::VARCHAR(100)[]', nullable: false, comment: '')]
     public ?array $permissions = [];
