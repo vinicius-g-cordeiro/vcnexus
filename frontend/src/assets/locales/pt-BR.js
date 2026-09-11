@@ -109,47 +109,47 @@ export default {
   tenants: {
     list: {
       search: {
-        legend: "Organização - Pesquisa",
+        legend: "Organizações - Pesquisar",
         search: 'Pesquisa',
         order: {
-          label: 'Ordenar',
+          label: 'Ordernar',
         },
         active: {
           label: 'Ativo',
           active: 'Ativo',
           deactivated: 'Desativado' 
         },
-        order_by: 'Ordenar por',
-        searchbtn: 'Pesquisa',
+        order_by: 'Ordernar por',
+        searchbtn: 'Pesquisar',
         clear: 'Limpar'
       },
       actions: {
         new: 'Novo',
-        reports: 'Relatórios',
+        reports: 'Relatorio',
+        documents: 'Documentos',
         users: 'Usuários'
       },
-
       results: {
         legend: 'Lista de Organizações',
         loading: 'Carregando...',
         errors: 'Ocorreu um erro.',
-        empty: 'Nenhum resultado encontrado..',
+        active: 'Ativo',
+        deactivated: 'Desativado',
+        blocked: 'Bloqueado',
         headers : {
           tenantInfo: 'Organização',
+          organization: 'Organização',
           status: 'Status',
           actions: 'Ações',
-          created_at: 'Criado',
-          updated_at: 'Atualizado',
-          deleted_at: 'Desativado',
-          deleted_by: 'Desativado por',
-          last_login: 'Último login',
+          created_at: 'Criado em',
+          updated_at: 'Atualizado em',
+          blocked_at: 'Bloqueado em',
         },
         actions: {
           view: 'Visualizar',
           edit: 'Editar',
           delete: 'Desativar',
           activate: 'Ativar',
-          block: 'Bloquear',
         }
       }
     },

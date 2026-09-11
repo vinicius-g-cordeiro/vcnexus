@@ -3,7 +3,7 @@
 
     <!-- Search -->
     <Fieldset :legend="t('tenants.list.search.legend')" icon="bi-people-fill"
-      :actions="[{ url: '/tenants/new/', name: t('tenants.list.actions.new'), icon: 'bi bi-building-add' }, { url: '/tenants/reports/', name: t('tenants.list.actions.reports'), icon: 'bi bi-file-spreadsheet' }, { url: '/tenants/users/', name: t('tenants.list.actions.users'), icon: 'bi bi-people' }]">
+      :actions="[{ url: '/tenants/new/', name: t('tenants.list.actions.new'), icon: 'bi bi-building-add' }, { url: '/tenants/reports/', name: t('tenants.list.actions.reports'), icon: 'bi bi-file-spreadsheet' }, { url: '/users/list', name: t('tenants.list.actions.users'), icon: 'bi bi-people' }]">
       <form class="space-y-6" @submit.prevent="handleSubmit">
         <!-- Filters -->
         <div class="gap-4 grid grid-cols-1 md:grid-cols-4">
@@ -89,9 +89,6 @@
               <thead class="bg-neutral-50 dark:bg-neutral-900/70 border-neutral-200 dark:border-neutral-800 border-b">
                 <tr>
                   <th class="px-5 py-3.5 font-medium text-neutral-500">
-                    #
-                  </th>
-                  <th class="px-5 py-3.5 font-medium text-neutral-500">
                     {{ t('tenants.list.results.headers.tenantInfo') }}
                   </th>
 
@@ -108,10 +105,7 @@
 
               <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
 
-                <tr v-for="(tenant, index) in tenants" :key="tenant.id" index="id" class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors">
-                  <td class="px-5 py-4">
-                    {{ index }}
-                  </td>
+                <tr v-for="(tenant) in tenants" :key="tenant.id" index="id" class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors">
                   <!-- tenant -->
                   <td class="px-5 py-4">
 
@@ -123,11 +117,13 @@
                         <p class="font-medium text-neutral-900 dark:text-neutral-100">
                           {{ tenant.name }}
                         </p>
-                        <p class="mt-0.5 text-neutral-500 text-xs">
-                          {{ tenant.email }}
-                        </p>
+                        <div class="mt-0.5 text-neutral-500 text-xs">
+                          <div class="drop-shadow-lg blur-[2px]">
+                            {{ tenant.email }}
+                          </div>
+                        </div>
                         <p class="font-medium text-neutral-900 dark:text-neutral-100">
-                          <Button variant="link" :external="tenant.website">{{ tenant.website }}</Button>
+                          <Button variant="link" target="blank" :href="tenant.website">{{ tenant.website }}</Button>
                         </p>
                       </div>
 
@@ -138,23 +134,22 @@
 
 
                   <!-- Status -->
-                  <td class="px-5 py-4 text-neutral-500">
+                  <td class="px-5 py-4 text-zinc-500 text-xs">
                     <div class="flex items-center gap-3">
 
-                      <div class="flex justify-center items-center bg-neutral-100 dark:bg-neutral-800 rounded-full w-9 h-9 text-neutral-600 dark:text-neutral-300 shrink-0">
-                        <i class="bi bi-clock"></i>
-                      </div>
+                      <div class="flex flex-wrap p-1">
 
-                      <div class="min-w-0">
+                        <template v-if="tenant.active === '0'">
 
-                        <p class="mt-0.5 text-neutral-500 text-xs">
-                          <b>{{ t('tenants.list.results.headers.created_at') }}: </b>{{ formatDate(tenant.created_at, true) }}
-                        </p>
+                          <div class="bg-red-500 p-2 rounded-sm text-zinc-200">
+                            <b>{{ t('tenants.list.results.deactivated') }}</b>
+                          </div>
 
-                        <template v-if="tenant.updated_at">
-                          <p class="mt-0.5 text-neutral-500 text-xs">
-                            <b>{{ t('tenants.list.results.headers.updated_at') }}: </b>{{ formatDate(tenant.updated_at, true) }}
-                          </p>
+                        </template>
+                        <template v-else>
+                          <div class="bg-emerald-500 p-2 rounded-sm text-zinc-200">
+                            <b>{{ t('tenants.list.results.active') }}</b>
+                          </div>
                         </template>
                       </div>
 
@@ -162,19 +157,18 @@
 
 
                   </td>
-
                   <!-- Actions -->
                   <td class="px-5 py-4">
 
                     <div class="flex flex-wrap justify-evenly gap-1">
-                      <Button variant="ghost" :to="{ name: 'tenants.view', params: { uuid: tenant.uuid } }" :title="t('tenant.list.results.actions.view')"><i class="bi bi-eye"></i></Button>
-                      <Button variant="ghost" :to="{ name: 'tenants.edit', params: { uuid: tenant.uuid } }" :title="t('tenant.list.results.actions.edit')"><i class="bi bi-pencil-square"></i></Button>
+                      <Button variant="ghost" :to="{ name: 'tenants.view', params: { uuid: tenant.uuid } }" :title="t('tenants.list.results.actions.view')"><i class="bi bi-eye"></i></Button>
+                      <Button variant="ghost" :to="{ name: 'tenants.edit', params: { uuid: tenant.uuid } }" :title="t('tenants.list.results.actions.edit')"><i class="bi bi-pencil-square"></i></Button>
                       <template v-if="(authStore.sessionUser.role !== '1' && authStore.sessionUser.role !== '2')">
                         <template v-if="tenant.active === '1'">
-                          <Button variant="ghost" @click="handleDeactivate(tenant.uuid)" :title="t('tenant.list.results.actions.delete')"><i class="text-red-500 bi bi-toggle2-off"></i></Button>
+                          <Button variant="ghost" @click="handleDeactivate(tenant.uuid)" :title="t('tenants.list.results.actions.delete')"><i class="text-red-500 bi bi-toggle2-off"></i></Button>
                         </template>
                         <template v-else>
-                          <Button variant="ghost" @click="handleActivate(tenant.uuid)" :title="t('tenant.list.results.actions.activate')"><i class="text-emerald-500 bi bi-toggle2-on"></i></Button>
+                          <Button variant="ghost" @click="handleActivate(tenant.uuid)" :title="t('tenants.list.results.actions.activate')"><i class="text-emerald-500 bi bi-toggle2-on"></i></Button>
                         </template>
                       </template>
                     </div>

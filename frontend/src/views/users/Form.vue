@@ -313,9 +313,13 @@ function mapFormToApiPayload() {
         contract_type: user.business.contract_type,
       }
       : {}),
-    ...(canManageAccess.value
+    ...(canChangePermissions.value
       ? {
         permissions: user.permissions,
+      }
+      : {}),
+      ...(canChangeRoles.value ? 
+      {
         roles: user.roles,
       }
       : {}),
@@ -402,7 +406,7 @@ function handleCancel() {
     return
   }
   if (isNew.value) {
-    router.push({ name: 'users.index' })
+    router.push({ name: 'users.list' })
     return
   }
   loadUser()

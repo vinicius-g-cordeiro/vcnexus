@@ -123,22 +123,24 @@ export default {
       actions: {
         new: 'New',
         reports: 'Reports',
+        documents: 'Documents',
         users: 'Users'
       },
-
       results: {
         legend: 'Tenants List',
         loading: 'Loading...',
         errors: 'Something went wrong.',
-        empty: 'No results found..',
+        active: 'Active',
+        deactivated: 'Deactivated',
+        blocked: 'Blocked',
         headers : {
-          tenantInfo: 'Tenant',
+          userInfo: 'Tenant',
+          organization: 'Organization',
           status: 'Status',
           actions: 'Actions',
-          created_at: 'Created',
-          updated_at: 'Updated',
-          deleted_at: 'Deleted',
-          deleted_by: 'Deleted By',
+          created_at: 'Created at',
+          updated_at: 'Updated at',
+          blocked_at: 'Blocked at',
           last_login: 'Last Login',
         },
         actions: {
@@ -147,6 +149,7 @@ export default {
           delete: 'Deactivate',
           activate: 'Activate',
           block: 'Block',
+          unblock: 'Unblock',
         }
       }
     },
