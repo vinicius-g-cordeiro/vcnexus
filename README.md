@@ -1,292 +1,240 @@
-# VCNexus 🚀
+# VCNexus
 
-## 🌟 Badges
+VCNexus is a multi-tenant ERP application for managing organizations, users, authentication, tenant data, and operational dashboards.
 
-| Build Status | Version | License |
-| :----------: | :-----: | :-----: |
-| ![Build Status](https://img.shields.io/badge/build-passing-brightgreen) | ![Version](https://img.shields.io/badge/version-1.0.0-blue) | ![License](https://img.shields.io/badge/license-MIT-green) |
+## Index
 
-## 📚 Table of Contents
+1. [Overview](#overview)
+2. [Architecture](#architecture)
+3. [Technology Stack](#technology-stack)
+4. [Project Structure](#project-structure)
+5. [Requirements](#requirements)
+6. [Configuration](#configuration)
+7. [Running with Docker](#running-with-docker)
+8. [Running Locally](#running-locally)
+9. [Application Areas](#application-areas)
+10. [API Overview](#api-overview)
+11. [Testing and Code Quality](#testing-and-code-quality)
+12. [License](#license)
 
-- [About VCNexus](#about-vcnexus)
-- [🚀 Features](#features)
-- [💻 Tech Stack](#tech-stack)
-- [📦 Dependencies](#dependencies)
-- [🐳 Docker Setup](#docker-setup)
-- [🔧 Installation](#installation)
-- [🚀 Usage](#usage)
-- [📂 Project Structure](#project-structure)
-- [🛠️ API Reference](#api-reference)
-- [🤝 Contributing](#contributing)
-- [📜 License](#license)
-- [🔗 Important Links](#important-links)
+## Overview
 
----
+VCNexus is organized as a separate backend and frontend:
 
-## ℹ️ About VCNexus
+- The backend provides the HTTP API, authentication, authorization, tenant context, persistence, validation, events, and file handling.
+- The frontend provides the Vue single-page application for authentication, dashboards, tenant administration, user administration, and profile management.
+- Docker Compose supplies PostgreSQL, Redis, Memcached, PHP-FPM, Nginx, and optional frontend development or build services.
 
-VCNexus is a robust, multi-tenant ERP system tailored for comprehensive business management. It aims to provide a unified platform for managing crucial organizational aspects including users, tasks, time tracking, payments, and performance metrics. The system is designed with a modern architecture, separating concerns between a powerful PHP backend and a dynamic Vue.js frontend.
+The application is designed for multiple organizations to share one deployment while keeping tenant data isolated through PostgreSQL Row-Level Security and request-level tenant context.
 
-## ✨ Features
+## Architecture
 
-- **Multi-Tenancy:** Designed to support multiple organizations within a single instance, ensuring data isolation and management.
-- **User Management:** Comprehensive handling of users, roles, and permissions.
-- **Task Management:** Functionality for creating, assigning, and tracking tasks.
-- **Time Tracking:** Integrated system for logging and managing time spent on tasks.
-- **Payment Processing:** Modules for managing financial transactions and payments.
-- **Performance Tracking:** Tools for monitoring and analyzing organizational and individual performance.
-- **API-Driven:** A well-defined API facilitates communication between the frontend and backend.
-- **Dockerized Environment:** Streamlined development and deployment using Docker and Docker Compose.
+### Backend
 
-## 💻 Tech Stack
+The backend is a custom PHP application with:
 
-| Category | Technologies |
-|---|---|
-| **Backend** | PHP, PostgreSQL, Redis, Memcached |
-| **Frontend** | Vue.js, Vite, Tailwind CSS, Bootstrap, Pinia, Vue Router, Axios |
-| **Infrastructure** | Docker, Nginx |
-| **Development Tools** | Composer, npm, Vite |
+- PHP attribute-based route discovery through `backend/app/Shared/Router.php`.
+- Controllers, services, models, DTOs, and shared request/response helpers.
+- Middleware for authentication, guests, tenant resolution, database context, roles, CORS, logging, and rate limiting.
+- PostgreSQL schema attributes and initialization scripts, including Row-Level Security policies.
+- Event and listener classes for user and tenant lifecycle actions.
+- Centralized exception and JSON response handling.
 
-## 🔗 Dependencies
+### Frontend
 
-### Backend Dependencies (via Composer)
+The frontend is a Vue 3 SPA using:
 
-- `php: ^8.1`
-- `ext-pdo`
-- `ext-json`
-- `doctrine/orm`
-- `symfony/validator`
-- `symfony/var-dumper`
-- `adodb/adodb-php`
-- `ext-zip`
-- `phpmailer/phpmailer`
-- `phpoffice/phpspreadsheet`
-- `vlucas/phpdotenv`
+- Vue Router for public and authenticated routes.
+- Pinia stores for authentication, tenant, and user state.
+- Axios services for API communication.
+- Vue I18n translations for English and Brazilian Portuguese.
+- Tailwind CSS, Bootstrap, Bootstrap Icons, and Lucide icons for the interface.
 
-### Frontend Dependencies (via npm)
+## Technology Stack
 
-- `@tailwindcss/vite`
-- `@vitejs/plugin-vue`
-- `axios`
-- `bootstrap`
-- `bootstrap-icons`
-- `pinia`
-- `tailwindcss`
-- `vue`
-- `vue-router`
-- `vite`
+| Area | Technologies |
+| --- | --- |
+| Backend | PHP 8.1+, PostgreSQL, ADOdb, Doctrine ORM, Symfony Validator, PHPMailer, PhpSpreadsheet |
+| Frontend | Vue 3, Vite, Pinia, Vue Router, Axios, Tailwind CSS, Bootstrap |
+| Infrastructure | Docker, Docker Compose, Nginx, PHP-FPM |
+| Supporting services | Redis and Memcached |
+| Quality tools | PHPUnit and PHP_CodeSniffer |
 
-## 🐳 Docker Setup
+## Project Structure
 
-This project utilizes Docker and Docker Compose for setting up the development and production environments. All necessary services (PostgreSQL, Redis, Memcached, PHP-FPM, Nginx, Node.js) are defined in `docker-compose.yml`.
-
-**Key Services:**
-
-- **`db`**: PostgreSQL database service.
-- **`redis`**: Redis caching service.
-- **`cache`**: Memcached caching service.
-- **`php`**: PHP-FPM service for the backend.
-- **`nginx`**: Nginx web server for serving frontend and backend requests.
-- **`node-dev`**: Node.js service for frontend development (Vite).
-- **`node-build`**: Node.js service for frontend builds.
-
-## 🔧 Installation
-
-1.  **Prerequisites:**
-    *   [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed.
-    *   [PHP](https://www.php.net/manual/en/install.php) (version 8.1 or higher) and [Composer](https://getcomposer.org/download/) installed locally (optional, as Docker will handle dependencies).
-    *   [Node.js](https://nodejs.org/) and [npm](https://docs.npmjs.com/cli/v8/commands/npm-install) installed locally (optional, as Docker will handle dependencies).
-
-2.  **Clone the Repository:**
-    ```bash
-    git clone https://github.com/vinicius-g-cordeiro/vcnexus.git
-    cd vcnexus
-    ```
-
-3.  **Configure Environment Variables:**
-    Create a `.env` file in the root directory (or specific service directories as needed) and populate it with your environment-specific settings. For database and secret configurations, you might need to create files referenced in `docker-compose.yml` (e.g., `./secrets/db_password`).
-
-    `Note: There is also the PHP settings .env that sould be placed on infrastructure/php/.env, this one contains most app related varibles, there is no use of passwords or secrets on docker, it's used only on runtime.` 
-
-    Example `.env` (root level, adjust as needed):
-    ```env
-    DB_DRIVER=pgsql
-    DB_HOST=db
-    DB_PORT=5432
-    DB_USERNAME=app_user
-    DB_PASSWORD_FILE=./secrets/db_password
-    DB_DATABASE=app_db
-    
-    REDIS_PORT=6379
-    REDIS_PASSWORD_FILE=./secrets/redis_password
-    
-    CACHE_PORT=11211
-    
-    JWT_SECRET_FILE=./secrets/jwt_secret
-    APP_KEY_FILE=./secrets/app_key
-    
-    NGINX_PORT=80
-    VITE_PORT=5173
-    APP_PORT=5173
-    APP_HOST=http://localhost
-    ```
-
-4.  **Build and Run Docker Containers:**
-    ```bash
-    docker-compose up --build
-    ```
-    This command will build the necessary Docker images and start all the defined services.
-
-5.  **Install Backend Dependencies (if not using Docker for build):**
-    ```bash
-    cd backend
-    composer install
-    ```
-
-6.  **Install Frontend Dependencies:**
-    ```bash
-    cd frontend
-    npm install
-    ```
-
-## 🚀 Usage
-
-### Development Mode
-
-To run the application in development mode, ensure the Docker containers are running. The frontend development server will be accessible at `http://localhost:5173` and the backend API will be served via Nginx at `http://localhost:80`.
-
--   **Start Frontend Development Server:**
-    ```bash
-    docker-compose up node-dev
-    ```
-    Navigate to `http://localhost:5173` in your browser.
-
--   **Accessing the Backend API:**
-    The backend API is typically proxied through Nginx. You can interact with the API endpoints as defined in the `backend/app/Controller` directory.
-
-### Accessing the Application
-
-Once the containers are running and dependencies are installed, you can access the application through your browser. The frontend will be served by the `node-dev` service (or the `nginx` service for production builds), and the backend API will be available via the `nginx` service, which proxies requests to the `php` service.
-
-**Frontend URL:** `http://localhost:5173` (default VITE_PORT)
-
-**Backend API Base URL:** `http://localhost:80` (default NGINX_PORT)
-
-### Example API Endpoints (from `UserController`):
-
--   **Get all users:** `GET /users/list/`
--   **Get user by ID:** `GET /users/{id}/`
--   **Create user:** `POST /users/create/`
--   **Update user:** `PUT /users/{id}/update/`
--   **Deactivate user:** `DELETE /users/{id}/delete/`
-
-## 📂 Project Structure
-
-```
+```text
 vcnexus/
 ├── backend/
 │   ├── app/
-│   │   ├── Controller/
-│   │   ├── DTOs/
-│   │   ├── Database/Schema/
-│   │   ├── Events/
-│   │   ├── Exceptions/
-│   │   ├── Middleware/
-│   │   ├── Model/
-│   │   ├── Service/
-│   │   ├── Shared/
-│   │   │   ├── Attributes/
-│   │   │   ├── Helpers/
-│   │   │   ├── Interfaces/
-│   │   │   └── RateLimiting/
-│   │   ├── bootstrap.php
-│   │   └── ...
+│   │   ├── Controller/       # Authentication, tenant, user, and base controllers
+│   │   ├── Database/         # Schema attributes, compilers, and database definitions
+│   │   ├── DTOs/             # Typed request data transfer objects
+│   │   ├── Events/           # Events, listeners, and event container
+│   │   ├── Exceptions/       # Application exception handlers
+│   │   ├── Middleware/       # Request authentication, tenant, role, and utility middleware
+│   │   ├── Model/            # Persistence models
+│   │   ├── Service/          # Application and business logic
+│   │   └── Shared/           # Router, requests, responses, sessions, context, and helpers
 │   ├── config/
-│   ├── public/
+│   ├── public/               # Web entry point
+│   ├── storage/              # Runtime uploads, logs, and application assets
 │   ├── tests/
-│   ├── vendor/
-│   ├── .env (example)
-│   ├── composer.json
-│   └── composer.lock
+│   └── composer.json
 ├── frontend/
-│   ├── public/
 │   ├── src/
-│   │   ├── App.vue
-│   │   ├── components/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   └── stores/
-│   ├── index.html
-│   ├── package.json
-│   ├── tailwind.config.js
-│   └── vite.config.js
+│   │   ├── components/       # Reusable and feature components
+│   │   ├── routes/           # Vue Router definitions and guards
+│   │   ├── services/         # API clients
+│   │   ├── stores/           # Pinia stores
+│   │   └── views/            # Page-level views
+│   └── package.json
 ├── infrastructure/
-│   ├── nginx/
-│   │   └── default.conf
-│   ├── node/
-│   │   └── Dockerfile
-│   └── php/
-│       ├── Dockerfile
-│       ├── php.ini
-│       └── xdebug.ini
-├── .dockerignore
+│   ├── nginx/                # Reverse proxy configuration
+│   ├── node/                 # Frontend container image
+│   ├── php/                  # PHP-FPM image and PHP configuration
+│   └── postgres/             # User and Row-Level Security initialization
 ├── docker-compose.yml
-└── README.md
+└── readme.md
 ```
 
-## 🛠️ API Reference
+## Requirements
 
-The backend provides a RESTful API. Key routes are defined in `backend/app/Controller/UserController.php` and other controller files.
+For the Docker workflow:
 
-### User Endpoints
+- Docker
+- Docker Compose
 
--   **`GET /users/`**: (This route seems to be defined as a base path in `UserController` but might not have a specific action mapped to it.)
--   **`GET /users/list/`**: Retrieves a list of users. Internally calls `Model->createTable()`, suggesting it might be used for initial setup or table creation verification.
--   **`GET /users/{id}/`**: Retrieves a specific user by ID. Returns placeholder data.
--   **`POST /users/create/`**: Creates a new user. Applies a rate limit of 5 attempts per 60 seconds.
--   **`PUT /users/{id}/update/`**: Updates a specific user by ID.
--   **`DELETE /users/{id}/delete/`**: Deactivates a user.
--   **`PUT|GET|PATCH /users/{id}/activate/`**: Activates a user.
--   **`PUT|GET|PATCH /users/{id}/block/`**: Blocks a user.
+For local development:
 
-**Middleware:**
+- PHP 8.1 or newer
+- Composer
+- Node.js and npm
+- PostgreSQL, Redis, and Memcached
 
--   `LoggingMiddleware` is applied globally.
--   `CorsMiddleware` is included in `bootstrap.php`.
--   `RateLimitMiddleware` is applied to specific routes (e.g., user creation).
+## Configuration
 
-## 🤝 Contributing
+Application configuration is read from environment files. Do not commit credentials or replace secret placeholders with real values in documentation.
 
-Contributions are welcome! Please follow these steps:
+The Docker Compose file expects secret files in `secrets/`, including:
 
-1.  Fork the repository.
-2.  Create a new branch for your feature (`git checkout -b feature/AmazingFeature`).
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4.  Push to the branch (`git push origin feature/AmazingFeature`).
-5.  Open a Pull Request.
+- `db_root_password`
+- `db_password`
+- `db_app_password`
+- `redis_password`
+- `jwt_secret`
+- `app_key`
+- `admin_password`
+- `smtp_user`
+- `smtp_password`
+- `vite_api_key`
 
-Please ensure your code adheres to the project's coding standards and includes relevant tests.
+Create the files before starting Docker services. The application-level PHP configuration is stored in `infrastructure/php/.env`. The root `.env` controls Compose values such as database connection settings and exposed ports.
 
-## 📜 License
+Common local endpoints are:
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- Frontend development server: `http://localhost:5173`
+- API through Nginx: `http://localhost:80`
+- PostgreSQL: `localhost:5432`
+- Redis: `localhost:6379`
+- Memcached: `localhost:11211`
 
-## 🔗 Important Links
+## Running with Docker
 
--   **Repository:** [https://github.com/vinicius-g-cordeiro/vcnexus](https://github.com/vinicius-g-cordeiro/vcnexus)
--   **Author Profile:** [https://github.com/vinicius-g-cordeiro](https://github.com/vinicius-g-cordeiro)
+Clone the repository and enter the project directory:
 
----
+```bash
+git clone https://github.com/vinicius-g-cordeiro/vcnexus.git
+cd vcnexus
+```
 
-## Footer
+Start the backend and supporting services:
 
-© 2026 VCNexus | Made with ❤️ by [Vinicius Goncalves Cordeiro](https://github.com/vinicius-g-cordeiro)
+```bash
+docker compose up --build
+```
 
-[![Star](https://img.shields.io/github/stars/vinicius-g-cordeiro/vcnexus?style=social)](https://github.com/vinicius-g-cordeiro/vcnexus/stargazers)
-[![Fork](https://img.shields.io/github/forks/vinicius-g-cordeiro/vcnexus?style=social)](https://github.com/vinicius-g-cordeiro/vcnexus/forks)
+Start the frontend development profile as well:
 
-[Report issues](https://github.com/vinicius-g-cordeiro/vcnexus/issues) or [Suggest features](https://github.com/vinicius-g-cordeiro/vcnexus/issues).
+```bash
+docker compose --profile dev up --build
+```
 
+Build the frontend through the dedicated build profile:
 
----
-**<p align="center">Generated by [ReadmeCodeGen](https://www.readmecodegen.com/)</p>**
+```bash
+docker compose --profile build run --rm node-build
+```
+
+The first database startup runs the scripts in `infrastructure/postgres/`. Database initialization scripts generally apply only when the PostgreSQL volume is created for the first time.
+
+## Running Locally
+
+Install backend dependencies:
+
+```bash
+cd backend
+composer install
+```
+
+Install and start the frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Create a production frontend bundle with:
+
+```bash
+npm run build
+```
+
+When running outside Docker, configure the backend environment and ensure the frontend API base URL points to the accessible API host.
+
+## Application Areas
+
+The current application includes:
+
+- Public home, login, and registration pages.
+- Session-based authentication, logout, current-user lookup, and profile updates.
+- Authenticated dashboard and profile pages.
+- Super-admin tenant listing, creation, viewing, and editing.
+- Authenticated user listing, creation, viewing, editing, and profile image upload.
+- Tenant-aware request and database context handling.
+- Role checks for administrators, owners, and super administrators.
+- Request rate limits on sensitive authentication and user operations.
+- English and Brazilian Portuguese localization.
+- Tenant branding and organization information fields.
+
+## API Overview
+
+Routes are declared with PHP attributes on controllers. The main API groups are:
+
+| Area | Examples |
+| --- | --- |
+| Authentication | `POST /auth/register/`, `POST /auth/login/`, `GET /auth/me/`, `PUT /auth/me/`, `POST /auth/logout/` |
+| Users | `GET /users/list/`, `GET /users/{uuid}`, `POST /users/create/`, `PUT /users/{uuid}`, `POST /users/{uuid}/avatar` |
+| Tenants | `GET /tenants/{uuid}`, `GET /tenants/list`, `POST /tenants/save`, `PUT /tenants/save` |
+| System | `GET /health-check`, `GET /init-system` |
+
+Authentication, tenant context, and role requirements vary by route. Nginx forwards PHP requests to PHP-FPM and serves uploaded files through the `/storage/` path.
+
+## Testing and Code Quality
+
+Backend tests are located in `backend/tests/`. Run the available PHPUnit suite from the backend directory:
+
+```bash
+cd backend
+vendor/bin/phpunit
+```
+
+Run PHP_CodeSniffer when checking backend coding standards:
+
+```bash
+vendor/bin/phpcs app tests
+```
+
+## License
+
+The backend package metadata declares the MIT License. A root `LICENSE` file is not currently present in the repository.
