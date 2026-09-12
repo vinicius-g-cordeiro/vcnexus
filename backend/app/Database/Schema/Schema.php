@@ -177,7 +177,7 @@ class Schema {
     }
 
 
-    public static function get(string $name = '', object $object ) : ?object{
+    public static function get(object $object, string $name = '') : ?object{
         $reflection = new ReflectionClass($object);
         $property = $reflection->getProperty($name);
 

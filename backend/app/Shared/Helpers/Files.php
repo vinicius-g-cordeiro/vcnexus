@@ -15,7 +15,7 @@ use App\Shared\Request;
 
 final class Files {
     
-    function upload_file($files, $path = '/var/www/storage/upload/', $filename, $newName = '') {
+    function upload_file($files, $path = '/var/www/storage/upload/', $filename = 'file_', $newName = '') {
         $info = pathinfo($files['name']);
         if (empty($newName)) {
             $response['file_name'] = $filename . uniqid('upload-',true) . time() . "." . $info['extension'];

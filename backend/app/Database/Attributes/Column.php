@@ -11,9 +11,11 @@ declare(strict_types=1);
 
 namespace App\Database\Attributes;
 
+use AllowDynamicProperties;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
+#[AllowDynamicProperties()]
 final class Column {
     public bool $modified = false;
     public mixed $value = null {

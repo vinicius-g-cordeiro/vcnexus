@@ -208,7 +208,7 @@ class Model extends Connection
         }
 
 
-        if (isset($this->session->get('user')->id)) {
+        if ($this->session !== null && isset($this->session->get('user')->id)) {
             $date = new DateTime('now', new DateTimeZone('UTC'));
             $fields['updated_by'] = $this->session->get('user')->id;
             $fields['updated_at'] = $date->getTimestamp();

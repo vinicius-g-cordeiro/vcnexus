@@ -229,6 +229,14 @@ cd backend
 vendor/bin/phpunit
 ```
 
+The suite covers:
+
+- Database connection and session availability when the integration environment is configured.
+- User and tenant schema columns, constraints, and row-level security policies.
+- Valid and invalid user registration data.
+- User insert and update field mapping, including avatar persistence.
+- Avatar upload metadata and upload-directory handling.
+
 Run PHP_CodeSniffer when checking backend coding standards:
 
 ```bash

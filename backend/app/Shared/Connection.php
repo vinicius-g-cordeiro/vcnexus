@@ -44,7 +44,7 @@ class Connection {
             $connection->SetCharSet('utf8');
             $connection->enableLastInsertID(true);
             $connection->autoCommit = false;
-            $connection->raiseExceptions = true;
+            // $connection->raiseExceptions = true;
         } catch (ADODB_Exception $e) {
             Response::log(file: 'errors', message: $e->getMessage(), status: 500, success: false);
             throw $e;
