@@ -86,6 +86,11 @@ const routes = [
               breadcrumbs: [],
               actions: [],
               title: "Tenants - List",
+              requiredPermissions: [
+                'tenants.view',
+                'tenants.list',
+                'tenants.edit',
+              ]
             },
           },            
           {
@@ -120,7 +125,8 @@ const routes = [
           },
         ],
         meta: {
-          requiresSuperAdmin: true,
+          requiresAuth: true,
+          requiresAdmin: true,
         },
       },
       {
@@ -134,6 +140,13 @@ const routes = [
               breadcrumbs: [],
               actions: [],
               title: "Users - List",
+              requiredPermissions: [
+                'users.view',
+                'users.list',
+                'users.edit',
+                'users.block',
+                'users.unblock'
+              ]
             },
           },
           {
@@ -195,10 +208,28 @@ router.beforeEach(async (to, from) => {
 
   const isAuthenticated = authStore.isAuthenticated;
   const isSuperAdminAccount = authStore.isSuperAdmin;
-  const requiresAuth = to.matched.some((r) => r.meta.requiresAuth);
-  const requiresGuest = to.matched.some((r) => r.meta.requiresGuest);
-  const requiresSuperAdmin = to.matched.some((r) => r.meta.requiresSuperAdmin);  
+  const requiresAuth = to.matched.some((r) => r.meta.requiresAuth)
+  const requiresGuest = to.matched.some((r) => r.meta.requiresGuest)
+  const requiresSuperAdmin = to.matched.some((r) => r.meta.requiresSuperAdmin)  
+   to.matched.some((r)=> r.meta.requiresPermission )
 
+  const requiresPermission = to.matched.some((r) => r.meta.requiredPermissions)
+  
+
+  if(requiresPermission === true && requiresAuth === true){
+    const requiredPermissions = to.matched.filter((route) => route.meta.requiredPermissions).flatMap(route => {
+      const permission = route.meta.requiredPermissions
+
+      return Array.isArray(permission) ? permission : [permission]
+    })
+
+    
+    if(authStore.hasPermission(requiredPermissions) === false){
+      return { name: "dashboard" }
+    }
+  }
+
+  
   if (requiresSuperAdmin && isSuperAdminAccount === false) {
     return { name: "dashboard" };
   }

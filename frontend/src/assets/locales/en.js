@@ -14,7 +14,8 @@ export default {
         schedule: {
             schedule: 'Schedule',
             calendar: 'Calendar',
-            list: 'List'
+            list: 'List',
+            new: 'New',
         },
         tasks: {
             tasks: 'Tasks',

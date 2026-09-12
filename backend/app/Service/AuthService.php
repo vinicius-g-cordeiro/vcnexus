@@ -324,15 +324,10 @@ class AuthService extends Service
             throw new AppExceptionHandler(message: 'Could not find the user to logout', code: 400);
         }
 
-        $response = $this->transaction(function () use ($userFound) {
-            $result = $this->model->update(dataTransferObject: new LogoutDTO(id: (int) $userFound->id, uuid: $userFound->uuid), where: 'uuid = \'' . $userFound->uuid . '\'', bUpdate: false);
-            return $result;
-        });
-
-        if (isset($response) && $response === 1) {
+        if($userFound->uuid === $this->session->get('user')->uuid){
             $this->session->set('user', null);
         }
 
-        return $response === 1 ? object(loggedOut: true) : null;
+        return object(loggedOut: true);
     }
 }

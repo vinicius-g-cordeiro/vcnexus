@@ -3,16 +3,20 @@
     <div class="mx-auto px-4 sm:px-6 py-10 max-w-5xl">
       <!-- Page header -->
       <div class="flex flex-col mb-8">
-        <div class="flex flex-row justify-between">
-          <h1 class="font-semibold text-2xl tracking-tight">{{ isView ? 'View User' : (isNew ? 'New User' : 'Edit User') }}</h1>
+        <div class="flex flex-row justify-end gap-2">
+          <h1 class="ms-0 me-auto font-semibold text-2xl tracking-tight">{{ isView ? 'View User' : (isNew ? 'New User' : 'Edit User') }}</h1>
           <template v-if="!isNew">
-            <span class="ms-auto me-0" v-if="isView">
+            <span class="" v-if="isView">
               <Button variant="outline" :to="{ name: 'users.edit', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-pencil-square"></i> Edit {{ user.personal.name }}</Button>
             </span>
-            <span class="ms-auto me-0" v-else>
+            <span class="" v-else>
               <Button variant="outline" :to="{ name: 'users.view', params: { uuid: user.uuid } }" :title="t('users.list.results.actions.edit')"><i class="bi bi-eye"></i> View {{ user.personal.name }}</Button>
             </span>
           </template>
+
+          <span class="">
+              <Button variant="outline" :to="{ name: 'users.list' }" :title="t('users.list.results.actions.list')"><i class="bi bi-people-fill"></i> {{ t('users.list.results.legend') || 'List Users' }} </Button>
+            </span>
         </div>
         <p class="mt-1 text-neutral-500 dark:text-neutral-400 text-sm">
           {{ isView ? 'View this profile' : (isNew ? 'Create a new profile' : 'Update this profile') }}

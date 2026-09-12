@@ -15,7 +15,8 @@ export default {
         schedule: {
             schedule: 'Agenda',
             calendar: 'Calendário',
-            list: 'Listar'
+            list: 'Listar',
+            new: 'Novo'
         },
         tasks: {
             tasks: 'Tarefas',

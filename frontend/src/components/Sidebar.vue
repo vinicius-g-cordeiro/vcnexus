@@ -1,4 +1,5 @@
 <template>
+  <aside>
   <!-- Backdrop -->
   <Transition enter-active-class="transition-opacity duration-300 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition-opacity duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
     <div v-if="isOpen" class="z-40 fixed inset-0 bg-black/50" @click="close" />
@@ -34,6 +35,7 @@
       </div>
     </aside>
   </Transition>
+  </aside>
 </template>
 
 <script setup>

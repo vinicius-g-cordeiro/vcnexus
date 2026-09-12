@@ -177,7 +177,7 @@ final class Files {
                 continue;
             }
 
-            $response = $this->upload_file($file, $folderRoot, 'file', uniqid('doc-'.($newFilename ?? $filename).'-').'-'.date('dmYHis', time()).$extensions);
+            $response = $this->upload_file($file, $folderRoot, 'file', uniqid('upload-'.($newFilename ?? $filename).'-').'-'.date('dmYHis', time()).$extensions);
             if(file_exists($response['fullpath']) == false){
                 $errors++;
                 $result = [

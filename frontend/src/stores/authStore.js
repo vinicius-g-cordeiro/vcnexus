@@ -22,9 +22,21 @@ export const useAuthStore = defineStore("auth", {
     isWorker: (state) =>  !!state.sessionUser && state.sessionUser?.roles.indexOf('3') >= 0,
     canManageAccess: (state) =>  !!state.sessionUser && (state.sessionUser.roles.indexOf('2') >= 0 || state.sessionUser?.roles.indexOf('1') >= 0),
     userPermissions: (state) =>  state?.sessionUser?.permissions,
+    isAdmin: (state) => !!state.sessionUser && state.sessionUser?.roles.indexOf('2') >= 0
   },
 
   actions: {
+
+    /**
+     * get the permission of the user 
+     * @param {array} permission ['tenants.view', 'users.view'] 
+     * @returns {bool} if the user has permissions set 
+     */
+    hasPermission(permission = Array.prototype()){
+      const permissions = permission.map((item) => !!this.sessionUser?.permissions.find((pe) => pe === item) )
+      return permissions.some((r) => r === true)
+    },
+
     async fetchUser() {
       // Don't refetch if we already know the user for this session
       if (this.hydration && this.sessionUser) return true;
