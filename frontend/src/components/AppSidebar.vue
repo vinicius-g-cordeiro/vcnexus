@@ -22,14 +22,14 @@
       </div>
 
       <!-- Nav links -->
-      <nav class="flex flex-col gap-0.5 px-2" v-if="navItems.length">
-        <AccordionMenu :items="navItems" />
+      <nav class="flex flex-col gap-0.5 px-2 overflow-y-auto 6" v-if="navItems.length">
+        <AccordionMenu :items="navItems" :collapsed="collapsed" />
       </nav>
 
       <div v-if="navItems.length && listItems.length" class="mx-3 my-3 border-zinc-300 dark:border-zinc-700 border-t" />
 
       <!-- Secondary list section (e.g. history / recents / projects) -->
-      <div class="flex-1 px-2 pb-2 overflow-y-auto" v-if="listItems.length">
+      <div class="flex-1 px-2 pb-2 h-5/6 overflow-y-auto" v-if="listItems.length">
         <p v-if="!collapsed" class="px-2 pt-1 pb-1.5 font-medium text-zinc-500 dark:text-zinc-400 text-xs uppercase tracking-wide">
           {{ listLabel }}
         </p>
@@ -48,7 +48,7 @@
       <div v-else class="flex-1" />
 
       <!-- Footer (e.g. profile) -->
-      <div v-if="$slots.footer" class="px-2 py-3 border-zinc-300 dark:border-zinc-700 border-t">
+      <div v-if="$slots.footer" class="px-2 py-3 border-zinc-300 dark:border-zinc-700 border-t h-32">
         <slot name="footer" :collapsed="collapsed" />
       </div>
     </aside>

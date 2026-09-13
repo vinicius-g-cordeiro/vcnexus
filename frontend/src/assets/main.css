@@ -10,3 +10,26 @@ body{
     @apply bg-zinc-50 dark:bg-zinc-800 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] rounded-md p-4
 }
 
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #525252 #171717;
+}
+
+/* Chrome, Edge, Safari */
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #171717;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: #525252;
+    border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: #737373;
+}

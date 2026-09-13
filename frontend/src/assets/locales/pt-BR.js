@@ -12,6 +12,27 @@ export default {
     links: {
         home: 'Inicio',
         about: 'Sobre',
+
+        payments: {
+          payments: 'Pagamentos',
+          list: 'Listar',
+          new: 'Novo',
+          wallet: 'Carteira',
+        },
+        store: {
+          store: 'Loja',
+          list: 'Listar',
+          orders: 'Pedidos',
+          suppliers: 'Fornecedores',
+          deliveries: 'Entregas',
+          inventory: 'Inventário',
+        },
+        products: {
+          products: 'Produtos',
+          list: 'Listar',
+          new: 'Novo',
+          stock: 'Gerenciar Estoque',
+        },
         schedule: {
             schedule: 'Agenda',
             calendar: 'Calendário',

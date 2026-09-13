@@ -1,6 +1,6 @@
 <template>
-    <section class="gap-2 grid grid-cols-2 mx-auto w-10/12">
-        <section>
+    <section class="flex gap-2 grid-cols-2 mx-auto w-10/12">
+        <section class="flex flex-col">
             <main class="p-6">
                 <div class="mb-8">
                     <p class="text-zinc-500 text-sm">
@@ -26,56 +26,33 @@
                     </section>
                 </Fieldset>
             </section>
-            <section class="mx-auto mt-6 px-6 w-5xl">
-                <Fieldset legend="Bulletin Board">
-                    <section class="gap-3 grid grid-cols-3">
-                        <BulletinCard v-for="post in bulletinPosts" :key="post.title" v-bind="post" />
-                    </section>
-                </Fieldset>
-            </section>
+
         </section>
-        <section class="ms-auto mt-6 px-6">
-            <Fieldset legend="System Activity">
-                <ActivityFeed :events="activityEvents" />
-            </Fieldset>
+        <section class="mt-8">
             <Fieldset legend="Tasks">
-                <TaskList :tasks="tasks" />
+                <TaskList :tasks="tasks"  class="flex flex-col justify-between mx-auto" />
             </Fieldset>
+            <section class="flex flex-col gap-2 px-2 py-1 h-96 overflow-y-auto">
+                <BulletinCard v-for="post in bulletinPosts" :key="post.title" v-bind="post" />
+            </section>
         </section>
     </section>
 </template>
 <script setup>
 import { ref } from 'vue'
-import BulletinCard from '@/components/BulletinCard.vue'
 import Fieldset from '@/components/Fieldset.vue'
 import LinkGroup from '@/components/LinkGroup.vue'
 import StatCard from '@/components/StatCard.vue'
 import TaskList from '@/components/TaskList.vue'
-import ActivityFeed from '@/components/ActivityFeed.vue'
+import BulletinCard from '@/components/BulletinCard.vue'
+
 const stats = ref([
-    { label: 'Active Users', value: '5', icon: 'bi-people-fill', delta: '+4.2%', deltaDirection: 'up', accent: 'emerald' },
-    { label: 'Open Tasks', value: '10', icon: 'bi-list-check', delta: '-8.1%', deltaDirection: 'down', accent: 'cyan' },
-    { label: 'Revenue (MTD)', value: '$100', icon: 'bi-cash-stack', delta: '+12.6%', deltaDirection: 'up', accent: 'rose' },
-    { label: 'Active Tenants', value: '5', icon: 'bi-buildings', delta: '+1.3%', deltaDirection: 'up', accent: 'amber' },
+    { label: 'Active Users', value: '5', icon: 'bi-people-fill', accent: 'emerald' },
+    { label: 'Open Tasks', value: '3', icon: 'bi-list-check', accent: 'cyan' },
+    { label: 'Expiring Schedule', value: '10', icon: 'bi-list-check', accent: 'orange' },
+    { label: 'Tenants', value: '3', icon: 'bi-building', delta: '+50%', deltaDirection: 'up', accent: 'amber' },
 ])
 const linkGroups = ref([
-    {
-        title: 'Schedule',
-        accent: 'sky',
-        links: [
-            { to: '/schedule/new', icon: 'bi-calendar-plus', label: 'New' },
-            { to: '/schedule/list', icon: 'bi-list-task', label: 'List' },
-        ],
-    },
-    {
-        title: 'Events',
-        accent: 'violet',
-        links: [
-            { to: '/events/new', icon: 'bi-calendar-event', label: 'New' },
-            { to: '/events/list', icon: 'bi-list-task', label: 'List' },
-            { to: '/events/calendar', icon: 'bi-calendar3', label: 'Calendar' },
-        ],
-    },
     {
         title: 'Users',
         accent: 'emerald',
@@ -92,14 +69,6 @@ const linkGroups = ref([
             { to: '/tenants/new', icon: 'bi-building-add', label: 'New' },
             { to: '/tenants/list', icon: 'bi-buildings', label: 'List' },
             { to: '/tenants/leases', icon: 'bi-file-earmark-text', label: 'Leases' },
-        ],
-    },
-    {
-        title: 'Entities',
-        accent: 'indigo',
-        links: [
-            { to: '/entities/new', icon: 'bi-diagram-3', label: 'New' },
-            { to: '/entities/list', icon: 'bi-diagram-3-fill', label: 'List' },
         ],
     },
     {
@@ -129,23 +98,22 @@ const linkGroups = ref([
             { to: '/store/suppliers', icon: 'bi-truck', label: 'Suppliers' },
         ],
     },
+    {
+        title: 'Schedule',
+        accent: 'sky',
+        links: [
+            { to: '/schedule/new', icon: 'bi-calendar-plus', label: 'New' },
+            { to: '/schedule/list', icon: 'bi-list-task', label: 'List' },
+        ],
+    },
 ])
 const tasks = ref([
-    { title: 'Review Q3 tenant lease renewals', owner: 'Facilities Team', due: 'Today', priority: 'High', done: false },
-    { title: 'Approve pending payment extract', owner: 'Finance', due: 'Today', priority: 'High', done: false },
-    { title: 'Onboard new store supplier', owner: 'Store Management', due: 'Tomorrow', priority: 'Medium', done: false },
-    { title: 'Update employee documents', owner: 'Human Resources', due: 'Sep 5', priority: 'Medium', done: false },
-    { title: 'Publish September schedule', owner: 'Scrum Master', due: 'Sep 6', priority: 'Low', done: true },
-    { title: 'Archive closed entities', owner: 'Ops', due: 'Sep 8', priority: 'Low', done: false },
+    { title: 'Setup multi-tenant system', owner: 'Development Team', due: '15/09/2026', priority: 'High', done: true },
+    { title: 'Implement store management', owner: 'Development Team', due: '21/09/2026', priority: 'High', done: false },
+    { title: 'Setup payment system with PIX and credit cards.', owner: 'Development Team', due: '05/10/2026', priority: 'High', done: false },
+    { title: 'Whats App message handling for selling/support notifications.', owner: 'Development Team', due: '05/10/2026', priority: 'High', done: false },
 ])
-const activityEvents = ref([
-    { actor: 'System', title: 'completed nightly payments reconciliation', time: '5 minutes ago', type: 'success' },
-    { actor: 'Maria Santos', title: 'created a new tenant record for Unit 402', time: '32 minutes ago', type: 'info' },
-    { actor: 'CyberSecurity Team', title: 'flagged 3 failed login attempts', time: '1 hour ago', type: 'warning' },
-    { actor: 'System', title: 'failed to sync inventory with supplier feed', time: '2 hours ago', type: 'error' },
-    { actor: 'Jonas Firmino', title: 'approved a new payment extract', time: '3 hours ago', type: 'success' },
-    { actor: 'System', title: 'ran scheduled backup', time: '6 hours ago', type: 'info' },
-])
+
 const bulletinPosts = ref([
     {
         title: 'Adipisicing pariatur deserunt adipisicing proident.',
@@ -191,4 +159,5 @@ const bulletinPosts = ref([
         urgent: true,
     },
 ])
+
 </script>
