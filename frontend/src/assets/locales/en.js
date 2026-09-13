@@ -1,3 +1,40 @@
+
+
+// const paymentsOptions = { label: t('header.links.payments.payments'), children: [], icon: 'bi bi-cash-coin' };
+// const paymentsOptionsUrls = {
+//     'payments.view': { label: t('header.links.payments.list'), href: '/payments/list/', icon: 'bi bi-receipt-cutoff' },
+//     'payments.new': { label: t('header.links.payments.new'), href: '/payments/new/', icon: 'bi bi-cash' },
+//     'payments.wallet': { label: t('header.links.payments.wallet'), href: '/payments/wallet/', icon: 'bi bi-wallet' },
+// };
+// paymentsOptions.children = Object.entries(paymentsOptionsUrls)
+//     .filter((permission) => authStore.hasPermission(permission))
+//     .map(([, item]) => item)
+
+
+// const storeOptions = { label: t('header.links.store.store'), children: [], icon: 'bi bi-shop' };
+// const storeOptionsUrls = {
+//     'store.view': { label: t('header.links.store.list'), href: '/store/list/', icon: 'bi bi-clipboard-data' },
+//     'store.orders': { label: t('header.links.store.orders'), href: '/store/orders/', icon: 'bi bi-cart4' },
+//     'store.suppliers': { label: t('header.links.store.suppliers'), href: '/store/suppliers/', icon: 'bi bi-truck' },
+//     'store.deliveries': { label: t('header.links.store.deliveries'), href: '/store/deliveries/', icon: 'bi bi-box-seam' },
+//     'store.inventory': { label: t('header.links.store.inventory'), href: '/store/inventory/', icon: 'bi bi-cart-check' },
+// };
+// storeOptions.children = Object.entries(storeOptionsUrls)
+//     .filter((permission) => authStore.hasPermission(permission))
+//     .map(([, item]) => item)
+
+
+// const productsOptions = { label: t('header.links.products.products'), children: [], icon: 'bi bi-box-seam' };
+// const productsOptionsUrls = {
+//     'products.view': { label: t('header.links.products.list'), href: '/products/list/', icon: 'bi bi-list-stars' },
+//     'products.new': { label: t('header.links.products.new'), href: '/products/new/', icon: 'bi bi-box2' },
+//     'products.stock': { label: t('header.links.products.stock'), href: '/products/stock/', icon: 'bi bi-boxes' },
+// };
+// productsOptions.children = Object.entries(productsOptionsUrls)
+//     .filter((permission) => authStore.hasPermission(permission))
+//     .map(([, item]) => item)
+
+
 export default {
   header:{
     dropdown:{
@@ -11,6 +48,26 @@ export default {
     links: {
         home: 'Home',
         about: 'About',
+        payments: {
+          payments: 'Payments',
+          list: 'List',
+          new: 'New',
+          wallet: 'Wallet',
+        },
+        store: {
+          store: 'Store',
+          list: 'List',
+          orders: 'Orders',
+          suppliers: 'Suppliers',
+          deliveries: 'Deliveries',
+          inventory: 'Inventory',
+        },
+        products: {
+          products: 'Products',
+          list: 'List',
+          new: 'New',
+          stock: 'Manage Stock',
+        },
         schedule: {
             schedule: 'Schedule',
             calendar: 'Calendar',

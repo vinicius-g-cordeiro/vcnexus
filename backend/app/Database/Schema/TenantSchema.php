@@ -23,7 +23,7 @@ final class TenantSchema extends Schema
     #[Column(type: 'SMALLINT', default: '1', nullable: false, comment: 'Current status of the subscription plan. 1: active, 2: expired')]
     public ?int $status = 1;
 
-    #[Column(type: 'VARCHAR(4) ARRAY', default: 'ARRAY[\'0\']::VARCHAR(4)[]', nullable: false, comment: 'Current status of the subscription plan. 1: active, 2: expired')]
+    #[Column(type: 'VARCHAR(4) ARRAY', default: 'ARRAY[\'0\']::VARCHAR(4)[]', nullable: false, comment: 'The modules this tenant is allowed to use, this should override the tenant_user permissions, if the user is not allowed to use said module')]
     public ?array $modules = [];
 
     #[Column(type: 'SMALLINT', default: 1, nullable: false, comment: '')]
@@ -31,9 +31,6 @@ final class TenantSchema extends Schema
 
     #[Column(type: 'varchar(255)', default: null, nullable: true)]
     public ?string $slug = '';
-
-    #[Column(type: 'BIGINT', default: 1, nullable: false)]
-    public ?int $business_id = 1;
 
     #[Column(type: 'BIGINT', default: 1, nullable: false, inherit: false)]
     public ?int $tenant_id = 1;

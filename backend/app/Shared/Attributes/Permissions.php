@@ -11,19 +11,13 @@ declare(strict_types=1);
 
 namespace App\Shared\Attributes;
 
-
 use Attribute;
 
-
 /**
- * Attach one or more middleware classes to a controller (applies to every
- * route in it) or to a single method (applies to that route only).
- *
- * #[Middleware(LoggingMiddleware::class)]
- * #[Middleware(AuthMiddleware::class)]
+ * #[Permissions(['tenants.list'])]
  * class UserController { ... }
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class Middleware {
-    public function __construct(public string $class, ...$args) {}
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
+final class Permissions {
+    public function __construct(public readonly array $permissions = []) {}
 }

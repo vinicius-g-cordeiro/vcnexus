@@ -2,25 +2,14 @@
   <div ref="rootEl" class="inline-block relative text-left">
     <slot name="trigger" :toggle="toggle" :isOpen="isOpen" />
 
-    <Transition
-      enter-active-class="transition duration-150 ease-out"
-      enter-from-class="opacity-0 scale-95 -translate-y-1"
-      enter-to-class="opacity-100 scale-100 translate-y-0"
-      leave-active-class="transition duration-100 ease-in"
-      leave-from-class="opacity-100 scale-100 translate-y-0"
-      leave-to-class="opacity-0 scale-95 -translate-y-1"
-    >
-      <div
-        v-if="isOpen"
-        :class="[
-          'absolute z-50 min-w-[12rem] rounded-lg shadow-lg py-1 origin-top',
-          'dark:bg-zinc-800 bg-neutral-100 dark:text-zinc-50 text-zinc-900',
-          'ring-1 ring-black/5',
-          alignClass,
-        ]"
-        :style="offsetStyle"
-        role="menu"
-      >
+    <Transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0 scale-95 -translate-y-1" enter-to-class="opacity-100 scale-100 translate-y-0" leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100 scale-100 translate-y-0"
+      leave-to-class="opacity-0 scale-95 -translate-y-1">
+      <div v-if="isOpen" :class="[
+        'absolute z-50 min-w-[12rem] rounded-lg shadow-lg py-1 origin-top',
+        'dark:bg-zinc-800 bg-neutral-100 dark:text-zinc-50 text-zinc-900',
+        'ring-1 ring-black/5',
+        alignClass,
+      ]" :style="offsetStyle" role="menu">
         <slot :close="close" />
       </div>
     </Transition>

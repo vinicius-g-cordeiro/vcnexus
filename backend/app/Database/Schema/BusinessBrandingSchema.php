@@ -13,7 +13,6 @@ namespace App\Database\Schema;
 
 use App\Database\Attributes\Column;
 use App\Database\Attributes\Index;
-use App\Database\Attributes\UniqueConstraint;
 
 #[Index(name: 'uq_business_businessBranding', unique: true, columns: ['business_id'], condition: ['active' => '1'], references:'business_branding')]
 final class BusinessBrandingSchema extends Schema

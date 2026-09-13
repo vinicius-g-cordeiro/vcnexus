@@ -43,7 +43,6 @@ export const useTenantStore = defineStore("tenants", {
         this.tenant = response.data.tenants
         return this.tenant;
       } catch (error) {
-        console.log(error)
         this.error = error;
         this.tenant = [];
         return this.tenant;
@@ -59,7 +58,6 @@ export const useTenantStore = defineStore("tenants", {
         const response = await tenantService.createTenant(tenantInfo);
         return true;
       } catch (e) {
-        console.log(e);
         this.error = e.response.data.message || "Erro ao registrar";
         return false;
       } finally {
@@ -68,14 +66,13 @@ export const useTenantStore = defineStore("tenants", {
     },
 
 
-    async updateTenant(tenantInfo) {
+    async updateTenant(targetUUID, tenantInfo) {
       this.loading = true;
       this.error = null;
       try {
-        const response = await tenantService.updateTenant(tenantInfo);
+        const response = await tenantService.updateTenant(targetUUID,tenantInfo);
         return true;
       } catch (e) {
-        console.log(e);
         this.error = e.response.data.message || "Erro ao registrar";
         return false;
       } finally {

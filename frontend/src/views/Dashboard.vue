@@ -1,9 +1,7 @@
 <template>
-    <main class="gap-2 grid grid-cols-2 mx-auto w-10/12">
+    <section class="gap-2 grid grid-cols-2 mx-auto w-10/12">
         <section>
-            <!-- Content -->
             <main class="p-6">
-                <!-- Page heading -->
                 <div class="mb-8">
                     <p class="text-zinc-500 text-sm">
                         Overview
@@ -16,14 +14,11 @@
                     </p>
                 </div>
             </main>
-
-            
             <section class="mx-auto px-6 w-5xl">
                 <section class="gap-3 grid grid-cols-4">
                     <StatCard v-for="stat in stats" :key="stat.label" v-bind="stat" />
                 </section>
             </section>
-
             <section class="mx-auto mt-6 px-6 w-5xl">
                 <Fieldset legend="Links">
                     <section class="gap-3 grid grid-cols-3">
@@ -31,7 +26,6 @@
                     </section>
                 </Fieldset>
             </section>
-
             <section class="mx-auto mt-6 px-6 w-5xl">
                 <Fieldset legend="Bulletin Board">
                     <section class="gap-3 grid grid-cols-3">
@@ -40,20 +34,16 @@
                 </Fieldset>
             </section>
         </section>
-
         <section class="ms-auto mt-6 px-6">
             <Fieldset legend="System Activity">
                 <ActivityFeed :events="activityEvents" />
             </Fieldset>
-
             <Fieldset legend="Tasks">
                 <TaskList :tasks="tasks" />
             </Fieldset>
         </section>
-
-    </main>
+    </section>
 </template>
-
 <script setup>
 import { ref } from 'vue'
 import BulletinCard from '@/components/BulletinCard.vue'
@@ -62,19 +52,12 @@ import LinkGroup from '@/components/LinkGroup.vue'
 import StatCard from '@/components/StatCard.vue'
 import TaskList from '@/components/TaskList.vue'
 import ActivityFeed from '@/components/ActivityFeed.vue'
-
-// Placeholder metrics — wire up to real endpoints when available.
 const stats = ref([
     { label: 'Active Users', value: '5', icon: 'bi-people-fill', delta: '+4.2%', deltaDirection: 'up', accent: 'emerald' },
     { label: 'Open Tasks', value: '10', icon: 'bi-list-check', delta: '-8.1%', deltaDirection: 'down', accent: 'cyan' },
     { label: 'Revenue (MTD)', value: '$100', icon: 'bi-cash-stack', delta: '+12.6%', deltaDirection: 'up', accent: 'rose' },
     { label: 'Active Tenants', value: '5', icon: 'bi-buildings', delta: '+1.3%', deltaDirection: 'up', accent: 'amber' },
 ])
-
-// Each group carries a small accent color to make modules scannable at a
-// glance without relying on icons alone. Kept subtle (border + icon tint),
-// not full colored card backgrounds — this is a dense admin surface, not a
-// marketing page.
 const linkGroups = ref([
     {
         title: 'Schedule',
@@ -147,7 +130,6 @@ const linkGroups = ref([
         ],
     },
 ])
-
 const tasks = ref([
     { title: 'Review Q3 tenant lease renewals', owner: 'Facilities Team', due: 'Today', priority: 'High', done: false },
     { title: 'Approve pending payment extract', owner: 'Finance', due: 'Today', priority: 'High', done: false },
@@ -156,7 +138,6 @@ const tasks = ref([
     { title: 'Publish September schedule', owner: 'Scrum Master', due: 'Sep 6', priority: 'Low', done: true },
     { title: 'Archive closed entities', owner: 'Ops', due: 'Sep 8', priority: 'Low', done: false },
 ])
-
 const activityEvents = ref([
     { actor: 'System', title: 'completed nightly payments reconciliation', time: '5 minutes ago', type: 'success' },
     { actor: 'Maria Santos', title: 'created a new tenant record for Unit 402', time: '32 minutes ago', type: 'info' },
@@ -164,9 +145,7 @@ const activityEvents = ref([
     { actor: 'System', title: 'failed to sync inventory with supplier feed', time: '2 hours ago', type: 'error' },
     { actor: 'Jonas Firmino', title: 'approved a new payment extract', time: '3 hours ago', type: 'success' },
     { actor: 'System', title: 'ran scheduled backup', time: '6 hours ago', type: 'info' },
-
 ])
-
 const bulletinPosts = ref([
     {
         title: 'Adipisicing pariatur deserunt adipisicing proident.',

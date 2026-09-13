@@ -14,6 +14,7 @@ namespace App\Service\Tenants;
 use App\DTOs\Business\Branding\BusinessBrandingStoreDTO;
 use App\DTOs\Business\BusinessRegistrationDTO;
 use App\DTOs\Tenants\TenantRegistrationDTO;
+use App\DTOs\Tenants\TenantUpdateDTO;
 use App\Exceptions\AppExceptionHandler;
 use App\Model\Tenants\BusinessBrandingModel;
 use App\Model\Tenants\BusinessModel;
@@ -22,6 +23,8 @@ use App\Model\Tenants\TenantModel;
 use ADOConnection;
 use App\Model\Model;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Type;
 
 final class TenantService extends Service {
     protected ?BusinessModel $businessModel = null;
@@ -79,7 +82,7 @@ final class TenantService extends Service {
                     new Assert\NotBlank(message: 'Modules field is required and cannot be blank'),
                     new Assert\Type('array')
             ],
-            'subscriptionPlan' =>  [
+            'subscription_plan' =>  [
                 new Assert\NotBlank(message: 'Subscription Plan field is required and cannot be blank'),
                 new Assert\Type('int'),
             ],
@@ -147,12 +150,112 @@ final class TenantService extends Service {
     public function getTenant(?string $uuid) : object|array|bool {
         $response = null;
         $response = $this->model->getTenant($uuid);
-        // foreach($response[0] as $key => $value){
-        //     if($key === 'modules' || $key === 'phone' || $key === 'categories'){
-        //         $response[0]->$key = Utils::pgArrayToPhp($value ?? '');
-        //     }
-        // }
         return $response ?? object();
     }
 
+
+    public function update(?TenantUpdateDTO $tenantUpdateDTO) : object|array|bool {
+
+        $assert = new Assert\Collection(fields: [
+            'uuid' => [
+                new Assert\NotBlank(),
+                new Assert\Type('string'),
+            ],
+            'name' =>  [
+                new Assert\NotBlank(message: 'Name field is required and cannot be blank'),
+                new Assert\Type('string')
+            ],
+            'email' =>  [
+                new Assert\NotBlank(message: 'Email field is required and cannot be blank'),
+                new Assert\Type('string'),
+                new Assert\Email()
+            ],
+            'slug' =>  new Assert\NotBlank(message: 'Slug field is required and cannot be blank'),
+            'domain' =>  new Assert\Optional(),
+            'type' =>  [
+                new Assert\NotBlank(message: 'Type field is required and cannot be blank'),
+                new Assert\Type('int'),
+            ],
+            'tax_id' =>  [
+                new Assert\NotBlank(message: 'Tax ID field is required and cannot be blank'),
+                new Assert\Type('string'),
+            ],
+            'legal_name' =>  new Assert\NotBlank(message: 'Legal Name field is required and cannot be blank'),
+            'trade_name' =>  new Assert\NotBlank(message: 'Trade Name field is required and cannot be blank'),
+            'municipal_registration' => new Assert\Optional() ,
+            'state_registration' =>  new Assert\Optional(),
+            'phone' =>  new Assert\NotBlank(message: 'Phone field is required and cannot be blank'),
+            'address' =>  new Assert\Optional(),
+            'description' =>  new Assert\Optional(),
+            'website' =>  new Assert\Optional(),
+            'modules' =>  [
+                    new Assert\NotBlank(message: 'Modules field is required and cannot be blank'),
+                    new Assert\Type('array')
+            ],
+            'subscription_plan' =>  [
+                new Assert\NotBlank(message: 'Subscription Plan field is required and cannot be blank'),
+                new Assert\Type('int'),
+            ],
+            'primaryColor' =>  new Assert\Optional(), 
+            'accentColor' =>  new Assert\Optional(), 
+            'backgroundColor' =>  new Assert\Optional(), 
+            'textColor' =>  new Assert\Optional(), 
+        ], allowMissingFields: false, allowExtraFields: true);
+
+        $violations = $this->validator->validate((array) $tenantUpdateDTO, [$assert]);
+
+        if ($violations->count() > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[] = $violation->getMessage();
+            }
+
+            // This should handle the notification to the user, using the session notification method
+            throw new AppExceptionHandler(implode('##,##', $errors), 400, null);
+        }
+
+
+         $response = $this->transaction(function () use ($tenantUpdateDTO) {
+            $this->model->setAuthContext();
+
+            $result = $this->model->update($tenantUpdateDTO, 'uuid = \'' . $tenantUpdateDTO->uuid . '\'');
+
+            if (!$result || !isset($result->id)) {
+                throw new AppExceptionHandler('Failed to create tenant.');
+            }
+            $businessRegisterDTO = new BusinessRegistrationDTO(
+                name: $tenantUpdateDTO->name,
+                email: $tenantUpdateDTO->email,
+                type: (int)$tenantUpdateDTO->type,
+                tax_id: $tenantUpdateDTO->tax_id,
+                legal_name: $tenantUpdateDTO->legal_name,
+                trade_name: $tenantUpdateDTO->trade_name,
+                municipal_registration: $tenantUpdateDTO->municipal_registration,
+                state_registration: $tenantUpdateDTO->state_registration,
+                phone: $tenantUpdateDTO->phone,
+                description: $tenantUpdateDTO->description,
+                website: $tenantUpdateDTO->website,
+                tenant_id: (int)$result->id,
+            );
+            
+
+            $businessResult = $this->businessModel->update($businessRegisterDTO, 'tenant_id = ' . $result->id);
+
+            if (!$businessResult || !isset($businessResult->id)) {
+                throw new AppExceptionHandler('Failed to create business.');
+            }
+
+            $businessBrandingDTO = new BusinessBrandingStoreDTO(business_id: (int)$businessResult->id, app_name: $tenantUpdateDTO->name, accentColor: $tenantUpdateDTO->accentColor, primaryColor: $tenantUpdateDTO->primaryColor, textColor: $tenantUpdateDTO->textColor, buttonStyle: $tenantUpdateDTO->buttonStyle, fontStyle: $tenantUpdateDTO->fontFamily, logo: null);
+            $businessBrandResult = $this->businessBrandingModel->update($businessBrandingDTO, 'business_id = ' . $businessResult->id );
+
+            if(!$businessBrandResult || !isset($businessBrandResult->id)){
+                throw new AppExceptionHandler('Failed to create business branding!');
+            }
+            $result->business_id = $businessResult->id;
+            $result->business_branding_id = $businessBrandResult->id;
+            return $result;
+         });
+
+         return $response === false ? null : $response;
+    }
 }

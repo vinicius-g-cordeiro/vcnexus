@@ -12,11 +12,14 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\DTOs\Tenants\TenantRegistrationDTO;
+use App\DTOs\Tenants\TenantUpdateDTO;
+use App\Middleware\PermissionsMiddleware;
 use App\Shared\Attributes\Middleware;
 use App\Middleware\SuperAdminMiddleware;
 use App\Middleware\AuthMiddleware;
 use App\Service\Tenants\TenantService;
 use App\Service\Service;
+use App\Shared\Attributes\Permissions;
 use App\Shared\Request;
 use App\Shared\Connection;
 use App\Shared\Attributes\Route;
@@ -26,6 +29,7 @@ use Exception;
 use App\Events\Container;
 use App\Events\Tenants\TenantRegistered;
 use Throwable;
+
 
 #[Route(path: 'tenants/')]
 class TenantController extends Controller{
@@ -39,6 +43,7 @@ class TenantController extends Controller{
     }
 
     #[Route('GET', '/{uuid}')]
+    #[Permissions(['tenants.view'])]
     public function get($uuid = '') : void {
          $response = null;
         try{
@@ -55,7 +60,7 @@ class TenantController extends Controller{
 
     #[Route('GET', '/list')]
     #[Middleware(AuthMiddleware::class)]
-    #[Middleware(SuperAdminMiddleware::class)]
+    #[Permissions(['tenants.list', 'tenants.view', 'tenants.edit'])]
     public function index() : void {
         $response = null;
         try{
@@ -68,9 +73,10 @@ class TenantController extends Controller{
         }
     }
 
-    #[Route('PUT|POST', '/save')]
+    #[Route('POST', '/save')]
     #[Middleware(AuthMiddleware::class)]
     #[Middleware(SuperAdminMiddleware::class)]
+    #[Permissions(['tenants.edit'])]
     public function store() : void {
         $response = null;
         try{
@@ -90,7 +96,7 @@ class TenantController extends Controller{
                 description: $this->request->post('description'),
                 website: $this->request->post('website'),
                 modules: $this->request->post('modules') ?? [],
-                subscriptionPlan: (int)$this->request->post('subscriptionPlan') ?? 1,
+                subscription_plan: (int)$this->request->post('subscriptionPlan') ?? 1,
                 primaryColor: $this->request->post('customization')->primary_color,
                 accentColor: $this->request->post('customization')->accent_color,
                 backgroundColor: $this->request->post('customization')->background_color,
@@ -98,6 +104,51 @@ class TenantController extends Controller{
             );
 
             $response = $this->service->store($tenantRegisterDTO);
+
+
+            Container::getInstance()->dispatch(
+                new TenantRegistered((int)$response->insertID, $tenantRegisterDTO->name, $tenantRegisterDTO->email)
+            );
+
+            Response::json(message: 'Tenant created', status: true, code: 201, bShouldExit: true, data: $response);
+        }catch(Throwable $th){
+            Response::log('error', $th->getMessage(), 500, false, (object)$th->getTraceAsString());
+            Response::json(message: '500 - Something went wrong, try again later', status: false, code: 500, bShouldExit: true);
+        }
+    }
+
+    #[Route('PUT', '/{uuid}')]
+    #[Middleware(AuthMiddleware::class)]
+    #[Middleware(SuperAdminMiddleware::class)]
+    #[Permissions(['tenants.edit'])]
+    public function update(string $uuid) : void {
+        $response = null;
+        try{
+            $tenantRegisterDTO = new TenantUpdateDTO(
+                uuid: $uuid,
+                name: $this->request->put('name') ?? $this->request->put('legal_name'),
+                email: $this->request->put('email'),
+                slug: $this->request->put('slug'),
+                domain: $this->request->put('domain'),
+                type: (int)$this->request->put('type'),
+                tax_id: $this->request->put('tax_id'),
+                legal_name: $this->request->put('legal_name'),
+                trade_name: $this->request->put('trade_name'),
+                municipal_registration: $this->request->put('municipal_registration'),
+                state_registration: $this->request->put('state_registration'),
+                phone: $this->request->put("phone"),
+                address: $this->request->put('address'),
+                description: $this->request->put('description'),
+                website: $this->request->put('website'),
+                modules: $this->request->put('modules') ?? [],
+                subscription_plan: (int)$this->request->put('subscription_plan') ?? 1,
+                primaryColor: $this->request->put('customization')->primary_color,
+                accentColor: $this->request->put('customization')->accent_color,
+                backgroundColor: $this->request->put('customization')->background_color,
+                textColor: $this->request->put('customization')->text_color,
+            );
+
+            $response = $this->service->update($tenantRegisterDTO);
 
 
             Container::getInstance()->dispatch(

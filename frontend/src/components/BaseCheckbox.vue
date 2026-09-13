@@ -6,7 +6,7 @@
         type="checkbox"
         :disabled="disabled"
         class="sr-only peer"
-        v-bind="$attrs"
+        v-bind="$attrs"  :title="title"
       />
       <span
         :class="[
@@ -14,7 +14,7 @@
           'peer-checked:bg-emerald-500 peer-checked:border-emerald-500',
           'peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500 peer-focus-visible:ring-offset-1',
           error ? 'border-red-500' : 'dark:border-zinc-600 border-zinc-400',
-        ]"
+        ]" :title="title"
       />
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -47,6 +47,7 @@ const props = defineProps({
   label: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
   error: { type: String, default: '' },
+  title: { type: String, default: '' },
 })
 
 const emit = defineEmits(['update:modelValue'])

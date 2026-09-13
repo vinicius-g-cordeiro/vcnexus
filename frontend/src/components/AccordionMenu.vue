@@ -2,14 +2,14 @@
   <ul class="m-0 p-0 w-full list-none" :class="{ 'pl-2': depth > 0 }">
     <li v-for="(item, index) in items" :key="item.href ?? item.label ?? index" class="w-full">
       <!-- Leaf link -->
-      <RouterLink v-if="!hasChildren(item)" :to="item.href" class="flex items-center gap-2.5 hover:bg-emerald-500 px-3 py-2.5 w-full text-zinc-900 dark:text-zinc-200 text-sm transition-colors" active-class="border-b border-b-emerald-500 text-emerald-600 font-semibold hover:bg-emerald-50" @click="$emit('navigate', item)"
+      <RouterLink v-if="!hasChildren(item) && item.href" :to="item.href" class="flex items-center hover:bg-emerald-500 px-3 py-2.5 w-full text-zinc-900 dark:text-zinc-200 text-sm transition-colors" active-class="border-b border-b-emerald-500 text-emerald-600 font-semibold hover:bg-emerald-50" @click="$emit('navigate', item)"
         :title="item.title || item.label">
         <i v-if="item.icon" :class="item.icon" class="w-5 text-center shrink-0"></i>
         <span class="flex-1 text-left truncate">{{ item.label }}</span>
       </RouterLink>
 
       <!-- Parent with children -->
-      <template v-else>
+      <template v-else-if="hasChildren(item) && !item.href">
         <button type="button" class="flex items-center hover:bg-emerald-500 px-3 py-2.5 w-full text-zinc-900 dark:text-zinc-200 text-sm transition-colors cursor-pointer" :aria-expanded="isOpen(index)" @click="toggle(index)">
           <i v-if="item.icon" :class="item.icon" class="w-5 text-center shrink-0"></i>
           <span class="flex-1 text-left truncate">{{ item.label }}</span>
@@ -31,6 +31,10 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
+
+
+const auth = useAuthStore()
 
 const props = defineProps({
   items: {

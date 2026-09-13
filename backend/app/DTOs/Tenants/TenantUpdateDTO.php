@@ -13,9 +13,10 @@ namespace App\DTOs\Tenants;
 
 use App\DTOs\DTOInterface;
 
-final readonly class TenantRegistrationDTO implements DTOInterface
+final readonly class TenantUpdateDTO implements DTOInterface
 {
     public function __construct(
+        public readonly string $uuid,
         public readonly string $name,
         public readonly ?string $legal_name,
         public readonly ?string $tax_id,

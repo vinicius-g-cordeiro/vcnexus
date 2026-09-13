@@ -12,10 +12,12 @@ declare(strict_types=1);
 namespace App\Shared;
 
 
+use App\Middleware\PermissionsMiddleware;
 use App\Shared\Response;
 use App\Shared\Attributes\Route as RouteAttribute;
 use App\Shared\Attributes\Middleware as MiddlewareAttribute;
 use App\Shared\Attributes\RateLimit as RateLimitAttribute;
+use App\Shared\Attributes\Permissions as PermissionsAttribute;
 use App\Shared\Request;
 use ReflectionAttribute;
 use ReflectionMethod;
@@ -39,6 +41,7 @@ final class Router {
      *     path: string,
      *     middlewares: class-string[],
      *     rateLimit: RateLimitAttribute|null,
+     *     permissions: PermissionsAttribute|null,
      *     injectsRequest: bool
      * }>
      */
@@ -78,6 +81,7 @@ final class Router {
 
         $classMiddleware = $reflection->getAttributes(MiddlewareAttribute::class);
         $classRateLimit = $reflection->getAttributes(RateLimitAttribute::class);
+        $classPermissions = $reflection->getAttributes(PermissionsAttribute::class);
 
         foreach($reflection->getMethods() as $method) {
             $methodRouteAttributes = $method->getAttributes(RouteAttribute::class);
@@ -87,6 +91,7 @@ final class Router {
 
             $methodMiddleware = $this->resolveMiddlewareClasses($method->getAttributes(MiddlewareAttribute::class));
             $methodRateLimit = $this->resolveRateLimit($method->getAttributes(RateLimitAttribute::class));
+            $methodPermissions = $this->resolvePermissions($method->getAttributes(PermissionsAttribute::class));
             $injectsRequest = $this->methodInjectsRequest($method);
 
             foreach($methodRouteAttributes as $attribute) {
@@ -103,6 +108,7 @@ final class Router {
                     'path' => $fullPath,
                     'middlewareClasses' => [...$classMiddleware, ...$methodMiddleware],
                     'rateLimit' => $methodRateLimit ?? $classRateLimit,
+                    'permissions' => $methodPermissions ?? $classPermissions,
                     'injectsRequest' => $injectsRequest
                 ];
             }
@@ -146,7 +152,9 @@ final class Router {
 
     function listRoutes() : array {
         return array_map(static fn (array $route) : string => implode('|', $route['methods']) . ' ' . $route['path'] . ' -> ' . $route['controller'] . '::' . $route['action'] . ' () ' 
-        . ($route['rateLimit'] !== null ? ('Rate Limit: ' . ($route['rateLimit']->maxAttempts ?? '') . '/'. ($route['rateLimit']->decaySeconds ?? '') . 's') : ''), $this->routes);
+        . ($route['rateLimit'] !== null ? ('Rate Limit: ' . ($route['rateLimit']->maxAttempts ?? '') . '/'. ($route['rateLimit']->decaySeconds ?? '') . 's') : '')
+        . ($route['permissions'] !== null ? 'Permissions: ' . ($route['permissions'] ?? '')  : ''),
+         $this->routes);
     }
 
     function runPipeline(array $route, Request $request) : mixed {
@@ -154,6 +162,10 @@ final class Router {
         
         if(isset($route['rateLimit'], $route['rateLimit']->maxAttempts, $route['rateLimit']->decaySeconds) && $route['rateLimit'] !== null) {
             $middlewareInstances[] = new RateLimitMiddleware($this->rateLimiter, $route['rateLimit']->maxAttempts, $route['rateLimit']->decaySeconds);
+        }
+
+        if(isset($route['permissions']) && empty($route['permissions']->permissions) === false){
+            $middlewareInstances[] = new PermissionsMiddleware($route['permissions']);
         }
         
         
@@ -192,6 +204,11 @@ final class Router {
     }
 
     function resolveRateLimit(array $attributes) : ?RateLimitAttribute {
+        return $attributes===[] ? null : $attributes[0]->newInstance();
+    }
+
+
+    function resolvePermissions(array $attributes) : ?PermissionsAttribute {
         return $attributes===[] ? null : $attributes[0]->newInstance();
     }
 
