@@ -57,8 +57,12 @@ class Schema {
     public ?int $created_by = null;
     #[Column(type: 'BIGINT',default: null, nullable: true, comment: '')]
     public ?int $updated_by = null;
+
     #[Column(type: 'BIGINT',default: null, nullable: true, comment: '')]
     public ?int $deleted_by = null;
+
+    #[Column(type: 'VARCHAR(500)', default: null, nullable:true, comment: 'Description of the reason the row was deactivated/deleted')]
+    public ?string $deleted_reason = null;
 
     #[Column(type: 'BIGINT',default: null, nullable: true, comment: 'Tenant id for multi-tenant management using RLS')]
     public ?int $tenant_id = null;
