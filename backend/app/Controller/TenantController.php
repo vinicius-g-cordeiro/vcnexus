@@ -75,7 +75,6 @@ class TenantController extends Controller{
 
     #[Route('POST', '/save')]
     #[Middleware(AuthMiddleware::class)]
-    #[Middleware(SuperAdminMiddleware::class)]
     #[Permissions(['tenants.edit'])]
     public function store() : void {
         $response = null;
@@ -119,7 +118,6 @@ class TenantController extends Controller{
 
     #[Route('PUT', '/{uuid}')]
     #[Middleware(AuthMiddleware::class)]
-    #[Middleware(SuperAdminMiddleware::class)]
     #[Permissions(['tenants.edit'])]
     public function update(string $uuid) : void {
         $response = null;

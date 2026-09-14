@@ -41,7 +41,7 @@
           <AvatarUpload :disabled="isView === true" v-show="activeSection === 'avatar'" v-model="user.avatarUrl" :name="fullName" @update:file="handleAvatarFile" />
           <PersonalDetailsSection :disabled="isView === true" v-show="activeSection === 'personal'" v-model="user.personal" :errors="errors.personal" />
           <SecuritySection :disabled="isView === true" v-show="activeSection === 'security'" v-model="user.security" :errors="errors.security" :password-required="isNew" />
-          <BusinessDetailsSection :disabled="isView === true" v-show="activeSection === 'business' && isWorker" v-model="user.business" :errors="errors.business" />
+          <BusinessDetailsSection :disabled="isView === true" v-show="activeSection === 'business'" v-model="user.business" :errors="errors.business" />
           <BioSection :disabled="isView === true" v-show="activeSection === 'bio'" v-model="user.bio" :error="errors.bio" />
           <PermissionsSection :disabled="isView === true" v-show="activeSection === 'permissions' && canChangePermissions" v-model="user.permissions" />
           <RolesSection :disabled="isView === true" v-show="activeSection === 'roles' && canChangeRoles" v-model="user.roles" />
@@ -144,7 +144,7 @@ const allSections = [
   { key: 'avatar', label: 'Avatar' },
   { key: 'personal', label: 'Personal details' },
   { key: 'documents', label: 'Documents' },
-  { key: 'business', label: 'Business details', requires: 'worker' },
+  { key: 'business', label: 'Business details' },
   { key: 'bio', label: 'Bio' },
   { key: 'permissions', label: 'Permissions', requires: 'permissions' },
   { key: 'roles', label: 'Roles', requires: 'roles' },
@@ -232,15 +232,11 @@ function mapFormToApiPayload() {
         password_confirmation: user.security.password_confirmation,
       }
       : {}),
-    ...(isWorker.value
-      ? {
-        hourly_rate: user.business.hourlyRate,
-        hire_date: user.business.hireDate,
-        tenant: user.business.tenant,
-        contract_file: user.business.contract_file,
-        contract_type: user.business.contract_type,
-      }
-      : {}),
+      hourly_rate: user.business.hourlyRate,
+      hire_date: user.business.hireDate,
+      tenant: user.business.tenant,
+      contract_file: user.business.contract_file,
+      contract_type: user.business.contract_type,
     ...(canChangePermissions.value
       ? {
         permissions: user.permissions,
@@ -261,15 +257,15 @@ async function loadUser() {
       Object.assign(user, emptyUser())
       isWorker.value = auth.sessionUser?.roles?.includes('2')
       canManageAccess.value = auth.isSuperAdmin
-      canChangeRoles.value = auth.isSuperAdmin || auth.userPermissions.includes('users.roles')
-      canChangePermissions.value = auth.isSuperAdmin || auth.userPermissions.includes('users.permissions')
+      canChangeRoles.value = auth.isSuperAdmin || auth.hasPermission(['users.roles'])
+      canChangePermissions.value = auth.isSuperAdmin || auth.hasPermission(['users.permissions'])
     } else {
       const ok = await userStore.fetchUser(targetId.value)
       Object.assign(user, mapApiUserToForm(userStore.user))
       isWorker.value = auth.sessionUser?.roles?.includes('3')
       canManageAccess.value = auth.isSuperAdmin
-      canChangeRoles.value = auth.isSuperAdmin || auth.userPermissions.includes('users.roles')
-      canChangePermissions.value = auth.isSuperAdmin || auth.userPermissions.includes('users.permissions')
+      canChangeRoles.value = auth.isSuperAdmin || auth.hasPermission(['users.roles'])
+      canChangePermissions.value = auth.isSuperAdmin || auth.hasPermission(['users.permissions'])
     }
   } catch (err) {
     loadError.value = isNew.value

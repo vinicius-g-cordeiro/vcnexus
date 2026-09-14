@@ -48,7 +48,7 @@
       <div v-else class="flex-1" />
 
       <!-- Footer (e.g. profile) -->
-      <div v-if="$slots.footer" class="px-2 py-3 border-zinc-300 dark:border-zinc-700 border-t h-32">
+      <div v-if="$slots.footer" class="px-2 py-3 border-zinc-300 dark:border-zinc-700 border-t h-16 cursor-pointer">
         <slot name="footer" :collapsed="collapsed" />
       </div>
     </aside>

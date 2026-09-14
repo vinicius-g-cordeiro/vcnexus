@@ -11,8 +11,7 @@ body{
 }
 
 * {
-    scrollbar-width: thin;
-    scrollbar-color: #525252 #171717;
+    @apply dark:scrollbar-thumb-zinc-800 dark:scrollbar-track-zinc-600 scrollbar-track-zinc-100 scrollbar-thumb-zinc-200 scrollbar-thin
 }
 
 /* Chrome, Edge, Safari */
@@ -22,14 +21,13 @@ body{
 }
 
 *::-webkit-scrollbar-track {
-    background: #171717;
+    @apply bg-zinc-300 dark:bg-zinc-700
 }
 
 *::-webkit-scrollbar-thumb {
-    background: #525252;
-    border-radius: 4px;
+    @apply bg-zinc-300 dark:bg-zinc-500
 }
 
 *::-webkit-scrollbar-thumb:hover {
-    background: #737373;
+    @apply dark:bg-gray-700 bg-gray-400
 }

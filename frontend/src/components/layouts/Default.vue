@@ -5,7 +5,7 @@
             <template #footer="{ collapsed }">
                 <Dropdown align="left" :offset="{ x: 0, y: -164 }" v-if="authStore.sessionUser">
                     <template #trigger="{ toggle }">
-                        <button type="button" :class="['flex items-center gap-2 w-full rounded-md p-2']" class="flex justify-center items-center hover:opacity-90 rounded-full w-9 h-9 font-medium text-zinc-100 text-sm transition-opacity" aria-label="Open user menu" @click="toggle">
+                        <button type="button" :class="['flex items-center gap-2 w-full rounded-md p-2']" class="flex justify-center items-center hover:opacity-90 rounded-full w-9 h-9 font-medium text-zinc-100 text-sm transition-opacity cursor-pointer" aria-label="Open user menu" @click="toggle">
                             <slot name="avatar">
                                 <img v-if="authStore.sessionUser?.avatar" :src="`${storageBase}/storage/users/avatars/${authStore.sessionUser?.avatar}`" loading="lazy" class="rounded-full w-9 h-9 object-center" alt="avatar" />
                                 <span v-else>

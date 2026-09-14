@@ -60,15 +60,15 @@ const props = defineProps({
 
 defineEmits(['update:modelValue'])
 
-const selectedRoleDetails = computed(() =>
-  props.roleOptions.filter((r) => props.modelValue.includes(r.value))
+const selectedRoleDetails = computed(() =>  
+  props.roleOptions.filter((r) => props.modelValue.includes(String(r.value)))
 )
 
 const canManageRoles = ref(false)
 
 
 onMounted(async() => {
-  canManageRoles.value = auth.isSuperAdmin
+  canManageRoles.value = auth.hasPermission(['users.roles'])
 });
 
 </script>
