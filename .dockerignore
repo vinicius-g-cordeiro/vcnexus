@@ -1,0 +1,57 @@
+# ==========================================================================
+# VCNexus ERP — .dockerignore
+# Keeps secrets and dev-only cruft out of every build context / image layer.
+# Applies even though secrets/ is also compose-mounted at runtime — a single
+# `COPY . .` in any Dockerfile would otherwise bake secrets into the image.
+# ==========================================================================
+
+# ---- Secrets — never enter a build context ----
+secrets/
+.env
+.env.*
+!.env.example
+
+# ---- Git ----
+.git/
+.gitignore
+.gitattributes
+
+# ---- PHP / Composer ----
+vendor/
+composer.lock.bak
+*.log
+.phpunit.result.cache
+
+# ---- Node / Vite / Vue frontend build artifacts ----
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ---- Docker meta files (no need to COPY these into any image) ----
+docker-compose.yml
+docker-compose.override.yml
+Dockerfile*
+.dockerignore
+
+# ---- Documentation / repo meta — irrelevant inside a container ----
+README.md
+*.md
+docs/
+.github/
+
+# ---- IDE / editor / OS cruft ----
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ---- Local storage / logs — should be volumes, not image content ----
+storage/app/*
+storage/logs/*
+database/backups/

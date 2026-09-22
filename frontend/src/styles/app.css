@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.app-dark, .app-dark *));
+
+font-face {
+    font-family: "Valley Sans";
+    src: url("@/assets/fonts/Valley_Sans/ValleySans-VariableFont_wght.ttf");
+}
+
+font-face {
+    font-family: "Playfair Display";
+    src: url("@/assets/fonts/Playfair_Display/PlayfairDisplay-VariableFont_wght.ttf");
+}
+
+font-face {
+    font-family: "Nunito";
+    src: url("@/assets/fonts/Nunito/Nunito-VariableFont_wght.ttf");
+}
+
+font-face {
+    font-family: "Inter";
+    src: url("@/assets/fonts/Inter/Inter-VariableFont_opsz,wght.ttf");
+}
+
+font-face {
+    font-family: "Quicksand";
+    src: url("@/assets/fonts/Quicksand/Quicksand-VariableFont_wght.ttf");
+}
+
+font-face {
+    font-family: "Fira Sans";
+    src: url("@/assets/fonts/Fira_Sans/FiraSans-Light.ttf");
+}
+
+@theme {
+    --font-sans: "Fira Sans", sans-serif;
+    --font-serif: "Playfair Display", serif;
+    --font-mono: "Fira Sans", monospace;
+    --font-valley: "Valley Sans", sans-serif;
+    --font-nunito: "Nunito", sans-serif;
+    --font-inter: "Inter", sans-serif;
+    --font-quicksand: "Quicksand", sans-serif;
+    --font-playfair: "Playfair Display", serif;
+
+    --color-olive-wood-50: oklch(96.39% 0.008 61.45);
+    --color-olive-wood-100: oklch(92.87% 0.015 70.88);
+    --color-olive-wood-200: oklch(85.72% 0.032 70.47);
+    --color-olive-wood-300: oklch(78.22% 0.048 68.10);
+    --color-olive-wood-400: oklch(70.91% 0.066 68.01);
+    --color-olive-wood-500: oklch(63.48% 0.082 67.34);
+    --color-olive-wood-600: oklch(54.06% 0.069 67.05);
+    --color-olive-wood-700: oklch(44.10% 0.054 66.75);
+    --color-olive-wood-800: oklch(33.89% 0.039 68.99);
+    --color-olive-wood-900: oklch(22.46% 0.021 69.76);
+    --color-olive-wood-950: oklch(18.77% 0.015 66.67);
+
+    --color-tomato-50: #ffe6e6;
+    --color-tomato-100: #ffcccc;
+    --color-tomato-200: #fe9a9a;
+    --color-tomato-300: #fe6767;
+    --color-tomato-400: #fe3434;
+    --color-tomato-500: #fe0101;
+    --color-tomato-600: #cb0101;
+    --color-tomato-700: #980101;
+    --color-tomato-800: #650101;
+    --color-tomato-900: #330000;
+    --color-tomato-950: #240000;
+
+    --color-primary-scarlet-50: #ffe5ea;
+    --color-primary-scarlet-100: #ffccd5;
+    --color-primary-scarlet-200: #ff99aa;
+    --color-primary-scarlet-300: #ff6680;
+    --color-primary-scarlet-400: #ff3355;
+    --color-primary-scarlet-500: #ff002b;
+    --color-primary-scarlet-600: #cc0022;
+    --color-primary-scarlet-700: #99001a;
+    --color-primary-scarlet-800: #660011;
+    --color-primary-scarlet-900: #330009;
+    --color-primary-scarlet-950: #240006;
+
+
+    --color-carbon-black: #f2f2f2;
+    --color-carbon-black: #e6e6e6;
+    --color-carbon-black: #cccccc;
+    --color-carbon-black: #b3b3b3;
+    --color-carbon-black: #999999;
+    --color-carbon-black: #808080;
+    --color-carbon-black: #666666;
+    --color-carbon-black: #4d4d4d;
+    --color-carbon-black: #333333;
+    --color-carbon-black: #1A1A1A;
+    --color-carbon-black: #121212;
+
+    --color-gold: #f2c94c;
+    --color-gold-500: #f2c94c;
+    --color-gold-600: #f2c94c;
+    --color-gold-700: #f2c94c;
+    --color-gold-800: #f2c94c;
+    --color-gold-900: #f2c94c;
+}
+
+body {
+    @apply bg-stone-200 dark:bg-stone-900 text-stone-900 dark:text-stone-50 min-h-screen font-valley antialiased 
+}
+
+* {
+    @apply text-sm font-valley
+}
+
+* > *::-webkit-scrollbar {
+    @apply dark:scrollbar-thumb-stone-800 dark:scrollbar-track-stone-600 scrollbar-track-stone-100 scrollbar-thumb-stone-200 scrollbar-thin
+}
+
+
+/* Chrome, Edge, Safari */
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    @apply bg-stone-300 dark:bg-stone-700
+}
+
+*::-webkit-scrollbar-thumb {
+    @apply bg-stone-300 dark:bg-stone-500
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    @apply dark:bg-stone-700 bg-stone-400
+}

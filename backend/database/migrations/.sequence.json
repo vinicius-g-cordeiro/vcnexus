@@ -1,0 +1,17 @@
+{
+    "user_credentials": 1,
+    "permissions": 2,
+    "role_permissions": 3,
+    "roles": 4,
+    "tenant_memberships": 5,
+    "user_permissions": 6,
+    "user_roles": 7,
+    "business_brandings": 8,
+    "business": 9,
+    "tenants": 10,
+    "user_address": 11,
+    "user_consents": 12,
+    "user_contact": 13,
+    "user_profile": 14,
+    "user_sensitive": 15
+}

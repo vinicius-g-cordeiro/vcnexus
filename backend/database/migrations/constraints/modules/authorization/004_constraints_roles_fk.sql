@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS "idx_roles_name" ON "roles" ("name","tenant_id") WHERE "active" = 1;

@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX IF NOT EXISTS "idx_tenant_business" ON "business" ("tenant_id") WHERE "active" = 1;
+ALTER TABLE "business" ADD CONSTRAINT "fk_tenant"  FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED ;

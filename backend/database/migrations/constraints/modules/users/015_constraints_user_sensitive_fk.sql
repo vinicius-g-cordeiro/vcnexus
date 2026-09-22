@@ -1,0 +1,2 @@
+
+ALTER TABLE "user_sensitive" ADD CONSTRAINT "fk_user_sensitive_user_credentials"  FOREIGN KEY ("user_id") REFERENCES "user_credentials" ("id") ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED ;

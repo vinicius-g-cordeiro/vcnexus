@@ -1,0 +1,84 @@
+# ==========================================================================
+# VCNexus ERP — .gitignore
+# ==========================================================================
+
+# ---- Secrets (never commit — see secrets/ folder, organized by concern) ----
+/secrets/*
+!/secrets/.env.example
+.env
+.env.*
+!.env.example
+
+# ---- PHP / Composer (backend: src/, tools/schema-compiler/) ----
+/vendor/
+vendor/
+
+composer.phar
+composer.lock.bak
+*.cache
+
+# Generated schema-compiler output (regenerate via tools/schema-compiler, don't hand-edit)
+# Uncomment if generated Models/Migrations should NOT be committed:
+# src/Modules/**/Models/*.generated.php
+# database/migrations/*.generated.sql
+
+# PHP runtime/debug
+*.log
+.phpunit.result.cache
+/build/
+/coverage/
+
+# ---- Node / Vite / Vue (frontend/) ----
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/*.local
+frontend/coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- Docker ----
+docker/**/*.local.yml
+docker-compose.override.yml
+*.pid
+
+# ---- Database ----
+*.sql.bak
+/database/*.sqlite
+/database/backups/
+
+# ---- File storage / uploads (local dev only — use real object storage in prod) ----
+**/storage/app/*
+!**/storage/app/.gitkeep
+**/storage/logs/*
+!**/storage/logs/.gitkeep
+**/storage/rate_limits.json
+
+*.pem
+*.key
+/nginx/ssl/
+
+# ---- IDE / editor ----
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ---- OS ----
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# ---- Nobara/Linux dev artifacts ----
+*~
+.directory
+
+/backend/database/migrations/shared/init/
