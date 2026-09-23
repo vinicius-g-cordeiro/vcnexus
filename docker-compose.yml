@@ -163,6 +163,8 @@ services:
 
   websocket:
     container_name: websocket
+    ports:
+      - "${WS_PORT-8080}:${WS_PORT-8080}"
     build:
       context: .
       dockerfile: infrastructure/php-ws/Dockerfile

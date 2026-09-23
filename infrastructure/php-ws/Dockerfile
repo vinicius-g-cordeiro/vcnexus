@@ -52,4 +52,5 @@ RUN composer install --no-dev --no-interaction --optimize-autoloader --no-script
 
 COPY ./backend . 
 
+
 CMD ["php", "bin/websocket-server.php"]

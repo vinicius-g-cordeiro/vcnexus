@@ -29,6 +29,25 @@ const routes = [
     ],
   },
   {
+    path: "/web-chat",
+    component: () => import("@/layouts/Guest.vue"),
+    meta: {
+      requiresGuest: true,
+    },
+    children: [
+      {
+        path: "",
+        name: "web-chat",
+        component: () => import("@/views/chat/WebSocketTest.vue"),
+        meta: {
+          breadcrumbs: [],
+          actions: [],
+          title: "Chat",
+        },
+      },
+    ],
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "not-found",
     component: () => import("@/views/errors/Error404.vue"),
