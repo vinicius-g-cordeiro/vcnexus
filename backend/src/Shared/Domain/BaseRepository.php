@@ -95,11 +95,12 @@ abstract class BaseRepository
 
         $columns = implode(', ', array_keys($row));
         $placeholders = implode(', ', array_fill(0, count($row), '?'));
+
         $result = $this->db->GetRow(
             "INSERT INTO $table ($columns) VALUES ($placeholders) RETURNING " . implode(', ', $returning),
             array_values($row)
         );
-
+        
         if ($result === false) {
             return false;
         }

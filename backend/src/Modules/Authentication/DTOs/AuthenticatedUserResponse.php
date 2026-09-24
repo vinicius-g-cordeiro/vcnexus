@@ -16,9 +16,34 @@ use App\Shared\Domain\DataTransferObjectInterface;
 
 final class AuthenticatedUserResponse implements DataTransferObjectInterface
 {
-    public function __construct(public readonly string $uuid, public readonly int $id, public readonly array $tenants, public readonly ?array $roles, public readonly ?array $permissions){}
+    public function __construct(
+        public readonly string $uuid,
+        public readonly int $id,
+        public readonly array $tenants,
+        public readonly ?array $roles,
+        public readonly ?array $permissions,
+        public readonly ?string $name,
+        public readonly ?string $email,
+        public readonly ?string $avatar
+    ) {
+    }
 
-    public function toArray(): array{ return get_object_vars($this); }
+    public function toArray(): array
+    {
+        return get_object_vars($this);
+    }
 
-    public static function fromArray(array $data): self{ return new self($data['uuid'], (int)$data['id'], $data['tenants'], $data['roles'], $data['permissions']); }
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            $data['uuid'],
+            isset($data['id']) ? (int) $data['id'] : null,
+            $data['tenants'],
+            $data['roles'],
+            $data['permissions'],
+            $data['name'],
+            $data['email'],
+            $data['avatar']
+        );
+    }
 }

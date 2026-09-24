@@ -41,6 +41,9 @@ final class MigrationGenerator
             }
         }
 
+        
+
+
         foreach (AttributeReader::getPolicies($schemaClass) as $policy) {
             $definition = sprintf(
                 "CREATE POLICY %s " .
@@ -86,6 +89,10 @@ final class MigrationGenerator
         }
 
         
+        foreach(AttributeReader::getPrimaryKeys($schemaClass) as $primaryKey){
+            $constraints[] = sprintf("ALTER TABLE %s ADD PRIMARY KEY (%s);", $table, implode(', ', $primaryKey->key));
+        }
+        
         return [
             'create' => implode("\n", $lines),
             'constraints' => implode("\n", $constraints)
@@ -113,15 +120,35 @@ final class MigrationGenerator
                 $sql .= " DEFAULT ''";
             }
         }
-        if ($column->primary_key)
-            $sql .= " PRIMARY KEY " . ($column->primary_key_value ? "({$column->primary_key_value})" : "");
+
+        
+        if (isset($column->primary_key) && $column->primary_key !== false){
+
+            
+            $sql .= " PRIMARY KEY ";
+            
+            if(is_array($column->primary_key)){
+                $sql .= " (" . implode(', ', $column->primary_key) . ")";
+            }else{
+                if(is_string($column->primary_key)){
+                    if($column->primary_key !== 'id'){    
+                        $sql .= " (" . $column->primary_key . ")";
+                    }
+                }
+            }
+        }
 
         if($column->autoincrement === true){
             $sql .= " AUTOINCREMENT";
         }
 
-        if ($column->foreignKey)
-            $sql .= " REFERENCES {$this->tableFor($column->foreignKey->referencesClass)}({$column->foreignKey->referencesColumn})";
+        if ($column->references){
+            $column->referencesColumns = implode(', ', $column->referencesColumns);
+            $sql .= " REFERENCES {$column->references} ({$column->referencesColumns})";
+            if(isset($column->referencesDeleteAction)){
+                $sql .= " ON DELETE {$column->referencesDeleteAction}";
+            }
+        }
         return $sql;
     }
 

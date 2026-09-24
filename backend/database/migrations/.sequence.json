@@ -13,5 +13,9 @@
     "user_consents": 12,
     "user_contact": 13,
     "user_profile": 14,
-    "user_sensitive": 15
+    "user_sensitive": 15,
+    "chat_messages": 16,
+    "chat_rooms": 17,
+    "chat_rooms_users": 18,
+    "chat_room_users": 19
 }

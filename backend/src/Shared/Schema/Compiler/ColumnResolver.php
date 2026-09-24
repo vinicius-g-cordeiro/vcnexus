@@ -57,7 +57,6 @@ final class ColumnResolver
             }
         }
 
-
         return $columns;
     }
 

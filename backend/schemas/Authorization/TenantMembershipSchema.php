@@ -97,8 +97,6 @@ use App\Shared\Schema\Attributes\{Column, Timestamps, Auditable, Unique, TenantS
 #[Auditable(created_by: 'created_by', updated_by: 'updated_by', deleted_by: 'deleted_by', deleted_reason: 'deleted_reason')]
 #[Timestamps(created_at: 'created_at', updated_at: 'updated_at', deleted_at: 'deleted_at')]
 #[TenantScoped(tenant_id: 'tenant_id', nullable: true)]
-#[Unique(name: 'tenant_membership_unique', columns: ['tenant_id', 'user_id'])]
-#[ForeignKey(name: 'fk_user_address_user_credentials', foreignKeys: ['user_id'], references: 'user_credentials', columns: ['id'], actionOnUpdate: true, deleteAction: 'CASCADE', deferred: true)]
 final class TenantMembershipSchema extends AbstractSchema
 {
     public string $table = 'tenant_memberships';

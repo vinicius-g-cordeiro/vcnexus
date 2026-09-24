@@ -14,6 +14,7 @@ namespace App\Bootstrap;
 
 use App\Bootstrap\Routing\Router;
 use App\Modules\Authentication\Controllers\AuthenticationController;
+use App\Modules\Chat\Controllers\ChatController;
 use App\Modules\Users\Controllers\UserController;
 use App\Modules\Tenant\Controllers\TenantController;
 use App\Shared\Http\{Request, Response};
@@ -27,8 +28,7 @@ final class Application
     {
         ini_set('display_errors', '1');
         ini_set('display_startup_errors', '1');
-        error_reporting(E_ALL ^E_USER_ERROR ^E_USER_WARNING ^E_USER_NOTICE ^E_DEPRECATED ^E_USER_DEPRECATED);
-
+        error_reporting(E_ALL ^ E_USER_ERROR ^ E_USER_WARNING ^ E_USER_NOTICE ^ E_DEPRECATED ^ E_USER_DEPRECATED);
 
         define('APP_PATH', 'var/www/');
         define('PUBLIC_PATH', 'public/');
@@ -36,7 +36,7 @@ final class Application
         date_default_timezone_set(getenv('APP_TIMEZONE'));
         setlocale(LC_TIME, getenv('APP_LOCALE'), getenv('APP_LOCALE') . '.utf-8', getenv('APP_LOCALE') . '.utf-8');
 
-        $this->router->registerControllers([UserController::class, AuthenticationController::class, TenantController::class]);
+        $this->router->registerControllers([UserController::class, AuthenticationController::class, TenantController::class, ChatController::class]);
         set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {
             if ($errno === E_DEPRECATED || $errno === E_USER_DEPRECATED) {
                 error_log(sprintf(

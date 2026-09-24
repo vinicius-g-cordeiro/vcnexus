@@ -9,3 +9,42 @@
  */
 
 declare(strict_types=1);
+
+
+namespace App\Bootstrap;
+
+
+use App\Realtime\Handlers\ChatHandler;
+use Ratchet\Server\IoServer;
+use Ratchet\Http\HttpServer;
+use Ratchet\WebSocket\WsServer;
+
+final class WebSocketApplication
+{
+    public function __construct()
+    {
+
+        error_reporting(
+            E_ALL
+            & ~E_DEPRECATED
+            & ~E_USER_DEPRECATED
+        );
+
+
+    }
+
+    public function run(): void
+    {
+        $server = IoServer::factory(
+            new HttpServer(
+                new WsServer(
+                    new ChatHandler()
+                )
+            ),
+            8080
+        );
+
+        $server->run();
+    }
+
+}

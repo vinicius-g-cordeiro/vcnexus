@@ -1,9 +1,9 @@
 <template>
     <button type="button" :class="[
         'relative inline-flex items-center justify-center rounded-full p-2 overflow-hidden transition-colors',
-        'dark:text-primary-scarlet text-primary-scarlet-500',
+        'dark:text-olive-wood text-olive-wood-500',
         'hover:bg-stone-300 dark:hover:bg-stone-700',
-        'focus:outline-none focus:ring-2 focus:ring-primary-scarlet-500',
+        'focus:outline-none focus:ring-2 focus:ring-olive-wood-500',
     ]" :aria-pressed="isDark" aria-label="Toggle dark mode" @click="toggle">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transition-all duration-300 ease-out" :class="isDark ? 'scale-0 -rotate-90 opacity-0 absolute' : 'scale-100 rotate-0 opacity-100'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
             stroke-linejoin="round">

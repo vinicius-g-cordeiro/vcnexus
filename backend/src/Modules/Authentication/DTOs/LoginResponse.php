@@ -16,9 +16,35 @@ use App\Shared\Domain\DataTransferObjectInterface;
 
 final class LoginResponse implements DataTransferObjectInterface
 {
-    public function __construct(public readonly string $uuid, public readonly string $id, public readonly array $tenants, public readonly ?array $roles, public readonly ?array $permissions){}
+    public function __construct(
+        public readonly string $uuid,
+        public readonly string $id,
+        public readonly array $tenants,
+        public readonly ?array $roles,
+        public readonly ?array $permissions,
+        public readonly ?string $name,
+        public readonly ?string $email,
+        public readonly ?string $avatar
+    ) {
+    }
 
-    public function toArray(): array{ return get_object_vars($this); }
+    public function toArray(): array
+    {
+        return get_object_vars($this);
+    }
 
-    public static function fromArray(array $data): self{ return new self($data['uuid'], $data['id'], $data['tenants'], $data['roles'], $data['permissions']); }
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            $data['uuid'],
+            $data['id'],
+            $data['tenants'],
+            $data['roles'],
+            $data['permissions'],
+            $data['name'],
+            $data['email'],
+            $data['avatar']
+        );
+    }
+
 }

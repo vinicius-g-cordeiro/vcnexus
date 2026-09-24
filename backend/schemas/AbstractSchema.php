@@ -20,9 +20,9 @@ abstract class AbstractSchema {
 
     #[Column(type: 'bigint', default: 1)]
     #[Identity(generated: 'ALWAYS')]
-    #[PrimaryKey(primaryKey: true)]
+    #[PrimaryKey(primaryKey: true, key: 'id')]
     #[Nullable(nullable: true)]
-    public readonly ?int $id;
+    public ?int $id;
 
     #[Column(type: 'UUID', default: 'uuidv7()')]
     #[Comment('V7 UUID')]

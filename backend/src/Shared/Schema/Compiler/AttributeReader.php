@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Schema\Compiler;
 
+use App\Shared\Schema\Attributes\References;
 use ReflectionProperty;
 use ReflectionClass;
 use App\Shared\Schema\Attributes\{Column, Comment, Nullable, PrimaryKey, Identity, Unique, Index, RowLevelSecurity, Policy, ForeignKey, Auditable, Timestamps, TenantScoped};
@@ -125,7 +126,12 @@ final class AttributeReader
                 // Get primary key
                 $attributes = $property->getAttributes(PrimaryKey::class);
                 if(isset($attributes, $attributes[0]) === true) {
-                    $column->primary_key = $attributes[0]->newInstance()->primaryKey ?? false;
+                    $primaryKey = $attributes[0]->newInstance();
+                    if(isset($primaryKey->primaryKey) === true) {
+                        if(isset($primaryKey->key) === true) {
+                            $column->primary_key = $primaryKey->key;
+                        }
+                    } 
                 }
 
                 // Get identity
@@ -133,6 +139,15 @@ final class AttributeReader
                 if(isset($attributes, $attributes[0]) === true) {
                     $column->identity = $attributes[0]->newInstance()->identity ?? false;
                     $column->identity_generated = $attributes[0]->newInstance()->primaryKeyGenerated ?? 'GENERATED ALWAYS AS IDENTITY';
+                }
+
+                $attributes = $property->getAttributes(References::class);
+                if(isset($attributes, $attributes[0]) === true) {
+                    $col = $attributes[0]->newInstance();
+                    $column->references = $col->references ?? false;
+                    $column->referencesClass = $col->references ?? false;
+                    $column->referencesDeleteAction = $col->deleteAction ?? false;
+                    $column->referencesColumns = $col->columns ?? false;
                 }
                 
                 // Get comment
@@ -286,6 +301,16 @@ final class AttributeReader
         return array_map(
             fn($attribute) => $attribute->newInstance(),
             $reflection->getAttributes(ForeignKey::class)
+        );
+    }
+
+    public static function getPrimaryKeys(string $schemaClass): array
+    {
+        $reflection = new ReflectionClass($schemaClass);
+
+        return array_map(
+            fn($attribute) => $attribute->newInstance(),
+            $reflection->getAttributes(PrimaryKey::class)
         );
     }
 

@@ -13,25 +13,6 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 
 
-error_reporting(
-    E_ALL
-    & ~E_DEPRECATED
-    & ~E_USER_DEPRECATED
-);
+use App\Bootstrap\WebSocketApplication;
 
-
-use App\Realtime\Handlers\ChatHandler;
-use Ratchet\Server\IoServer;
-use Ratchet\Http\HttpServer;
-use Ratchet\WebSocket\WsServer;
-
-$server = IoServer::factory(
-    new HttpServer(
-        new WsServer(
-            new ChatHandler()
-        )
-    ),
-    8080
-);
-
-$server->run();
+(new WebSocketApplication())->run();

@@ -16,10 +16,9 @@ namespace App\Shared\Schema\Attributes;
 use Attribute;
 
 /**
- * #[Primary Key]
- * public string $id = '1';
+ * #[PrimaryKey]   
  */
-#[Attribute(Attribute::TARGET_PROPERTY)]
+#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
 class PrimaryKey {
-    public function __construct(public readonly bool $primaryKey = true, public readonly string $key = 'id') {}
+    public function __construct(public readonly bool $primaryKey = true, public readonly array|string|null $key = ['id']) {}
 }
