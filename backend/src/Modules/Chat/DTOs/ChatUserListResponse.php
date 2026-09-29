@@ -21,7 +21,9 @@ final class ChatUserListResponse implements DataTransferObjectInterface
         public readonly ?int $id,
         public readonly ?string $uuid,
         public readonly ?string $name,
-        public readonly ?string $surname
+        public readonly ?string $surname,
+        public readonly ?int $online_status,
+        public readonly ?string $avatar
     ) {}
 
     public function toArray(): array
@@ -35,7 +37,9 @@ final class ChatUserListResponse implements DataTransferObjectInterface
             isset($data['id']) ? (int) $data['id'] : null,
             isset($data['uuid']) ? $data['uuid'] : null,
             isset($data['name']) ? $data['name'] : null,            
-            isset($data['surname']) ? $data['surname'] : null
+            isset($data['surname']) ? $data['surname'] : null,
+            isset($data['online_status']) ? (int) $data['online_status'] : null,
+            isset($data['avatar']) ? $data['avatar'] : null
         );
     }
 }

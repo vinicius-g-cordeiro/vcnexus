@@ -33,36 +33,41 @@ final class UserCredentialsSchema extends AbstractSchema
     public readonly ?int $blocked;
 
     #[Column(type: 'smallint', length: 1,  default: null)]
-    #[Comment("Users Remember for login (1 = Remember), so the user dont need to login again ")]
+    #[Comment("User's Remember for login (1 = Remember), so the user dont need to login again ")]
     #[Nullable(nullable: true)]
     public readonly ?int $remember;
 
     #[Column(type: 'varchar', length: 255, default: null)]
-    #[Nullable()]
+    #[Nullable]
     public readonly ?string $token;
 
     #[Column(type: 'timestamp', default: null)]
-    #[Nullable()]
+    #[Nullable]
     public readonly ?string $token_expires_at;
 
     #[Column(type: 'timestamp', default: null)]
-    #[Nullable()]
+    #[Nullable]
     public readonly ?string $token_created_at;
 
     #[Column(type: 'timestamp', default: null)]
-    #[Nullable()]
+    #[Nullable]
     public readonly ?string $last_login_at;
 
     #[Column(type: 'timestamp', default: null)]
-    #[Nullable()]
+    #[Nullable]
     public readonly ?string $last_login_at_local;
 
     #[Column(type: 'varchar', length: 100, default: null)]
-    #[Nullable()]
+    #[Nullable]
     public readonly ?string $last_login_ip;
 
-    #[Column(type: 'varchar', length: 100, default: null)]
-    #[Nullable()]
+    #[Column(type: 'varchar', length: 300, default: null)]
+    #[Nullable]
     public readonly ?string $last_login_agent;
+
+    #[Column(type: 'smallint')]
+    #[Nullable]
+    #[Comment("1 = Online, 2 = Away, 3 = Busy, 0|null = Offline")]
+    public readonly ?int $status ;
 
 }

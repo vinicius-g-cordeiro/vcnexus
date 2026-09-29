@@ -87,6 +87,8 @@ final class ChatHandler implements MessageComponentInterface
             return;
         }
 
+        echo sprintf("Client {$connection->resourceId} message_payload: %s\n,", $message);
+
         try {
             $payload = json_decode((string) $message, true, 512, JSON_THROW_ON_ERROR);
 
@@ -96,7 +98,8 @@ final class ChatHandler implements MessageComponentInterface
                 'send_message' => $this->sendMessage(
                     $connection,
                     (int) ($payload['room_id'] ?? 0),
-                    trim((string) ($payload['message'] ?? ''))
+                    trim((string) ($payload['message'] ?? '')),
+                    $payload['type'] ?? 'text',
                 ),
                 default => $this->sendError($connection, 'Unknown action.'),
             };
@@ -146,6 +149,7 @@ final class ChatHandler implements MessageComponentInterface
     |--------------------------------------------------------------------------
     */
 
+
     private function joinRoom(ConnectionInterface $connection, int $roomId): void
     {
         if ($roomId <= 0) {
@@ -181,7 +185,7 @@ final class ChatHandler implements MessageComponentInterface
         }
     }
 
-    private function sendMessage(ConnectionInterface $connection, int $roomId, string $message): void
+    private function sendMessage(ConnectionInterface $connection, int $roomId, string $message, ?string $type = 'text'): void
     {
         if ($roomId <= 0 || $message === '') {
             $this->sendError($connection, 'Invalid room or message.');
@@ -198,7 +202,7 @@ final class ChatHandler implements MessageComponentInterface
         $userId = (int) $this->clients[$connection]['user_id'];
 
         // Persist first; only broadcast what was actually stored.
-        $saved = $this->service($connection)->saveMessage($roomId, $userId, $message);
+        $saved = $this->service($connection)->saveMessage($roomId, $userId, $message, $type);
 
         $response = json_encode([
             'event' => 'message',

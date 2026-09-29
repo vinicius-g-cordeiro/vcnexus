@@ -30,9 +30,10 @@ final class Application
         ini_set('display_startup_errors', '1');
         error_reporting(E_ALL ^ E_USER_ERROR ^ E_USER_WARNING ^ E_USER_NOTICE ^ E_DEPRECATED ^ E_USER_DEPRECATED);
 
-        define('APP_PATH', 'var/www/');
+        define('APP_PATH', '/var/www/');
         define('PUBLIC_PATH', 'public/');
         define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST']);
+        define('STORAGE_PATH', APP_PATH . 'storage/app/');
         date_default_timezone_set(getenv('APP_TIMEZONE'));
         setlocale(LC_TIME, getenv('APP_LOCALE'), getenv('APP_LOCALE') . '.utf-8', getenv('APP_LOCALE') . '.utf-8');
 

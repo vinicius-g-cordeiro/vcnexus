@@ -11,6 +11,12 @@ import { useI18n } from 'vue-i18n'
 import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/authentication/authenticationStore'
+import { useSessionMonitor } from '@/composables/useSessionMonitor.js'
+
+
+
+// Check the session every 60 seconds
+useSessionMonitor(60000)
 
 const { t } = useI18n()
 // send the intl to all the components

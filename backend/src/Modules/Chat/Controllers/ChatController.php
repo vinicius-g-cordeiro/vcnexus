@@ -14,12 +14,14 @@ namespace App\Modules\Chat\Controllers;
 
 use App\Infrastructure\Redis\RedisConnectionFactory;
 use App\Modules\Chat\DTOs\ChatConversationRequest;
+use App\Shared\Helpers\Files;
 use App\Shared\Http\Attributes\{Route, Middleware};
 use App\Shared\Http\Controllers\BaseController;
 use App\Shared\Http\{Response, Request, Session, DTOValidator};
 use App\Shared\Http\Middleware\{AuthMiddleware,TenantResolverMiddleware};
 use App\Modules\Chat\Services\ChatService;
 use App\Modules\Chat\DTOs\ChatUserListRequest;
+use Throwable;
 
 #[Route(path: '/v1/chat')]
 #[Middleware(AuthMiddleware::class)]
@@ -90,5 +92,20 @@ final class ChatController extends BaseController
         ], JSON_THROW_ON_ERROR));
 
         return Response::json(data: ['ticket' => $ticket], message: 'WebSocket ticket issued')->send(200, [], true);
+    }
+
+    #[Route('POST', '/room/audio-message/')]
+    public function sendAudioMessage(): ?Response {
+        $filesHelper = new Files();
+        try{
+            $user_id = $this->request->params('user_id');
+            $room_id = $this->request->params('room_id');
+            $filePath = STORAGE_PATH . "audio/{$room_id}/{$user_id}/";
+            $file = $filesHelper->upload_file(files: $this->request->files('file'), path: $filePath, filename: 'audio_', newName: 'audio_message_'.time().'.webm');
+            $file['path'] = BASE_URL . '/storage/app/audio/' . $room_id . '/' . $user_id . '';
+        }catch(Throwable $e) {
+            throw $e;
+        }
+        return Response::json(data: $file, message: 'Audio message sent successfully')->send(200, [], true);
     }
 }

@@ -14,11 +14,12 @@ declare(strict_types=1);
 namespace App\Schemas\Chat;
 
 use App\Schemas\AbstractSchema;
-use App\Shared\Schema\Attributes\{Column, ForeignKey, Nullable};
+use App\Shared\Schema\Attributes\{Column, ForeignKey, Index, Nullable};
 
 
 #[ForeignKey(name: 'fk_chat_messages_room', foreignKeys: ['room_id'], references: 'chat_rooms', columns: ['id'], actionOnUpdate: true, deleteAction: 'CASCADE', deferred: true)]
 #[ForeignKey(name: 'fk_chat_messages_user', foreignKeys: ['user_id'], references: 'user_credentials', columns: ['id'], actionOnUpdate: false, deferred: true)]
+#[Index(name: 'idx_chat_messages_room_id_id', unique: false, columns: ['room_id', 'id'], references: 'chat_messages')]
 final class ChatRoomMessagesSchema extends AbstractSchema
 {
     public string $table = 'chat_messages';
@@ -37,6 +38,9 @@ final class ChatRoomMessagesSchema extends AbstractSchema
     #[Nullable(nullable: false)]
     public ?string $content;
 
+    #[Column(type: 'varchar', default: 'text')]
+    #[Nullable(nullable: false)]
+    public ?string $type;
 
     #[Column(type: 'timestamp')]
     #[Nullable(nullable: true)]

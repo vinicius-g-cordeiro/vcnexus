@@ -2,6 +2,7 @@
 import {
     computed,
     defineEmits,
+    nextTick,
     onBeforeUnmount,
     onMounted,
     ref,
@@ -9,6 +10,28 @@ import {
 
 import { useAuthStore } from '@/stores/authentication/authenticationStore'
 import { useChatStore } from '@/stores/chat/chatStore'
+import { useAudioDevices } from '@/composables/useAudioDevices'
+
+const {
+    microphones,
+    loadMicrophones,
+    requestMicrophonePermission
+} = useAudioDevices()
+
+const selectedMicrophone = ref('')
+
+onMounted(async () => {
+    try {
+        await requestMicrophonePermission()
+
+        if (microphones.value.length > 0) {
+            selectedMicrophone.value = microphones.value[0].deviceId
+        }
+    } catch (error) {
+        console.error('Unable to access microphones:', error)
+    }
+})
+
 
 const emit = defineEmits(['click'])
 
@@ -33,10 +56,47 @@ const loadingConversation = ref(false)
 const sendingMessage = ref(false)
 const chatContainerRef = ref(null)
 const recording = ref(false)
+const mediaRecorder = ref(null)
+const audioChunks = ref([])
+const showScrollToBottom = ref(false)
+
+function addNewLine() {
+    message.value += "\r\n";
+}
 
 const isRecording = computed(() => {
     return recording.value
 })
+
+function scrollToBottom(smooth = true) {
+    const container = chatContainerRef.value
+
+    if (!container) {
+        return
+    }
+
+    container.scrollTo({
+        top: container.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto',
+    })
+
+    showScrollToBottom.value = false
+}
+
+function handleMessageScroll() {
+    const container = chatContainerRef.value
+
+    if (!container) {
+        return
+    }
+
+    const distanceFromBottom =
+        container.scrollHeight -
+        container.scrollTop -
+        container.clientHeight
+
+    showScrollToBottom.value = distanceFromBottom > 50
+}
 
 // get microfone access
 const isMicrophoneAccessible = ref(false)
@@ -49,36 +109,6 @@ const isChatOpen = ref(false)
 const currentRoom = computed(() => {
     return currentRoomId.value
 })
-
-function startRecording() {
-    recording.value = true
-
-    navigator.mediaDevices.getUserMedia({ audio: true })
-        .then((stream) => {
-            const mediaRecorder = new MediaRecorder(stream)
-            const audioChunks = []
-
-            mediaRecorder.addEventListener('dataavailable', (event) => {
-                audioChunks.push(event.data)
-            })
-
-            mediaRecorder.addEventListener('stop', () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
-                const audioUrl = URL.createObjectURL(audioBlob)
-                const audio = new Audio(audioUrl)
-                audio.play()
-            })
-
-            mediaRecorder.start()    
-        })
-        .catch((error) => {
-            console.error('Error accessing microphone:', error)
-        })
-        .finally(() => {
-            recording.value = false
-            
-    })
-}
 
 /*
  * Reconnection state.
@@ -236,14 +266,12 @@ function handleSocketMessage(event) {
         case 'message':
             handleIncomingMessage(payload.data)
             break
-
         case 'error':
             console.error(
                 'WebSocket error:',
                 payload.data?.message
             )
             break
-
         default:
             console.warn(
                 'Unknown WebSocket event:',
@@ -257,37 +285,35 @@ function handleIncomingMessage(data) {
         return
     }
 
-    /*
-     * Don't display messages belonging to another conversation.
-     */
     if (Number(data.room_id) !== Number(currentRoomId.value)) {
         return
     }
 
-    /*
-     * The sender also receives its own message (broadcast), and history
-     * may already contain it: never show the same id twice.
-     */
     if (data.id && messages.value.some(item => item.id === data.id)) {
         return
     }
 
-    // Play sound if it's not the current user and the conversation is not opened
-    if (data.user_id !== authStore.sessionUser.id) {
+    const userId = Number(data.user_id)
+
+    if (userId !== Number(authStore.sessionUser.id)) {
         const audio = new Audio('/src/assets/sounds/notify.wav')
         audio.volume = 0.25
-        audio.play()
+        audio.play().catch(() => { })
     }
 
     messages.value.push({
         id: data.id ?? null,
-        roomId: data.room_id,
-        userId: data.user_id,
+        roomId: Number(data.room_id),
+        userId,
         content: data.content,
+        type: data.type ?? 'text',
         createdAt: data.created_at ?? new Date().toISOString(),
     })
-}
 
+    if (userId === Number(authStore.sessionUser.id)) {
+        scrollToBottom()
+    }
+}
 
 
 /*
@@ -429,12 +455,12 @@ async function loadMessages(roomId) {
 
     const history = chatStore.messagesData.map(item => ({
         id: item.id,
-        roomId: item.room_id,
-        userId: item.user_id,
+        roomId: Number(item.room_id),
+        userId: Number(item.user_id),
         content: item.content,
+        type: item.type ?? 'text',
         createdAt: item.created_at,
     }))
-
     /*
      * Keep live messages that arrived while history was loading.
      */
@@ -443,6 +469,9 @@ async function loadMessages(roomId) {
     )
 
     messages.value = [...history, ...live]
+
+    await nextTick()
+
 }
 
 /*
@@ -460,7 +489,7 @@ function sendMessage() {
     ) {
         return
     }
-
+    
     if (
         !socket.value ||
         socket.value.readyState !== WebSocket.OPEN
@@ -486,6 +515,119 @@ function sendMessage() {
 
     sendingMessage.value = false
 }
+
+async function startRecording() {
+
+    // load the microphones
+    await loadMicrophones()
+
+
+
+    const constraints = {
+        audio: {
+            deviceId: selectedMicrophone.value
+                ? { exact: selectedMicrophone.value }
+                : undefined,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+        }
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints)
+
+    const recorder = new MediaRecorder(
+        stream,
+        {
+            mimeType: getSupportedAudioMimeType()
+        }
+    )
+
+    mediaRecorder.value = recorder
+    audioChunks.value = []
+
+    recorder.ondataavailable = event => {
+        if (event.data.size > 0) {
+            audioChunks.value.push(event.data)
+        }
+    }
+
+    recorder.onstop = async () => {
+        const blob = new Blob(audioChunks.value, {
+            type: recorder.mimeType
+        })
+
+        await sendAudioMessage(blob)
+
+        stream.getTracks().forEach(track => track.stop())
+    }
+
+    recorder.start()
+    recording.value = true
+}
+
+function stopRecording() {
+    if (
+        mediaRecorder.value &&
+        mediaRecorder.value.state === 'recording'
+    ) {
+        mediaRecorder.value.stop()
+    }
+}
+
+function getSupportedAudioMimeType() {
+    const types = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+    ]
+
+    return types.find(type => MediaRecorder.isTypeSupported(type)) ?? ''
+}
+
+async function sendAudioMessage(blob) {
+    if (
+        !connected.value ||
+        !currentRoomId.value ||
+        !socket.value ||
+        socket.value.readyState !== WebSocket.OPEN
+    ) {
+        return
+    }
+
+
+
+    // save the file using a new created form 
+
+    const form = new FormData()
+
+    form.append('room_id', currentRoomId.value)
+    form.append('user_id', authStore.sessionUser.id)
+    form.append('tenant_id', authStore.sessionUser?.tenants)
+    form.append('content_type', 'audio/webm')
+    form.append('filename', 'audio.webm')
+    form.append('content_length', blob.size)
+
+    form.append('file', blob, 'audio.webm')
+
+
+    recording.value = false
+
+    const response = await chatStore.sendAudioMessage(form)
+
+    if (response.error) {
+        console.error('Unable to send audio message:', response.error)
+    }
+
+    // send message to the server
+    socket.value.send(JSON.stringify({
+        action: 'send_message',
+        room_id: currentRoomId.value,
+        type: 'audio',
+        message: response,
+    }))
+}
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -530,7 +672,6 @@ async function loadUsers() {
 
 onMounted(async () => {
     connect()
-
     await loadUsers()
 })
 
@@ -585,14 +726,29 @@ const toggleChat = (event) => {
                 </div>
 
                 <button v-for="user in users" :key="user.id" type="button" @click="changeConversation(user)" class="flex flex-row justify-between items-center hover:bg-stone-200 dark:hover:bg-stone-600 p-2 border-stone-200 border-b text-left">
+                    <!-- user avatar -->
+
+                    <template v-if="user.avatar">
+                        <img class="rounded-full w-8 h-8" :src="user.avatar" :alt="user.name">
+                    </template>
+                    <template v-else>
+                        <span class="flex justify-center items-center bg-stone-500 dark:bg-stone-600 mr-2 rounded-full w-8 h-8 font-medium text-stone-100 dark:text-stone-400 text-sm">
+                            <i class="bi bi-person-fill"></i>
+                        </span>
+                    </template>
                     <span class="self-center font-semibold dark:text-white text-sm">
-                        {{ user.name }}
+                        {{ user.name }} {{  user.surname }}
                     </span>
 
-                    <span>
-                        <i v-if="status === 'Connected'" class="text-green-500 bi bi-circle-fill"></i>
 
-                    <i v-else class="text-stone-500 bi bi-circle-fill"></i>
+                    <span>
+                        <i v-if="user.online_status === 1" class="text-green-500 bi bi-circle-fill"></i>
+
+                        <i v-else-if="user.online_status === 2" class="text-orange-500 bi bi-circle-fill"></i>
+
+                        <i v-else-if="user.online_status === 3" class="text-red-500 bi bi-circle-fill"></i>
+
+                        <i v-else class="text-stone-500 bi bi-circle-fill"></i>
                     </span>
                 </button>
             </aside>
@@ -600,17 +756,30 @@ const toggleChat = (event) => {
             <!-- Conversation -->
 
             <div class="flex flex-col gap-2 w-2/3">
-                <p v-if="selectedChat" class="flex self-center gap-2 font-semibold dark:text-white text-sm whitespace-nowrap">
-                    Talking to:
-
+                <div v-if="selectedChat" class="flex flex-col gap-2 font-semibold dark:text-white text-sm whitespace-nowrap">
+                    <section class="flex flex-row items-center">
+                    <template v-if="selectedChat?.avatar">
+                        <img class="rounded-full w-8 h-8" :src="selectedChat?.avatar" :alt="selectedChat?.name">
+                    </template>
+                    <template v-else>
+                        <span class="flex justify-center items-center bg-stone-500 dark:bg-stone-600 mr-2 rounded-full w-8 h-8 font-medium text-stone-100 dark:text-stone-400 text-sm">
+                            <i class="bi bi-person-fill"></i>
+                        </span>
+                    </template>
                     <strong>
-                        {{ selectedChat.name }}
+                        {{ selectedChat.name }} {{  selectedChat.id === authStore.sessionUser.id ? '(You)' : '' }} 
                     </strong>
+                    </section>  
+                    <p class="justify-self-start text-stone-500 text-xs whitespace-nowrap">
+                        <i v-if="selectedChat.online_status === 1"> Online </i>
 
-                    <i v-if="status === 'Connected'" class="text-green-500 bi bi-circle-fill"></i>
+                        <i v-else-if="selectedChat.online_status === 2"> Away </i>
 
-                    <i v-else class="text-stone-500 bi bi-circle-fill"></i>
-                </p>
+                        <i v-else-if="selectedChat.online_status === 3"> Busy </i>
+
+                        <i v-else> Offline </i>
+                    </p>
+                </div>
 
                 <p v-else class="self-center text-stone-500 text-sm">
                     Select a user.
@@ -618,8 +787,8 @@ const toggleChat = (event) => {
 
                 <!-- Messages -->
 
-                <div class="flex flex-col gap-2">
-                    <div class="flex flex-col gap-2 mb-2 p-2 border-stone-200 h-full min-h-80 max-h-[400px] overflow-y-scroll">
+                <div class="flex flex-col gap-2 bg-stone-100 dark:bg-stone-700">
+                    <div ref="chatContainerRef" @scroll="handleMessageScroll" class="relative flex flex-col gap-2 mb-2 p-2 border-stone-200 h-full min-h-80 max-h-[400px] overflow-y-auto">
                         <div v-if="loadingConversation" class="text-stone-500 text-sm">
                             Loading conversation...
                         </div>
@@ -628,26 +797,46 @@ const toggleChat = (event) => {
                             No messages yet.
                         </div>
 
-                        <div class="right-0 bottom-0 absolute"> <i class="bi bi-arrow-down-circle-fill bi"></i> </div>
-                        <ul class="flex flex-col gap-2 p-2 border-stone-200">
-                            
+                        <ul class="flex flex-col gap-2 p-2 border-stone-200 h-full">
+
                             <!-- Scroll to bottom  -->
-                            
-                            <li v-for="item in messages" :key="item.id ?? `${item.createdAt}-${item.content}`" class="flex flex-col flex-wrap p-2 rounded-md text-sm" 
-                            :class="{ 'self-end bg-cyan-500': item.userId === authStore.sessionUser.id , 'self-start bg-emerald-500': item.userId !== authStore.sessionUser.id}" >
-                                {{ item.content }}
+
+                            <li v-for="item in messages" :key="item.id ?? `${item.createdAt}-${item.content}`" class="flex flex-col px-3 py-2 rounded-2xl max-w-[75%] text-sm break-words whitespace-pre-wrap" :class="{
+                                'self-end rounded-br-md bg-cyan-500 dark:bg-cyan-600 text-white':
+                                    Number(item.userId) === Number(authStore.sessionUser.id),
+
+                                'self-start rounded-bl-md bg-stone-200 dark:bg-stone-600 dark:text-white':
+                                    Number(item.userId) !== Number(authStore.sessionUser.id)
+                            }">
+                                <template v-if="item.type === 'audio'">
+                                    <audio controls preload="metadata" :src="item.content" class="max-w-full max-h-12 object-center object-contain">
+                                    </audio>
+                                </template>
+
+                                <template v-else>
+                                    <!-- get the text as it was sent html getting the new lines (\n) as well -->
+                                    {{ item.content }}
+                                </template>
                             </li>
                         </ul>
-
+                        <div class="right-5 bottom-5 z-10 absolute flex">
+                            <button v-if="showScrollToBottom" type="button" @click="scrollToBottom()" class="justify-center items-center bg-stone-800 hover:bg-stone-700 shadow-lg rounded-full w-9 h-9 text-white" aria-label="Scroll to bottom">
+                                <i class="bi bi-arrow-down"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Input -->
 
                     <form v-if="selectedChat" @submit.prevent="sendMessage" class="flex flex-row justify-between gap-2">
-                        <input v-model="message" class="p-2 border-stone-200 dark:border-stone-600 w-full" type="text" placeholder="Type a message..." :disabled="!connected ||
+                        <!-- If enter is pressed send message, if shift enter add new line, also when typing the message will be send, as ... -->
+                        <textarea v-model="message" class="p-2 border-stone-200 dark:border-stone-600 w-full text-sm resize-none" type="text" placeholder="Type a message..." :disabled="!connected ||
                             !currentRoomId ||
-                            loadingConversation
-                            " />
+                            loadingConversation ||
+                            !isMicrophoneAccessible
+                            " @keydown.exact.enter="sendMessage" @keydown.enter.exact.prevent>
+    </textarea>
+
 
                         <button type="submit" class="bg-stone-100 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-700" :disabled="!connected ||
                             !currentRoomId ||
@@ -659,9 +848,16 @@ const toggleChat = (event) => {
 
                         <!-- audio recording button -->
 
+                        <select v-model="selectedMicrophone" class="p-2 border-stone-200 dark:border-stone-600 w-2/6 text-xs">
+                            <option v-for="microphone in microphones" :key="microphone.deviceId" :value="microphone.deviceId">
+                                {{ microphone.label || 'Microphone' }}
+                            </option>
+                        </select>
+
                         <button type="button" @click="startRecording" v-show="!recording" class="bg-stone-100 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-700" :disabled="!connected ||
                             !currentRoomId ||
-                            loadingConversation
+                            loadingConversation ||
+                            !isMicrophoneAccessible
                             ">
                             <i class="mx-auto p-2 text-2xl bi bi-mic-fill"></i>
                         </button>

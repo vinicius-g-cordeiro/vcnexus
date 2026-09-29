@@ -18,6 +18,10 @@ const chatService = {
     async wsTicket() {
         const response = await api.post('/chat/ws-ticket/')
         return response.data
+    },
+    async sendAudioMessage(form) {
+        const response = await api.post('/chat/room/audio-message/', form)
+        return response.data
     }
 }
 

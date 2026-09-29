@@ -4,7 +4,7 @@
  * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
- * @date 28/09/2026
+ * @date 29/09/2026
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  */
 
@@ -30,6 +30,7 @@ final class UserCredentials extends BaseModel
     public ?string $last_login_at_local;
     public ?string $last_login_ip;
     public ?string $last_login_agent;
+    public ?int $status;
     public ?string $created_at;
     public ?string $updated_at;
     public ?string $deleted_at;
@@ -61,6 +62,7 @@ final class UserCredentials extends BaseModel
         $newObject->last_login_at_local = isset($data['last_login_at_local']) ? $data['last_login_at_local'] : null;
         $newObject->last_login_ip = isset($data['last_login_ip']) ? $data['last_login_ip'] : null;
         $newObject->last_login_agent = isset($data['last_login_agent']) ? $data['last_login_agent'] : null;
+        $newObject->status = isset($data['status']) ? (int) $data['status'] : null;
         $newObject->created_at = isset($data['created_at']) ? $data['created_at'] : null;
         $newObject->updated_at = isset($data['updated_at']) ? $data['updated_at'] : null;
         $newObject->deleted_at = isset($data['deleted_at']) ? $data['deleted_at'] : null;

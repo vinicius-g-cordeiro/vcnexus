@@ -40,12 +40,13 @@ final class ChatRepository extends BaseRepository {
             SELECT
                 uc.id as id,
                 up.firstname as name,
-                CONCAT(up.surname || ' ' || up.lastname) as surname
+                CONCAT(up.surname || ' ' || up.lastname) as surname,
+                uc.status as online_status
             FROM
                 user_credentials uc
             INNER JOIN user_profile up ON up.user_id = uc.id
             WHERE
-                uc.id <> ? AND uc.active = 1
+                uc.active = 1 AND uc.id <> ?
             ORDER BY up.firstname, up.lastname
         SQL;
 
@@ -113,14 +114,14 @@ final class ChatRepository extends BaseRepository {
      *
      * @return array{id:int, uuid:?string, room_id:int, user_id:int, content:string, created_at:?string}
      */
-    public function insertMessage(int $roomId, int $userId, string $content): array {
+    public function insertMessage(int $roomId, int $userId, string $content, ?string $type = 'text'): array {
         $sql = <<<'SQL'
-            INSERT INTO chat_messages (room_id, user_id, content, created_at)
-            VALUES (?, ?, ?, ?)
-            RETURNING id, uuid, room_id, user_id, content, created_at
+            INSERT INTO chat_messages (room_id, user_id, content, created_at, type)
+            VALUES (?, ?, ?, ?, ?)
+            RETURNING id, uuid, room_id, user_id, content, created_at, type
         SQL;
 
-        $rows = $this->scopedQuery($sql, [$roomId, $userId, $content, date('Y-m-d H:i:s')]);
+        $rows = $this->scopedQuery($sql, [$roomId, $userId, $content, date('Y-m-d H:i:s'), $type]);
 
         if ($rows === false || empty($rows)) {
             throw new \RuntimeException('Could not save message', 500);
@@ -137,7 +138,7 @@ final class ChatRepository extends BaseRepository {
     public function findMessages(int $roomId, int $limit = 50, ?int $beforeId = null): array {
         $limit = max(1, min(100, $limit));
 
-        $sql = 'SELECT id, uuid, room_id, user_id, content, created_at FROM chat_messages WHERE room_id = ? AND active = 1';
+        $sql = 'SELECT id, uuid, room_id, user_id, content, created_at, type FROM chat_messages WHERE room_id = ? AND active = 1';
         $params = [$roomId];
 
         if ($beforeId !== null) {
@@ -168,6 +169,7 @@ final class ChatRepository extends BaseRepository {
             'user_id'    => (int) $row['user_id'],
             'content'    => (string) $row['content'],
             'created_at' => $row['created_at'] ?? null,
+            'type'       => $row['type'] ?? 'text',
         ];
     }
 }

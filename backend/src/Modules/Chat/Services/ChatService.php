@@ -92,7 +92,7 @@ final class ChatService extends BaseService
      *
      * @return array{id:int, uuid:?string, room_id:int, user_id:int, content:string, created_at:?string}
      */
-    public function saveMessage(int $roomId, int $userId, string $content): array {
+    public function saveMessage(int $roomId, int $userId, string $content, ?string $type = 'text'): array {
         $content = trim($content);
 
         if ($roomId <= 0 || $content === '') {
@@ -107,7 +107,7 @@ final class ChatService extends BaseService
             throw new ChatException('You do not have access to this room', 403);
         }
 
-        return $this->chatRepository->insertMessage($roomId, $userId, $content);
+        return $this->chatRepository->insertMessage($roomId, $userId, $content, $type);
     }
 
     /**

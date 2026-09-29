@@ -50,6 +50,7 @@ final class AuthenticationController extends BaseController
             
             return Response::json(data: $user)->send(200, [], true);
         }catch(\Throwable $e) {
+            dd($e);
             throw $e;
         }
     }

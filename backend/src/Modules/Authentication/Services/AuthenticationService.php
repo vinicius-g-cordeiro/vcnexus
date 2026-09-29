@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Authentication\Services;
 
-use App\Modules\Authentication\DTOs\{LoginRequest, LogoutRequest, LoginResponse, AuthenticatedUserResponse};
+use App\Modules\Authentication\DTOs\{LoginRequest, LogoutRequest, LoginResponse, AuthenticatedUserResponse, LoginSuccessRequest};
 use App\Modules\Authentication\Exceptions\InvalidCredentialsException;
 use App\Modules\Authentication\Repositories\{AuthenticationRepository};
 use App\Shared\Domain\BaseService;
@@ -78,6 +78,20 @@ final class AuthenticationService extends BaseService
 
         $loginResponse = Hydrator::hydrate(LoginResponse::class, $userContext->toArray()); 
 
+        // set the user status and last_login
+
+        $this->transactional(function() use ($user) {
+            
+            $loginSuccess = LoginSuccessRequest::fromArray([
+                'uuid' => $user->uuid,
+                'last_login_at' => date('Y-m-d H:i:s'),
+                'last_login_ip' => $this->request->ip(),
+                'last_login_agent' => $this->request->agent(),
+                'status' => 1
+            ]);
+            $this->authenticationRepository->update($loginSuccess);
+        });
+
         $this->session->set('user', $loginResponse);
 
         return $loginResponse;
@@ -88,6 +102,19 @@ final class AuthenticationService extends BaseService
         if($logoutRequest->uuid !== $this->session->get('user')->uuid) {
             throw new InvalidCredentialsException();
         }
+
+        $this->transactional(function() use ($logoutRequest) {
+            $loginSuccess = LoginSuccessRequest::fromArray([
+                'uuid' => $logoutRequest->uuid,
+                'last_login_at' => date('Y-m-d H:i:s'),
+                'last_login_ip' => $this->request->ip(),
+                'last_login_agent' => $this->request->agent(),
+                'status' => 0
+            ]);
+            $this->authenticationRepository->update($loginSuccess);
+        });
+
+        
         $this->session->set('user', null);
         return true;
     }

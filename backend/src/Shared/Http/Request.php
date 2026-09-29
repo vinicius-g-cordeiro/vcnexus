@@ -69,6 +69,7 @@ final class Request
             'PUT' => $this->put = (object) $data,
             'PATCH' => $this->patch = (object) $data,
             'DELETE' => $this->delete = (object) $data,
+            'FILES' => $this->files = (object) $data,
             default => null, // GET and others carry no body — $get is already populated from $_GET
         };
     }
@@ -192,6 +193,10 @@ final class Request
     public function ip(): string
     {
         return $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    }
+
+    public function agent() : string {
+        return $_SERVER['HTTP_USER_AGENT'] ?? '';
     }
 
     public function headers(string $key = '', mixed $value = ''): mixed

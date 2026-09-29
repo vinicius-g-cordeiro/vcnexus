@@ -29,14 +29,14 @@ final class Files {
             if($this->createFolder($path) == false){
                 throw new \Exception( 'Could not create new folder!',400);
             }
-            chmod($path, 0777);
+            chmod($path, 0755);
         }
 
         $movedFile = move_uploaded_file($files['tmp_name'], $path . $response['file_name']);
         if($movedFile == true){
             $response['fullpath'] = $path . $response['file_name'];
             $response['file'] = $response['file_name'];
-            chmod($response['fullpath'], 0777);
+            chmod($response['fullpath'], 0755);
             return $response;
         }
 
@@ -46,8 +46,8 @@ final class Files {
     function createFolder($folderPath = '') {
         if (!empty($folderPath)) {
             if (is_dir($folderPath) == false) {
-                $response = @mkdir($folderPath, 0777, true);
-                chmod($folderPath, 0777);
+                $response = @mkdir($folderPath, 0755, true);
+                chmod($folderPath, 0755);
                 if ($response === false) {
                     throw new \Exception('Could not create new folder in path.', 400);
                 }

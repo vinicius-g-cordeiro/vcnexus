@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace App\Shared\Domain;
 
 use App\Infrastructure\Database\RLS\{RoleContext, TenantContext, UserContext};
-use App\Shared\Domain\DTOs\StoreResponse;
+use App\Shared\Domain\DTOs\{StoreResponse, UpdateResponse};
 use ADORecordSet;
 use App\Shared\Domain\Exceptions\TransactionFailedException;
 use App\Shared\Helpers\Utils;
@@ -112,6 +112,55 @@ abstract class BaseRepository
         }
 
         return new StoreResponse((int) $row['id'], $row['uuid'] ?? null, (int) $this->tenant_id);
+    }
+
+
+
+    public function update(DataTransferObjectInterface|ModelInterface $data, ?array $returning = ['id', 'uuid'], ?string $table = null): UpdateResponse|false|null
+    {
+        $table = $table ?? $this->table();
+        $row = [];
+        $this->applyContext($this->user_id, $this->tenant_id, $this->roles);
+        foreach ($data->toArray() as $key => $value) {
+            if ($key === 'id' || $key === 'password_confirmation' || $value === null || $key === 'uuid') {
+                continue; // skip: let DB defaults / serial handle it
+            }
+
+            if ($key === 'password' && password_needs_rehash($value, PASSWORD_BCRYPT, ['cost' => 12])) {
+                $value = password_hash($value, PASSWORD_BCRYPT, ['cost' => 12]);
+            } elseif (is_bool($value)) {
+                $value = $value ? 1 : 0;
+            } elseif ($value === 'on' || $value === '1') {
+                $value = 1;
+            } elseif (is_array($value)) {
+                $value = Utils::PhpArrayToPg($value);
+            }
+            $row[$key] = $value;
+        }
+
+        $columns = implode(', ', array_map(fn(string $key) => "$key = ?", array_keys($row)) );
+        
+
+        $returning = implode(', ', $returning);
+
+
+        $result = $this->db->Execute(
+            "UPDATE $table SET $columns WHERE uuid = ? RETURNING $returning",
+            array_merge(array_values($row), [$data->uuid])
+        );
+        
+        
+        if ($result === false) {
+            return false;
+        }
+
+        $row = $rows[0] ?? null;
+
+        if ($row === null) {
+            return false;
+        }
+
+        return new UpdateResponse((int) $row['id'], $row['uuid'] ?? null, (int) $this->tenant_id);
     }
 
     protected function scopedQuery(string $query = '', array $params = []): array|false

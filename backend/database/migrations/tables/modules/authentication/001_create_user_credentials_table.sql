@@ -12,7 +12,8 @@ CREATE TABLE user_credentials (
     last_login_at timestamp,
     last_login_at_local timestamp,
     last_login_ip varchar(100),
-    last_login_agent varchar(100),
+    last_login_agent varchar(300),
+    status smallint,
     created_at timestamp DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp,
     deleted_at timestamp,
@@ -21,5 +22,6 @@ CREATE TABLE user_credentials (
     deleted_by bigint,
     deleted_reason varchar(500)
 );
-COMMENT ON COLUMN "user_credentials"."remember" IS 'Users Remember for login (1 = Remember), so the user dont need to login again ';
+COMMENT ON COLUMN "user_credentials"."remember" IS 'User''s Remember for login (1 = Remember), so the user dont need to login again ';
+COMMENT ON COLUMN "user_credentials"."status" IS '1 = Online, 2 = Away, 3 = Busy, 0|null = Offline';
 COMMENT ON COLUMN "user_credentials"."uuid" IS 'V7 UUID';

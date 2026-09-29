@@ -31,5 +31,9 @@ export const useChatStore = defineStore("chat", {
       const response = await chatService.wsTicket();
       return response.data.ticket;
     },
+    async sendAudioMessage(form) {
+      const response = await chatService.sendAudioMessage(form);
+      return `${response.data.path}/${response.data.file_name}`;
+    }
   },
 });

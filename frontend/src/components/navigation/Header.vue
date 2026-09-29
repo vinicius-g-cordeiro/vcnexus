@@ -7,21 +7,12 @@
                         Home
                     </RouterLink>
                 </span>
-                <span class="self-center font-semibold dark:text-white text-xl whitespace-nowrap">
-                    <RouterLink to="/about">
-                        About
-                    </RouterLink>
-                </span>
             </div>
 
             <div class="flex items-center gap-2">
                 <ul class="flex items-center gap-2">
                     <li class="relative hover:bg-stone-100 dark:hover:bg-stone-700 no-underline">
-                        <!-- WebChat -->
-                        <RouterLink :to="{ name: 'web.chat' }" class="flex items-center gap-2 hover:bg-stone-100 dark:hover:bg-stone-700 p-2 rounded-lg font-medium text-stone-900 dark:text-stone-100 text-sm">
-                            <i class="bi-chat-left-text-fill bi"></i>
-                            WebChat
-                        </RouterLink>
+                        
                     </li>
                 </ul>
             </div>
