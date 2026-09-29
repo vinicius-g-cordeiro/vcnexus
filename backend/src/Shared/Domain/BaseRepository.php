@@ -18,7 +18,6 @@ use App\Shared\Domain\DTOs\StoreResponse;
 use ADORecordSet;
 use App\Shared\Domain\Exceptions\TransactionFailedException;
 use App\Shared\Helpers\Utils;
-use App\Shared\Http\Response;
 
 
 abstract class BaseRepository
@@ -96,7 +95,7 @@ abstract class BaseRepository
         $columns = implode(', ', array_keys($row));
         $placeholders = implode(', ', array_fill(0, count($row), '?'));
 
-        $result = $this->db->GetRow(
+        $result = $this->db->Execute(
             "INSERT INTO $table ($columns) VALUES ($placeholders) RETURNING " . implode(', ', $returning),
             array_values($row)
         );
@@ -105,7 +104,14 @@ abstract class BaseRepository
             return false;
         }
 
-        return new StoreResponse((int) $result['id'], $result['uuid'], (int) $this->tenant_id);
+        $rows = $result->getRows();
+        $row = $rows[0] ?? null;
+
+        if ($row === null) {
+            return false;
+        }
+
+        return new StoreResponse((int) $row['id'], $row['uuid'] ?? null, (int) $this->tenant_id);
     }
 
     protected function scopedQuery(string $query = '', array $params = []): array|false
@@ -114,14 +120,13 @@ abstract class BaseRepository
         try {
             $this->applyContext($this->user_id, $this->tenant_id, $this->roles);
             $result = $this->db->GetAll($query, $params);
+            $this->db->CompleteTrans();
         } catch (\Throwable $e) {
             $this->db->FailTrans();
-            dd($e->getMessage());
+            $this->db->CompleteTrans();
             throw new TransactionFailedException('Transaction failed!', 500, $e);
         }
-
-        $this->db->CompleteTrans();
-
+        
         return $result;
     }
 

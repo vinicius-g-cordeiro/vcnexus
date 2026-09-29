@@ -16,26 +16,31 @@ final class ConnectionFactory
 {
     public function create(): ?\ADOConnection
     {
+
         $db = \ADONewConnection(getenv('DB_DRIVER'));
-        $db->Connect(argHostname: $this->host(),argUsername: $this->username(),argPassword: $this->password(),argDatabaseName: $this->database());
+        $db->Connect(argHostname: $this->host(), argUsername: $this->username(), argPassword: $this->password(), argDatabaseName: $this->database());
+        if (!extension_loaded('pgsql')) {
+            throw new \RuntimeException('The pgsql PHP extension is not loaded in this container.');
+        }
+        if (!$db->IsConnected()) {
+            throw new \RuntimeException('Database connection failed: ' . $db->ErrorMsg());
+        }
         $db->autoCommit = false;
         $db->enableLastInsertID(true);
         $db->SetFetchMode(ADODB_FETCH_ASSOC);
-        $db->autoRollback =  true;
+        $db->autoRollback = true;
+
         return $db;
     }
 
     public function createSuperUser(string $user, string $password): ?\ADOConnection
     {
         $db = \ADONewConnection(getenv('DB_DRIVER'));
-        $db->Connect(argHostname: 'db',argUsername: trim($user),argPassword: trim($password),argDatabaseName: 'app_db', forceNew:true);
-        $db->raiseErrorFn = function($db, $code, $msg, $sqlstate, $raw){ error_log('Error: ' . $msg); return false; };
+        $db->Connect(argHostname: 'db', argUsername: trim($user), argPassword: trim($password), argDatabaseName: 'app_db', forceNew: true);
         $db->autoCommit = false;
         $db->enableLastInsertID(true);
-        $db->IgnoreErrors(false);
-        $db->LogSQL(true);
         $db->SetFetchMode(ADODB_FETCH_ASSOC);
-        $db->autoRollback =  true;
+        $db->autoRollback = true;
         return $db;
     }
 
@@ -55,7 +60,7 @@ final class ConnectionFactory
     private function password(): string
     {
         $passwdFile = getenv('DB_PASSWORD'); // e.g. /run/secrets/db_app_password (Docker secret mount path
-        $pasww= trim(file_get_contents($passwdFile));
+        $pasww = trim(file_get_contents($passwdFile));
         return $pasww;
     }
 

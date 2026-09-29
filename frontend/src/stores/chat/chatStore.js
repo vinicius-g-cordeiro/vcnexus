@@ -3,9 +3,9 @@ import chatService from "@/services/chat/chatService";
 
 export const useChatStore = defineStore("chat", {
   state: () => ({
-    usersData: [{}],
-    messagesData: [{}],
-    conversationData: [{}],
+    usersData: [],
+    messagesData: [],
+    conversationData: {},
     loading: false,
     error: null,
     hydration: false,
@@ -16,8 +16,8 @@ export const useChatStore = defineStore("chat", {
       this.usersData = response.data;
       return response;
     },
-    async messages(uuid) {
-      const response = await chatService.messages(uuid);
+    async messages(roomId, options) {
+      const response = await chatService.messages(roomId, options);
       this.messagesData = response.data;
       return response;
     },
@@ -25,6 +25,11 @@ export const useChatStore = defineStore("chat", {
       const response = await chatService.conversations(recipient_id);
       this.conversationData = response.data;
       return response;
+    },
+    /** Single-use ticket for opening the WebSocket. */
+    async wsTicket() {
+      const response = await chatService.wsTicket();
+      return response.data.ticket;
     },
   },
 });

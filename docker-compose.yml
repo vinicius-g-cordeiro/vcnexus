@@ -163,6 +163,8 @@ services:
 
   websocket:
     container_name: websocket
+    env_file:
+      - infrastructure/php/.env
     ports:
       - "${WS_PORT-8080}:${WS_PORT-8080}"
     build:
@@ -177,13 +179,24 @@ services:
         condition: service_healthy
       nginx:
         condition: service_started
+      pgdog:
+        condition: service_started
     environment:
+      - DB_HOST=${PGDOG_HOST-pgdog}
+      - DB_PORT=${PGDOG_PORT-6432}
+      - DB_PASSWORD=/run/secrets/db_app_password
+      - DB_USERNAME=${DB_USERNAME-app_user}
       - REDIS_PASSWORD=/run/secrets/redis_password
       - APP_KEY=/run/secrets/app_key
     volumes:
       - ./backend:/var/www
+      - ./infrastructure/php/.env:/var/www/.env
     secrets:
+      - db_username
+      - db_password
       - redis_password
+      - admin_password
+      - db_app_password
       - app_key
     deploy:
       resources:

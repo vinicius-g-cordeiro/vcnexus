@@ -15,14 +15,22 @@ namespace App\Modules\Chat\Exceptions;
 
 use App\Shared\Exceptions\AppException;
 
+/**
+ * Chat errors carry their own HTTP status code:
+ *  - 400/422 invalid input
+ *  - 403     no access to the room
+ *  - 500     could not persist
+ *
+ * Do NOT use 401 for these: the frontend axios interceptor redirects to /login on any 401.
+ */
 final class ChatException extends AppException {
-    public function __construct(string $message = 'Invalid credentials', int $code = 401, ?Throwable $previous = null) {
+    public function __construct(string $message = 'Chat error', int $code = 400, ?\Throwable $previous = null) {
         parent::__construct($message, $code, $previous);
     }
 
     public function ip() : string { return $this->ip; }
 
-    public function statusCode(): int { return 401; }
+    public function statusCode(): int { return $this->getCode() >= 400 ? $this->getCode() : 400; }
 
     public function allowedMethods() : array { return []; }
 

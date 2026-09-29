@@ -9,6 +9,7 @@ RUN apk add --no-cache \
     oniguruma-dev \
     libxml2-dev \
     linux-headers \
+    postgresql-dev \
     $PHPIZE_DEPS
 
 FROM base AS builder
@@ -28,13 +29,15 @@ RUN docker-php-ext-configure gd \
     pcntl \
     bcmath \
     soap \
-    sockets 
+    sockets \
+    pgsql \
+    pdo_pgsql
 
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --install-dir=/usr/local/bin \
     --filename=composer
 
-RUN php -m | grep -E 'gd|zip|xdebug|opcache|redis'
+RUN php -m | grep -E 'gd|zip|pgsql|pdo_pgsql|opcache'
 
 FROM base AS runtime
 
