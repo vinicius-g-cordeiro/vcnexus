@@ -1,5 +1,5 @@
 <template>
-    <span :disabled="!deactivated" tabindex="0" role="menuitem" class="relative bg-stone-100 dark:bg-stone-800" @click="handleClick" 
+    <span :disabled="!deactivated" tabindex="0" role="menuitem" class="relative bg-zinc-100 dark:bg-zinc-800" @click="handleClick" 
     :class="{ ' border-b-olive-wood-500 dark:border-b-olive-wood-500': isActive, 'deactivated cursor-not-allowed': !deactivated }">
         <template v-if="to">
             <RouterLink :to="to" class="flex items-center gap-2 hover:bg-olive-wood-500 px-1.5 py-1.5">

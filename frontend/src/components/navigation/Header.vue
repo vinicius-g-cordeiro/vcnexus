@@ -1,5 +1,5 @@
 <template>
-    <nav class="bg-white dark:bg-stone-800 px-4 lg:px-6 py-2.5 border-stone-200">
+    <nav class="bg-white dark:bg-zinc-800 px-4 lg:px-6 py-2.5 border-zinc-200">
         <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
             <div class="flex items-center gap-2">
                 <span class="self-center font-semibold dark:text-white text-xl whitespace-nowrap">
@@ -11,7 +11,7 @@
 
             <div class="flex items-center gap-2">
                 <ul class="flex items-center gap-2">
-                    <li class="relative hover:bg-stone-100 dark:hover:bg-stone-700 no-underline">
+                    <li class="relative hover:bg-zinc-100 dark:hover:bg-zinc-700 no-underline">
                         
                     </li>
                 </ul>
@@ -28,7 +28,7 @@
                                         <img class="rounded-full w-8 h-8" :src="user.avatar" :alt="user.name">
                                     </template>
                                     <template v-else>
-                                        <span class="bg-stone-500 dark:bg-stone-600 mr-2 px-2.5 py-0.5 rounded font-medium text-stone-100 dark:text-stone-400 text-sm">
+                                        <span class="bg-zinc-500 dark:bg-zinc-600 mr-2 px-2.5 py-0.5 rounded font-medium text-zinc-100 dark:text-zinc-400 text-sm">
                                             <i class="bi bi-person-fill"></i>
                                         </span>
                                     </template>
@@ -57,7 +57,7 @@
                     </Dropdown>
                 </template>
                 <template v-else>
-                    <RouterLink :to="{ name: 'login' }" class="hover:bg-stone-100 dark:hover:bg-stone-700 p-2 rounded-lg font-medium text-stone-900 dark:text-stone-100 text-sm">
+                    <RouterLink :to="{ name: 'login' }" class="hover:bg-zinc-100 dark:hover:bg-zinc-700 p-2 rounded-lg font-medium text-zinc-900 dark:text-zinc-100 text-sm">
                         Login
                     </RouterLink>
                 </template>

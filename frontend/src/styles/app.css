@@ -100,15 +100,12 @@ font-face {
 }
 
 body {
-    @apply bg-stone-200 dark:bg-stone-900 text-stone-900 dark:text-stone-50 min-h-screen font-valley antialiased 
+    @apply bg-zinc-200 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 min-h-screen font-valley antialiased bg-gradient-to-b from-zinc-200 to-zinc-400
 }
 
-* {
-    @apply text-sm font-valley
-}
 
 * > *::-webkit-scrollbar {
-    @apply dark:scrollbar-thumb-stone-800 dark:scrollbar-track-stone-600 scrollbar-track-stone-100 scrollbar-thumb-stone-200 scrollbar-thin
+    @apply dark:scrollbar-thumb-zinc-800 dark:scrollbar-track-zinc-600 scrollbar-track-zinc-100 scrollbar-thumb-zinc-200 scrollbar-thin
 }
 
 
@@ -119,13 +116,13 @@ body {
 }
 
 *::-webkit-scrollbar-track {
-    @apply bg-stone-300 dark:bg-stone-700
+    @apply bg-zinc-300 dark:bg-zinc-700
 }
 
 *::-webkit-scrollbar-thumb {
-    @apply bg-stone-300 dark:bg-stone-500
+    @apply bg-zinc-300 dark:bg-zinc-500
 }
 
 *::-webkit-scrollbar-thumb:hover {
-    @apply dark:bg-stone-700 bg-stone-400
+    @apply dark:bg-zinc-700 bg-zinc-400
 }

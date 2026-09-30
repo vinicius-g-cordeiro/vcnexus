@@ -453,26 +453,26 @@ const toggleChat = (event) => {
 }
 </script>
 <template>
-    <main class="right-6 bottom-6 fixed flex flex-col gap-2 bg-stone-100 dark:bg-stone-800 shadow-xl p-2 border-stone-200 w-4/12">
+    <main class="right-6 bottom-6 fixed flex flex-col gap-2 bg-zinc-100 dark:bg-zinc-800 shadow-xl p-2 border-zinc-200 w-4/12">
         <section class="flex flex-row justify-between items-center">
             <h1 class="font-bold text-4xl sm:text-5xl tracking-tight">
                 Chat
             </h1>
-            <button type="button" @click="toggleChat" class="bg-stone-100 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-700">
+            <button type="button" @click="toggleChat" class="bg-zinc-100 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700">
                 <i class="mx-auto p-2 text-2xl bi bi-dash-lg"></i>
             </button>
         </section>
         <section class="flex flex-row justify-between gap-2">
-            <aside class="flex flex-col bg-stone-100 dark:bg-stone-700 w-1/3">
-                <div v-if="users.length === 0" class="p-3 text-stone-500 text-sm">
+            <aside class="flex flex-col bg-zinc-100 dark:bg-zinc-700 w-1/3">
+                <div v-if="users.length === 0" class="p-3 text-zinc-500 text-sm">
                     No users available.
                 </div>
-                <button v-for="user in users" :key="user.id" type="button" @click="changeConversation(user)" class="flex flex-row justify-between items-center hover:bg-stone-200 dark:hover:bg-stone-600 p-2 border-stone-200 border-b text-left">
+                <button v-for="user in users" :key="user.id" type="button" @click="changeConversation(user)" class="flex flex-row justify-between items-center hover:bg-zinc-200 dark:hover:bg-zinc-600 p-2 border-zinc-200 border-b text-left">
                     <template v-if="user.avatar">
                         <img class="rounded-full w-8 h-8" :src="user.avatar" :alt="user.name">
                     </template>
                     <template v-else>
-                        <span class="flex justify-center items-center bg-stone-500 dark:bg-stone-600 mr-2 rounded-full w-8 h-8 font-medium text-stone-100 dark:text-stone-400 text-sm">
+                        <span class="flex justify-center items-center bg-zinc-500 dark:bg-zinc-600 mr-2 rounded-full w-8 h-8 font-medium text-zinc-100 dark:text-zinc-400 text-sm">
                             <i class="bi bi-person-fill"></i>
                         </span>
                     </template>
@@ -483,7 +483,7 @@ const toggleChat = (event) => {
                         <i v-if="user.online_status === 1" class="text-green-500 bi bi-circle-fill"></i>
                         <i v-else-if="user.online_status === 2" class="text-orange-500 bi bi-circle-fill"></i>
                         <i v-else-if="user.online_status === 3" class="text-red-500 bi bi-circle-fill"></i>
-                        <i v-else class="text-stone-500 bi bi-circle-fill"></i>
+                        <i v-else class="text-zinc-500 bi bi-circle-fill"></i>
                     </span>
                 </button>
             </aside>
@@ -494,7 +494,7 @@ const toggleChat = (event) => {
                             <img class="rounded-full w-8 h-8" :src="selectedChat?.avatar" :alt="selectedChat?.name">
                         </template>
                         <template v-else>
-                            <span class="flex justify-center items-center bg-stone-500 dark:bg-stone-600 mr-2 rounded-full w-8 h-8 font-medium text-stone-100 dark:text-stone-400 text-sm">
+                            <span class="flex justify-center items-center bg-zinc-500 dark:bg-zinc-600 mr-2 rounded-full w-8 h-8 font-medium text-zinc-100 dark:text-zinc-400 text-sm">
                                 <i class="bi bi-person-fill"></i>
                             </span>
                         </template>
@@ -502,29 +502,29 @@ const toggleChat = (event) => {
                             {{ selectedChat.name }} {{ selectedChat.id === authStore.sessionUser.id ? '(You)' : '' }}
                         </strong>
                     </section>
-                    <p class="justify-self-start text-stone-500 text-xs whitespace-nowrap">
+                    <p class="justify-self-start text-zinc-500 text-xs whitespace-nowrap">
                         <i v-if="selectedChat.online_status === 1"> Online </i>
                         <i v-else-if="selectedChat.online_status === 2"> Away </i>
                         <i v-else-if="selectedChat.online_status === 3"> Busy </i>
                         <i v-else> Offline </i>
                     </p>
                 </div>
-                <p v-else class="self-center text-stone-500 text-sm">
+                <p v-else class="self-center text-zinc-500 text-sm">
                     Select a user.
                 </p>
-                <div class="flex flex-col gap-2 bg-stone-100 dark:bg-stone-700">
-                    <div ref="chatContainerRef" @scroll="handleMessageScroll" class="relative flex flex-col gap-2 mb-2 p-2 border-stone-200 h-full min-h-80 max-h-[400px] overflow-y-auto">
-                        <div v-if="loadingConversation" class="text-stone-500 text-sm">
+                <div class="flex flex-col gap-2 bg-zinc-100 dark:bg-zinc-700">
+                    <div ref="chatContainerRef" @scroll="handleMessageScroll" class="relative flex flex-col gap-2 mb-2 p-2 border-zinc-200 h-full min-h-80 max-h-[400px] overflow-y-auto">
+                        <div v-if="loadingConversation" class="text-zinc-500 text-sm">
                             Loading conversation...
                         </div>
-                        <div v-else-if="messages.length === 0 && selectedChat" class="text-stone-500 text-sm">
+                        <div v-else-if="messages.length === 0 && selectedChat" class="text-zinc-500 text-sm">
                             No messages yet.
                         </div>
-                        <ul class="flex flex-col gap-2 p-2 border-stone-200 h-full">
+                        <ul class="flex flex-col gap-2 p-2 border-zinc-200 h-full">
                             <li v-for="item in messages" :key="item.id ?? `${item.createdAt}-${item.content}`" class="flex flex-col px-3 py-2 rounded-2xl max-w-[75%] text-sm break-words whitespace-pre-wrap" :class="{
                                 'self-end rounded-br-md bg-cyan-500 dark:bg-cyan-600 text-white':
                                     Number(item.userId) === Number(authStore.sessionUser.id),
-                                'self-start rounded-bl-md bg-stone-200 dark:bg-stone-600 dark:text-white':
+                                'self-start rounded-bl-md bg-zinc-200 dark:bg-zinc-600 dark:text-white':
                                     Number(item.userId) !== Number(authStore.sessionUser.id)
                             }">
                                 <template v-if="item.type === 'audio'">
@@ -537,38 +537,38 @@ const toggleChat = (event) => {
                             </li>
                         </ul>
                         <div class="right-5 bottom-5 z-10 absolute flex">
-                            <button v-if="showScrollToBottom" type="button" @click="scrollToBottom()" class="justify-center items-center bg-stone-800 hover:bg-stone-700 shadow-lg rounded-full w-9 h-9 text-white" aria-label="Scroll to bottom">
+                            <button v-if="showScrollToBottom" type="button" @click="scrollToBottom()" class="justify-center items-center bg-zinc-800 hover:bg-zinc-700 shadow-lg rounded-full w-9 h-9 text-white" aria-label="Scroll to bottom">
                                 <i class="bi bi-arrow-down"></i>
                             </button>
                         </div>
                     </div>
-                    <form v-if="selectedChat" @submit.prevent="sendMessage" class="flex flex-row justify-between items-center gap-2 bg-stone-600 dark:bg-stone-900">
-                        <textarea v-model="message" id="message" class="p-2 border-stone-200 dark:border-stone-600 w-full text-sm resize-none" type="text" placeholder="Type a message..." :disabled="!connected ||
+                    <form v-if="selectedChat" @submit.prevent="sendMessage" class="flex flex-row justify-between items-center gap-2 bg-zinc-600 dark:bg-zinc-900">
+                        <textarea v-model="message" id="message" class="p-2 border-zinc-200 dark:border-zinc-600 w-full text-sm resize-none" type="text" placeholder="Type a message..." :disabled="!connected ||
                             !currentRoomId ||
                             loadingConversation ||
                             !isMicrophoneAccessible
                             " @keydown.exact.enter="sendMessage" @keydown.enter.exact.prevent>
             </textarea>
-                        <button type="submit" class="bg-stone-100 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-700" :disabled="!connected ||
+                        <button type="submit" class="bg-zinc-100 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700" :disabled="!connected ||
                             !currentRoomId ||
                             !message.trim() ||
                             sendingMessage
                             ">
                             <i class="mx-auto p-2 text-2xl bi bi-send-fill"></i>
                         </button>
-                        <select id="microphone" v-model="selectedMicrophone" class="bg-stone-100 dark:bg-stone-800 p-2 border-stone-200 dark:border-stone-600 w-2/6 text-stone-500 text-xs">
+                        <select id="microphone" v-model="selectedMicrophone" class="bg-zinc-100 dark:bg-zinc-800 p-2 border-zinc-200 dark:border-zinc-600 w-2/6 text-zinc-500 text-xs">
                             <option v-for="microphone in microphones" :key="microphone.deviceId" :value="microphone.deviceId">
                                 {{ microphone.label || 'Microphone' }}
                             </option>
                         </select>
-                        <button type="button" @click="startRecording" v-show="!recording" class="bg-stone-100 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-700" :disabled="!connected ||
+                        <button type="button" @click="startRecording" v-show="!recording" class="bg-zinc-100 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700" :disabled="!connected ||
                             !currentRoomId ||
                             loadingConversation ||
                             !isMicrophoneAccessible
                             ">
                             <i class="mx-auto p-2 text-2xl bi bi-mic-fill"></i>
                         </button>
-                        <button type="button" @click="stopRecording" v-show="recording" class="bg-stone-100 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-700" :disabled="!connected ||
+                        <button type="button" @click="stopRecording" v-show="recording" class="bg-zinc-100 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700" :disabled="!connected ||
                             !currentRoomId ||
                             loadingConversation
                             ">
@@ -578,7 +578,7 @@ const toggleChat = (event) => {
                 </div>
             </div>
         </section>
-        <small class="text-stone-500">
+        <small class="text-zinc-500">
             {{ status }}
         </small>
     </main>
