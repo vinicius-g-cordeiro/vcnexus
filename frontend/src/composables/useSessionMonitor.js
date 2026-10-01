@@ -1,5 +1,7 @@
 import { useAuthStore } from '@/stores/authentication/authenticationStore'
 import { onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+
 
 
 export function useSessionMonitor(interval = 60000) {
@@ -7,19 +9,22 @@ export function useSessionMonitor(interval = 60000) {
 
     let timer
 
+    const router = useRouter()
     const monitor = async () => {
+        await authStore.getAuthenticatedUser()
+        
         if(!authStore.sessionUser){
             return
         }
-        await authStore.getAuthenticatedUser()
 
         if(!authStore.isAuthenticated){
             await authStore.logout()
-            return
+            router.replace({ name: 'login' })
         }
 
         if(!authStore.sessionUser){
             await authStore.logout()
+            router.replace({ name: 'login' })
         }
     }
 

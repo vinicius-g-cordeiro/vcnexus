@@ -1,14 +1,14 @@
 <template>
-    <span :disabled="!deactivated" tabindex="0" role="menuitem" class="relative bg-zinc-100 dark:bg-zinc-800" @click="handleClick" 
-    :class="{ ' border-b-olive-wood-500 dark:border-b-olive-wood-500': isActive, 'deactivated cursor-not-allowed': !deactivated }">
+    <span :aria-disabled="deactivated" tabindex="0" role="menuitem" class="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-olive-wood-500" @click="handleClick"
+    :class="{ 'bg-zinc-100 dark:bg-zinc-700/60': isActive, 'opacity-50 cursor-not-allowed pointer-events-none': deactivated }">
         <template v-if="to">
-            <RouterLink :to="to" class="flex items-center gap-2 hover:bg-olive-wood-500 px-1.5 py-1.5">
+            <RouterLink :to="to" :class="linkClasses">
                 <slot name="icon"></slot>
                 <slot name="label"></slot>
             </RouterLink>
         </template>
         <template v-else>
-            <a :href="href" class="flex items-center gap-2 hover:bg-olive-wood-500 px-1.5 py-1.5">
+            <a :href="href" :class="linkClasses">
                 <slot name="icon"></slot>
                 <slot name="label"></slot>
             </a>
@@ -18,7 +18,7 @@
 
 <script setup="js">
 import { RouterLink } from 'vue-router'
-import { ref, defineProps, defineEmits } from 'vue'
+import { ref, computed, defineProps, defineEmits } from 'vue'
 
 const props = defineProps({
     to: {
@@ -38,13 +38,23 @@ const props = defineProps({
     deactivated: {
         type: Boolean,
         default: false
+    },
+    danger: {
+        type: Boolean,
+        default: false
     }
 });
 
 const isActive = ref(false)
 const emit = defineEmits(['click'])
 
-// Send the click event to the parent component
+const linkClasses = computed(() => [
+    'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
+    props.danger
+        ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10'
+        : 'text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700/60'
+])
+
 const handleClick = (e) => {
     isActive.value = !isActive.value
     emit('click', e)

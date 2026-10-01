@@ -56,6 +56,7 @@ final class Utils
                 continue;
             }
 
+
             $current .= $char;
         }
 

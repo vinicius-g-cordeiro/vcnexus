@@ -30,7 +30,7 @@ abstract class BaseRepository
         protected ?array $roles = null,
         private ?UserContext $userContext = null,
         private ?TenantContext $tenantContext = null,
-        private ?RoleContext $roleContext = null
+        private ?RoleContext $roleContext = null,
     ) {
         $this->userContext ??= new UserContext();
         $this->tenantContext ??= new TenantContext();
@@ -162,22 +162,37 @@ abstract class BaseRepository
 
         return new UpdateResponse((int) $row['id'], $row['uuid'] ?? null, (int) $this->tenant_id);
     }
+    
 
-    protected function scopedQuery(string $query = '', array $params = []): array|false
-    {
-        $this->db->StartTrans();
-        try {
-            $this->applyContext($this->user_id, $this->tenant_id, $this->roles);
+protected function scopedQuery(string $query = '', array $params = [], bool $paginate = false, int $limit = 15, int $page = 1, ?string $countQuery = null): array|false
+{
+    $limit = min(100, max(1, $limit));
+    $page = max(1, $page);
+
+    $this->db->StartTrans();
+    try {
+        $this->applyContext($this->user_id, $this->tenant_id, $this->roles);
+
+        if (!$paginate) {
             $result = $this->db->GetAll($query, $params);
-            $this->db->CompleteTrans();
-        } catch (\Throwable $e) {
-            $this->db->FailTrans();
-            $this->db->CompleteTrans();
-            throw new TransactionFailedException('Transaction failed!', 500, $e);
+        } else {
+            $total = (int) $this->db->GetOne($countQuery, $params);
+            $rs = $this->db->SelectLimit($query, $limit, ($page - 1) * $limit, $params);
+            $result = [
+                'data' => $rs ? $rs->GetArray() : [],
+                'meta' => ['page' => $page, 'per_page' => $limit, 'total' => $total],
+            ];
         }
-        
-        return $result;
+
+        $this->db->CompleteTrans();
+    } catch (\Throwable $e) {
+        $this->db->FailTrans();
+        $this->db->CompleteTrans();
+        throw new TransactionFailedException('Transaction failed!', 500, $e);
     }
+
+    return $result;
+}
 
     protected function buildSearchClause(array $columns, string $searchTerm): array
     {

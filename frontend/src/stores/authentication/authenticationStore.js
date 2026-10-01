@@ -7,6 +7,7 @@ export const useAuthStore = defineStore("auth", {
     loading: false,
     error: null,
     hydration: false,
+    menus: [],
   }),
  
   getters: {
@@ -23,10 +24,17 @@ export const useAuthStore = defineStore("auth", {
      * @param {Array} permission
      * @returns bool
      */
-    hasPermissions(permission = Array.prototype()) {
-      const permissions = permission.map(
+    hasPermissions(permission = Array.prototype) {
+      let permissions = [];
+      if (!Array.isArray(permission)) {
+        permissions = [permission];
+      }
+
+
+      permissions = permission.map(
         (item) => !!this.sessionUser.permissions.find((p) => p === item),
       );
+      
       return permissions.some((item) => item === true);
     },
     async login(credentials) {
@@ -78,5 +86,14 @@ export const useAuthStore = defineStore("auth", {
         this.hydration = true;
       }
     },
+    async getMenus() {
+      try {
+        const response = await authenticationService.getMenus();
+        this.menus = response.data;
+        return response.data;
+      } catch (e) {
+        return [];
+      }
+    }
   },
 });

@@ -65,11 +65,13 @@ const props = defineProps({
     },
     maxlength: {
         type: Number,
-        default: null
+        default: null,
+        required: false
     },
     minlength: {
         type: Number,
-        default: null
+        default: null,
+        required: false
     }
 })
 
@@ -166,7 +168,7 @@ const updatePasswordMeter = () => {
 
 <template>
     <div class="flex flex-col gap-1 m-2">
-        <label :for="id" class="flex flex-row justify-start items-center gap-1 mb-1 font-semibold text-zinc-900 dark:text-zinc-50 text-sm align-baseline whitespace-nowrap" :title="label" alt="label" >
+        <label :for="id" class="flex flex-row justify-start items-center gap-1 font-semibold text-zinc-900 dark:text-zinc-50 text-xs align-baseline whitespace-nowrap" :title="label" alt="label">
             <template v-if="label">
                 {{ label }}: <span v-if="required" class="font-bold text-[0.3rem] text-tomato-500"><i class="bi bi-asterisk"></i> </span>
             </template>
@@ -178,7 +180,7 @@ const updatePasswordMeter = () => {
         </label>
 
         <div class="relative">
-            <input @keypress="type === 'password' && showPassword ? updatePasswordMeter() : null" class="bg-zinc-100 dark:bg-zinc-800 p-2 border border-olive-wood-500 dark:border-zinc-600 rounded-md focus:outline-olive-wood-500 w-full text-sm" ref="input"
+            <input @keypress="type === 'password' && showPassword ? updatePasswordMeter() : null" class="bg-zinc-100 dark:bg-zinc-800 p-1 border border-olive-wood-500 dark:border-zinc-600 focus:outline-olive-wood-500 w-full text-xs" ref="input"
                 :type="showPassword ? (isPasswordVisible ? 'text' : 'password') : type" :placeholder="placeholder" :disabled="disabled" :readonly="readonly" :autocomplete="autocomplete" :autofocus="autofocus" :required="required" :name="name" :id="id" :class="classes" :value="modelValue"
                 @input="updateValue" :maxlength="maxlength" :minlength="minlength" />
             <template v-if="showPassword">
@@ -186,15 +188,13 @@ const updatePasswordMeter = () => {
                     <i v-if="isPasswordVisible" class="bi bi-eye-slash-fill"></i>
                     <i v-else class="bi bi-eye-fill"></i>
                 </button>
-
             </template>
-           
         </div>
-         <template v-if="passwordMeter">
-                <canvas class="right-0 bottom-1 left-0 rounded-md h-1 transition-all duration-500 ease-in-out" ref="meter" @input="updatePasswordMeter"></canvas>
-                <span ref="meterText" class="text-zinc-600 dark:text-zinc-400 text-xs">Password strength: <span class="font-semibold text-zinc-900 dark:text-zinc-50">Weak</span></span>
-            </template>
-        <p v-if="error" class="text-olive-wood-500 text-sm">
+        <template v-if="passwordMeter">
+            <canvas class="right-0 bottom-1 left-0 h-1 transition-all duration-500 ease-in-out" ref="meter" @input="updatePasswordMeter"></canvas>
+            <span ref="meterText" class="text-zinc-600 dark:text-zinc-400 text-xs">Password strength: <span class="font-semibold text-zinc-900 dark:text-zinc-50">Weak</span></span>
+        </template>
+        <p v-if="error" class="text-olive-wood-500 text-xs">
             {{ error }}
         </p>
     </div>

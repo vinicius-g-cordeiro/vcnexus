@@ -4,7 +4,7 @@
  * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
- * @date 29/09/2026
+ * @date 30/09/2026
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  */
 
@@ -23,10 +23,9 @@ final class UserProfile extends BaseModel
     public string $firstname;
     public ?string $surname;
     public string $lastname;
-    public ?int $marital_status_id;
     public ?string $birthdate;
-    public ?int $nationality_id;
     public ?string $locale;
+    public ?string $avatar;
     public function __construct() {}
 
     public function toArray(): array
@@ -44,10 +43,9 @@ final class UserProfile extends BaseModel
         $newObject->firstname = isset($data['firstname']) ? $data['firstname'] : null;
         $newObject->surname = isset($data['surname']) ? $data['surname'] : null;
         $newObject->lastname = isset($data['lastname']) ? $data['lastname'] : null;
-        $newObject->marital_status_id = isset($data['marital_status_id']) ? (int) $data['marital_status_id'] : null;
         $newObject->birthdate = isset($data['birthdate']) ? $data['birthdate'] : null;
-        $newObject->nationality_id = isset($data['nationality_id']) ? (int) $data['nationality_id'] : null;
         $newObject->locale = isset($data['locale']) ? $data['locale'] : null;
+        $newObject->avatar = isset($data['avatar']) ? $data['avatar'] : null;
         return $newObject;
     }
 }

@@ -14,7 +14,8 @@ namespace App\Modules\Users\Services;
 
 use App\Modules\Authentication\Models\UserCredentials;
 use App\Modules\Authorization\Models\UserPermission;
-use App\Modules\Users\Models\{UserProfile, UserAddress, UserContact};
+use App\Modules\Users\DTOs\UserCredentialsResponse;
+use App\Modules\Users\Models\{UserProfile, UserAddress, UserConsents, UserContact, UserSensitive};
 use App\Modules\Authorization\Models\{TenantMembership, UserRole};
 use App\Modules\Authorization\Repositories\{UserRolesRepository, UserPermissionsRepository};
 use App\Modules\Authentication\Repositories\AuthenticationRepository;
@@ -160,6 +161,42 @@ final class UserService extends BaseService
     {
         $users = $this->userProfileRepository->list($queryParameters);
         return $users;
+    }
+
+    public function profile(string $uuid): ?UserProfile
+    {
+        $user = $this->userProfileRepository->profile($uuid);
+        return $user;
+    }
+
+    public function credentials(string $uuid): ?UserCredentialsResponse
+    {
+        $user = $this->userProfileRepository->credentials($uuid);
+        return $user;
+    }
+
+    public function addresses(string $uuid): ?array
+    {
+        $user = $this->userProfileRepository->addresses($uuid);
+        return $user;
+    }
+
+    public function consents(string $uuid): ?array
+    {
+        $user = $this->userProfileRepository->consents($uuid);
+        return $user;
+    }
+
+    public function sensitive(string $uuid): ?UserSensitive
+    {
+        $user = $this->userProfileRepository->sensitive($uuid);
+        return $user;
+    }
+
+    public function contacts(string $uuid): ?array
+    {
+        $user = $this->userProfileRepository->contacts($uuid);
+        return $user;
     }
 
 

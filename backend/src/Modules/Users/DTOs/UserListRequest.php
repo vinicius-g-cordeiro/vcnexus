@@ -17,7 +17,7 @@ use App\Shared\Domain\QueryObjectInterface;
 #[\AllowDynamicProperties]
 final class UserListRequest implements QueryObjectInterface
 {
-    public function __construct(public ?string $search, public ?int $tenant_id, public ?int $active, public ?int $blocked, public ?string $created_at)
+    public function __construct(public ?string $search, public ?int $tenant_id, public ?int $active, public ?int $blocked, public ?string $created_at, public ?int $page = 1, public ?int $per_page = 10)
     {
     }
 
@@ -33,7 +33,9 @@ final class UserListRequest implements QueryObjectInterface
             isset($data['tenant_id']) ? (int) $data['tenant_id'] : null,
             isset($data['active']) ? (int) $data['active'] : null,
             isset($data['blocked']) ? (int) $data['blocked'] : null,
-            $data['created_at'] ?? null
+            $data['created_at'] ?? null,
+            isset($data['page']) ? (int) $data['page'] : 1,
+            isset($data['per_page']) ? (int) $data['per_page'] : 10
         );
     }
 }

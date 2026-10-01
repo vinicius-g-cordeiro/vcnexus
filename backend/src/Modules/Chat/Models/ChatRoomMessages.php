@@ -4,7 +4,7 @@
  * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
- * @date 29/09/2026
+ * @date 30/09/2026
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  */
 
@@ -22,6 +22,7 @@ final class ChatRoomMessages extends BaseModel
     public int $room_id;
     public int $user_id;
     public string $content;
+    public string $type;
     public ?string $created_at;
     public function __construct() {}
 
@@ -39,6 +40,7 @@ final class ChatRoomMessages extends BaseModel
         $newObject->room_id = isset($data['room_id']) ? (int) $data['room_id'] : null;
         $newObject->user_id = isset($data['user_id']) ? (int) $data['user_id'] : null;
         $newObject->content = isset($data['content']) ? $data['content'] : null;
+        $newObject->type = isset($data['type']) ? $data['type'] : null;
         $newObject->created_at = isset($data['created_at']) ? $data['created_at'] : null;
         return $newObject;
     }

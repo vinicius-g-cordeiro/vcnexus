@@ -100,7 +100,7 @@ font-face {
 }
 
 body {
-    @apply bg-zinc-200 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 min-h-screen font-valley antialiased bg-gradient-to-b from-zinc-200 to-zinc-400
+    @apply bg-zinc-200 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 min-h-screen font-valley antialiased bg-gradient-to-b from-zinc-200 to-zinc-400 dark:from-zinc-900 dark:to-zinc-700
 }
 
 

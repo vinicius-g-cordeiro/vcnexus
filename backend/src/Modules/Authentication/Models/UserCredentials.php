@@ -4,7 +4,7 @@
  * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
- * @date 29/09/2026
+ * @date 30/09/2026
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  */
 
@@ -20,7 +20,7 @@ final class UserCredentials extends BaseModel
     public ?string $uuid;
     public ?int $active;
     public string $email;
-    public string $password;
+    public ?string $password;
     public ?int $blocked;
     public ?int $remember;
     public ?string $token;

@@ -17,5 +17,6 @@
     "chat_messages": 16,
     "chat_rooms": 17,
     "chat_rooms_users": 18,
-    "chat_room_users": 19
+    "chat_room_users": 19,
+    "menus": 20
 }

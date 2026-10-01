@@ -41,10 +41,14 @@ final class ChatRepository extends BaseRepository {
                 uc.id as id,
                 up.firstname as name,
                 CONCAT(up.surname || ' ' || up.lastname) as surname,
-                uc.status as online_status
+                uc.status as online_status,
+                b.fantasy_name as organization_name,
+                up.avatar as avatar
             FROM
                 user_credentials uc
             INNER JOIN user_profile up ON up.user_id = uc.id
+            INNER JOIN tenant_memberships tm ON tm.user_id = uc.id
+            INNER JOIN business b ON b.tenant_id = tm.tenant_id
             WHERE
                 uc.active = 1 AND uc.id <> ?
             ORDER BY up.firstname, up.lastname
@@ -67,6 +71,8 @@ final class ChatRepository extends BaseRepository {
             SELECT uc.id
             FROM user_credentials uc
             INNER JOIN user_profile up ON up.user_id = uc.id
+            INNER JOIN tenant_memberships tm ON tm.user_id = uc.id
+            INNER JOIN business b ON b.tenant_id = tm.tenant_id
             WHERE uc.id = ? AND uc.active = 1
         SQL;
 

@@ -38,7 +38,7 @@ final class ChatRoomMessagesSchema extends AbstractSchema
     #[Nullable(nullable: false)]
     public ?string $content;
 
-    #[Column(type: 'varchar', default: 'text')]
+    #[Column(type: 'varchar', default: '\'text\'')]
     #[Nullable(nullable: false)]
     public ?string $type;
 

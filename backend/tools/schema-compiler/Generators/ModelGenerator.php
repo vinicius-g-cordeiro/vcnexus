@@ -70,6 +70,7 @@ final class ModelGenerator
     {
         $type = $this->sqlToPhpType($column->type);
         $type = $column->nullable ? "?{$type}" : $type;
+        $column->name = str_replace(['"', "'"], '', $column->name);
         
         // For the model the primary keys should be considered nullable, in order to use the model without specifing the keys, for example when inserting a new record on the database
         if(in_array($column->name,['uuid', 'active']) || ($column->name === 'id' && $type === 'int')) {
@@ -82,6 +83,9 @@ final class ModelGenerator
     {
         $type = $this->sqlToPhpType($column->type);
         $type = $column->nullable ? "?{$type}" : $type;
+
+        // Remove the double or single quotes from the column name, in case it's reserved word
+        $column->name = str_replace(['"', "'"], '', $column->name);
         
         if(in_array($type, ['int', '?int'])) {
             return "\$newObject->{$column->name} = isset(\$data['{$column->name}']) ? (int) \$data['{$column->name}'] : null";

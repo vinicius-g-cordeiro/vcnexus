@@ -66,6 +66,58 @@ const routes = [
           title: "Chat",
         },
       },
+      {
+        path: "users",
+        name: "users",
+        children: [
+          {
+            path: "",
+            name: "users.index",
+            component: () => import("@/views/users/Users.vue"),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "Users",
+            },
+          },
+          {
+            path: "new",
+            name: "users.create",
+            component: () => import("@/views/users/Form.vue"),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "New User",
+            },
+          },
+          {
+            path: "/user/:uuid",
+            name: "users.edit",
+            component: () => import("@/views/users/Form.vue"),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "Edit User",
+            },
+          },
+        ]
+      },
+      {
+        path: "tenants",
+        name: "tenants",
+        children: [
+          {
+            path: "",
+            name: "tenants.index",
+            component: () => import("@/views/tenants/Tenants.vue"),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "Tenants",
+            },
+          },
+        ]
+      }
     ],
   },
 
@@ -110,6 +162,8 @@ router.beforeEach(async (to, from) => {
       return { name: "home.auth" };
     }
   }
+
+
 
   if (requiresSuperAdmin && isSuperAdminAccount === false) {
     return { name: "home.auth" };

@@ -13,6 +13,7 @@ namespace App\Infrastructure\Database;
 
 use App\Shared\Http\Response;
 use App\Shared\Helpers\Utils;
+use App\Shared\Schema\BaseModel;
 
 final class Hydrator
 {
@@ -51,6 +52,10 @@ final class Hydrator
             $args[$p['name']] = self::cast($row[$key], $p, $class);
         }
 
+        // Check if the class is a model, if so use the model's fromArray
+        if (is_subclass_of($class, BaseModel::class)) {
+            return $class::fromArray($args);
+        }
         return new $class(...$args);
     }
 
@@ -130,6 +135,8 @@ final class Hydrator
         $ctor = (new \ReflectionClass($class))->getConstructor();
         $params = [];
 
+        // check 
+
         foreach ($ctor?->getParameters() ?? [] as $param) {
             $type = $param->getType();
             $name = $param->getName();
@@ -141,6 +148,21 @@ final class Hydrator
                 'nullable'   => $type === null || $type->allowsNull(),
                 'builtin'    => $type instanceof \ReflectionNamedType && $type->isBuiltin(),
                 'hasDefault' => $param->isDefaultValueAvailable(),
+            ];
+        }
+
+        $properties = (new \ReflectionClass($class))->getProperties();
+
+        foreach ($properties as $property) {
+            $type = $property->getType();
+            $name = $property->getName();
+            $params[] = [
+                'name'       => $name,
+                'column'     => strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name)),
+                'type'       => $type instanceof \ReflectionNamedType ? $type->getName() : null,
+                'nullable'   => $type === null || $type->allowsNull(),
+                'builtin'    => $type instanceof \ReflectionNamedType && $type->isBuiltin(),
+                'hasDefault' => false,
             ];
         }
 

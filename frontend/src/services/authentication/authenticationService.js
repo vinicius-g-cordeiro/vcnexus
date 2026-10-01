@@ -12,6 +12,10 @@ const authenticationService = {
     async getAuthenticatedUser() {
         const response = await api.get('/auth/me', { withCredentials: true })
         return response.data
+    },
+    async getMenus() {
+        const response = await api.get('/menus', { withCredentials: true })
+        return response.data
     }
 }
 

@@ -101,6 +101,10 @@ final class MigrationGenerator
 
     private function renderColumnSql($column): string
     {
+        if($column->name === 'order'){
+            // Wrap the column name in double quotes as it is a reserved word
+            $column->name = "\"{$column->name}\"";
+        }
         $sql = "{$column->name} " . $this->pgType($column);
         if($column->identity === true && $column->identity_generated != ''){
             $sql .= " {$column->identity_generated}";
@@ -160,6 +164,7 @@ final class MigrationGenerator
     {
         return match ($column->type) {
             'varchar' => $column->length ? "varchar({$column->length})" : 'varchar',
+            'varchar::array' => $column->length ? "varchar({$column->length})[]" : 'varchar[]',
             'char' => "char({$column->length})",
             'text' => 'text',
             'uuid' => 'uuid',

@@ -14,6 +14,7 @@ namespace App\Bootstrap;
 
 use App\Bootstrap\Routing\Router;
 use App\Modules\Authentication\Controllers\AuthenticationController;
+use App\Modules\Authorization\Controllers\MenuController;
 use App\Modules\Chat\Controllers\ChatController;
 use App\Modules\Users\Controllers\UserController;
 use App\Modules\Tenant\Controllers\TenantController;
@@ -37,7 +38,12 @@ final class Application
         date_default_timezone_set(getenv('APP_TIMEZONE'));
         setlocale(LC_TIME, getenv('APP_LOCALE'), getenv('APP_LOCALE') . '.utf-8', getenv('APP_LOCALE') . '.utf-8');
 
-        $this->router->registerControllers([UserController::class, AuthenticationController::class, TenantController::class, ChatController::class]);
+        /// -------------- 
+        /// REGISTER CONTROLLERS 
+        /// --------------
+        $this->router->registerControllers([UserController::class, AuthenticationController::class, TenantController::class, ChatController::class, MenuController::class]);
+
+
         set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {
             if ($errno === E_DEPRECATED || $errno === E_USER_DEPRECATED) {
                 error_log(sprintf(

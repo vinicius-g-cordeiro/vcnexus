@@ -1,13 +1,14 @@
 <template>
-    <div class="inline-block z-10 relative text-left">
+    <div class="inline-block z-50 relative text-left">
         <slot name="trigger" :toggle="toggleDropdown" :isOpen="isDropdownOpen" />
 
-        <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" 
+        <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75"
         leave-from-class="transform opacity-100 scale-100"
             leave-to-class="transform opacity-0 scale-95">
-            <div v-if="isDropdownOpen" class="right-0 absolute shadow-lg mt-2 w-56 origin-top-right">
-                <div class="bg-zinc-100 dark:bg-zinc-300 shadow-xs text-zinc-900 dark:text-zinc-900">
-                    <div class="py-1">
+            <div v-if="isDropdownOpen" class="right-0 absolute mt-2 w-60 origin-top-right">
+                <div class="bg-white dark:bg-zinc-800 shadow-xl border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden text-zinc-900 dark:text-zinc-100">
+                    <slot name="header" />
+                    <div class="p-1">
                         <slot name="content" :close="toggleDropdown" />
                     </div>
                 </div>

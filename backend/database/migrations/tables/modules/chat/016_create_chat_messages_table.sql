@@ -5,6 +5,7 @@ CREATE TABLE chat_messages (
     room_id bigint NOT NULL,
     user_id bigint NOT NULL,
     content text NOT NULL,
+    type varchar NOT NULL DEFAULT 'text',
     created_at timestamp
 );
 COMMENT ON COLUMN "chat_messages"."uuid" IS 'V7 UUID';
