@@ -9,6 +9,7 @@
 .env.*
 !.env.example
 
+
 # ---- PHP / Composer (backend: src/, tools/schema-compiler/) ----
 /vendor/
 vendor/
@@ -81,4 +82,6 @@ Desktop.ini
 *~
 .directory
 
+# ---- database migrations and seeds from thirdy parties like geonames
 /backend/database/migrations/shared/init/
+backend/database/migrations/geonames/

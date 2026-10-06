@@ -8,7 +8,6 @@ const props = defineProps({
     },
     type: {
         type: String,
-        required: true,
         default: 'text'
     },
     placeholder: {

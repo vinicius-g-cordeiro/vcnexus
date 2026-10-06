@@ -18,5 +18,19 @@
     "chat_rooms": 17,
     "chat_rooms_users": 18,
     "chat_room_users": 19,
-    "menus": 20
+    "menus": 20,
+    "cities": 21,
+    "contact_categories": 22,
+    "contact_types": 23,
+    "countries": 24,
+    "disabilities": 25,
+    "educational_levels": 26,
+    "ethnicity": 27,
+    "genders": 28,
+    "locales": 29,
+    "marital_statuses": 30,
+    "religions": 31,
+    "sexual_orientations": 32,
+    "states": 33,
+    "nationality": 34
 }

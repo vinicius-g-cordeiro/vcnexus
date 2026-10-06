@@ -28,10 +28,9 @@ final class AuthenticationRepository extends BaseRepository
     public function findUserAccountUnscoped(string $login): ?CredentialsResponse
     {
         $query =    "SELECT u.blocked, u.id, u.uuid, u.active, u.password
-        FROM {$this->table()} u WHERE (public.unaccent(lower(u.email)) = public.unaccent(lower(?))) LIMIT 1";
+        FROM {$this->table()} u WHERE (public.unaccent(lower(u.email)) = public.unaccent(lower(?)) OR public.unaccent(lower(u.username)) = public.unaccent(lower(?))) LIMIT 1";
 
-        $result = $this->db->GetRow($query, [$login]);
-        
+        $result = $this->db->GetRow($query, [$login, $login]);
         
         return empty($result) === false ? Hydrator::hydrate(CredentialsResponse::class, $result) : null;
     }

@@ -14,8 +14,9 @@ namespace App\Bootstrap;
 
 use App\Bootstrap\Routing\Router;
 use App\Modules\Authentication\Controllers\AuthenticationController;
-use App\Modules\Authorization\Controllers\MenuController;
+use App\Modules\Authorization\Controllers\{PermissionController, MenuController, RoleController};
 use App\Modules\Chat\Controllers\ChatController;
+use App\Modules\References\Controllers\ReferencesController;
 use App\Modules\Users\Controllers\UserController;
 use App\Modules\Tenant\Controllers\TenantController;
 use App\Shared\Http\{Request, Response};
@@ -41,7 +42,18 @@ final class Application
         /// -------------- 
         /// REGISTER CONTROLLERS 
         /// --------------
-        $this->router->registerControllers([UserController::class, AuthenticationController::class, TenantController::class, ChatController::class, MenuController::class]);
+        $this->router->registerControllers(
+            [
+                UserController::class,
+                AuthenticationController::class,
+                TenantController::class,
+                ChatController::class,
+                MenuController::class,
+                PermissionController::class,
+                RoleController::class,
+                ReferencesController::class
+            ]
+        );
 
 
         set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {

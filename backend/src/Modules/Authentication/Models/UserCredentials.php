@@ -4,7 +4,7 @@
  * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
- * @date 30/09/2026
+ * @date 06/10/2026
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  */
 
@@ -20,7 +20,8 @@ final class UserCredentials extends BaseModel
     public ?string $uuid;
     public ?int $active;
     public string $email;
-    public ?string $password;
+    public ?string $username;
+    public string $password;
     public ?int $blocked;
     public ?int $remember;
     public ?string $token;
@@ -52,6 +53,7 @@ final class UserCredentials extends BaseModel
         $newObject->uuid = isset($data['uuid']) ? $data['uuid'] : null;
         $newObject->active = isset($data['active']) ? (int) $data['active'] : null;
         $newObject->email = isset($data['email']) ? $data['email'] : null;
+        $newObject->username = isset($data['username']) ? $data['username'] : null;
         $newObject->password = isset($data['password']) ? $data['password'] : null;
         $newObject->blocked = isset($data['blocked']) ? (int) $data['blocked'] : null;
         $newObject->remember = isset($data['remember']) ? (int) $data['remember'] : null;

@@ -260,6 +260,9 @@ protected function scopedQuery(string $query = '', array $params = [], bool $pag
         return $result;
     }
 
+    public function setTenantId(?string $tenant_id){
+        $this->tenant_id = $tenant_id;
+    }
 
 
 }

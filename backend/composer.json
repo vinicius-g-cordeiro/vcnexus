@@ -32,7 +32,8 @@
         "Config\\": "src/Bootstrap/Configuration/",
         "Tests\\": "tests/",
         "App\\Schemas\\": "schemas/",
-        "Tools\\SchemaCompiler\\": "tools/schema-compiler/"
+        "Tools\\SchemaCompiler\\": "tools/schema-compiler/",
+        "Tools\\GeonameExtractor\\": "tools/geoname-extractor/"
     },
     "files": [
         "src/Shared/Http/Object.php"

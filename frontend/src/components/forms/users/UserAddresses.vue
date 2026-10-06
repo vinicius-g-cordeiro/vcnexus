@@ -16,22 +16,22 @@
                     <i class="bi bi-trash"></i>
                 </button>
                 <div class="gap-x-4 grid grid-cols-1 sm:grid-cols-2">
+                    <Select label="Country" :id="`country-${i}`" :options="countryOptions" v-model="addr.country_id" @change="getStates(addr.country_id)" placeholder="Select country" />
+                    <Select label="State" :id="`state-${i}`" :options="stateOptions" v-model="addr.state_id" @change="getCities(addr.state_id, addr.country_id)" placeholder="Select state" />
+                    <Select label="City" :id="`city-${i}`" :options="cityOptions" v-model="addr.city_id" placeholder="Select city" />
                     <Input v-model="addr.purpose" label="Purpose" placeholder="Home, Work..." :id="`purpose-${i}`" required />
                     <Input v-model="addr.address" label="Address" :id="`address-${i}`" required />
                     <Input v-model="addr.neighborhood" label="Neighborhood" :id="`neighborhood-${i}`" />
                     <Input v-model="addr.zip_code" label="ZIP Code" :id="`zip-${i}`" />
                     <Input v-model="addr.complement" label="Complement" :id="`complement-${i}`" />
                     <Input v-model="addr.reference" label="Reference" :id="`reference-${i}`" />
-                    <Input v-model="addr.city_id" label="City ID" :id="`city-${i}`" />
-                    <Input v-model="addr.state_id" label="State ID" :id="`state-${i}`" />
-                    <Input v-model="addr.country_id" label="Country ID" :id="`country-${i}`" />
                     <Input v-model="addr.extra_info" label="Extra Info" :id="`extra-${i}`" />
                 </div>
             </div>
 
             <p v-if="!form.list.length" class="py-6 text-zinc-400 text-sm text-center">No addresses added yet</p>
 
-            <div class="flex justify-end pt-2">
+            <div v-if="mode === 'edit'" class="flex justify-end pt-2">
                 <button type="submit" class="bg-zinc-900 hover:bg-zinc-700 dark:bg-zinc-100 dark:hover:bg-zinc-300 px-4 py-2 rounded-md font-medium text-white dark:text-zinc-900 text-sm transition-colors">
                     Save Changes
                 </button>
@@ -41,23 +41,45 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue'
+import { reactive, watch, onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/users/userStore'
+import { useReferencesStore } from '@/stores/references/referencesStore'
 import Input from '@/components/inputs/Input.vue'
-
+import Select from '@/components/inputs/Select.vue'
 const props = defineProps({
-    addresses: { type: Array, default: () => [] }
+    addresses: { type: Array, default: () => [] },
+    mode: { type: String, default: 'edit' },
 })
+
+const countryOptions = ref([])
+const stateOptions = ref([])
+const cityOptions = ref([])
+
+
+const emit = defineEmits(['update:modelValue'])
 
 const route = useRoute()
 const userStore = useUserStore()
+const referencesStore = useReferencesStore()
 
 const form = reactive({ list: [] })
+const states = ref([])
+const cities = ref([])
 
-watch(() => props.addresses, (val) => {
-    form.list = (val ?? []).map(a => ({ ...a }))
-}, { immediate: true })
+
+if (props.mode === 'create') {
+    // seed once from the parent draft, then only push local edits outward —
+    // re-watching the prop would rebuild form.list from scratch on our own
+    // emit, wiping whatever row the user is mid-edit on and dropping focus
+    form.list = (props.addresses ?? []).map(a => ({ ...a }))
+    watch(form, (val) => emit('update:modelValue', val.list), { deep: true })
+} else {
+    watch(() => props.addresses, (val) => {
+        form.list = (val ?? []).map(a => ({ ...a }))
+    }, { immediate: true })
+}
 
 function addAddress() {
     form.list.push({
@@ -75,6 +97,41 @@ function addAddress() {
 }
 
 async function handleSubmit() {
+    if (props.mode !== 'edit') return
     await userStore.updateAddresses(route.params.uuid, form.list)
+}
+
+onMounted(async () => {
+    const ok = await referencesStore.fetchCountries();
+    if(ok === true){
+        countryOptions.value = referencesStore.countries.map(c => ({ label: c.name, value: c.id }))
+    }
+})
+
+async function getStates(country_id) {
+    if(!country_id) {
+        // Clear the city options
+        stateOptions.value = []
+        cityOptions.value = []
+        return
+    }
+    cityOptions.value = []
+    const ok = await referencesStore.fetchStates({},country_id);
+    if(ok === true){
+        stateOptions.value = referencesStore.states.map(s => ({ label: s.name, value: s.id }))
+    }
+}
+
+async function getCities(state_id, country_id) {
+    if(!state_id) {
+        // Clear the city options
+        cityOptions.value = []
+        return
+    }
+    cityOptions.value = []
+    const ok = await referencesStore.fetchCities({},state_id, country_id);
+    if(ok === true){
+        cityOptions.value = referencesStore.cities.map(c => ({ label: c.name, value: c.id }))
+    }
 }
 </script>

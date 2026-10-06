@@ -10,25 +10,32 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Authentication\Controllers;
+namespace App\Modules\Authorization\Controllers;
 
 use App\Shared\Http\Attributes\{Route, Middleware, Permission};
 use App\Shared\Http\Controllers\BaseController;
 use App\Shared\Http\{Response, Request, Session, DTOValidator};
-use App\Shared\Http\Middleware\{AuthMiddleware};
+use App\Shared\Http\Middleware\{AuthMiddleware, TenantResolverMiddleware};
+use App\Modules\Authorization\Services\RoleService;
+
 
 #[Route(path: '/v1/roles')]
 #[Middleware(AuthMiddleware::class)]
-#[Permission(['roles.manage'])]
+#[Middleware(TenantResolverMiddleware::class)]
 final class RoleController extends BaseController
 {
-    public function __construct(Request $request, Session $session, private DTOValidator $validator) {
+    public function __construct(private RoleService $service, Request $request, Session $session, private DTOValidator $validator) {
         parent::__construct($request, $session);
     }
 
     #[Route('GET', '/')]
-    #[Permission(['roles.list'])]
+    #[Permission(['roles.view'])]
     public function index(): ?Response {
-        return Response::json(data: null, message: 'Not implemented yet')->send(501, [], true);
+        try{
+            $roles = $this->service->index();
+            return Response::json(data: object(list: $roles), message: 'success')->send(200, [], true);
+        }catch(\Throwable $th) {
+            throw $th;
+        }
     }
 }

@@ -19,6 +19,7 @@ use App\Shared\Http\Controllers\BaseController;
 use App\Shared\Http\{Response, Request, Session, DTOValidator, Middleware\ErrorLogMiddleware};
 use App\Modules\Users\DTOs\{UserListRequest, UserStoreRequest};
 use App\Shared\Http\Middleware\{AuthMiddleware, TenantResolverMiddleware};
+use App\Shared\Helpers\Utils;
 
 
 #[Route(path: '/v1/users')]
@@ -35,7 +36,12 @@ final class UserController extends BaseController
     public function store() : ?Response {
         try{
             /// @todo implement Idepodency key validation
-            $userStoreRequest = UserStoreRequest::fromArray((array)$this->request->post());
+            $post = (array)$this->request->params(); // But params is the one that is getting the information on this specific request, instead of the post
+            // flat the array to one level
+            $post = Utils::flatten($post);        
+            $post['emails'] = $this->contactPerTypeSplitter($post['contacts'], '1');
+            $post['phones'] = $this->contactPerTypeSplitter($post['contacts'], '2');
+            $userStoreRequest = UserStoreRequest::fromArray($post);
             $this->validator->validate($userStoreRequest);
             $users = $this->service->store($userStoreRequest);
             return Response::json(data: $users)->send(201, [], true);
@@ -139,5 +145,15 @@ final class UserController extends BaseController
         }catch(\Throwable $th) {
             throw $th;
         }
+    }
+
+    public function contactPerTypeSplitter(array $contacts, string $contactType) : array {
+        $contactInfo = [];
+        foreach($contacts as $contact) {
+            if($contact['type'] == $contactType) {
+                $contactInfo[] = $contact;
+            }
+        }
+        return $contactInfo;
     }
 }

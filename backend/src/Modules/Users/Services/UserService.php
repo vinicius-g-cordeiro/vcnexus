@@ -58,7 +58,7 @@ final class UserService extends BaseService
 
         /// @TODO Validate user data before storing
         $result = $this->transactional(function () use ($userStoreRequest) {
-            $userCredentialsStoreRequest = UserCredentials::fromArray(['created_by' => $this->session->get('user')->id ?? 1, ...$userStoreRequest->toArray()]);
+            $userCredentialsStoreRequest = UserCredentials::fromArray([...$userStoreRequest->toArray(), 'created_by' => $this->session->get('user')->id ?? 1]);
             $userCredentials = $this->authenticationRepository->store($userCredentialsStoreRequest);
             
             

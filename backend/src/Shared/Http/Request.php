@@ -61,8 +61,8 @@ final class Request
     private function parseRequestBody(): void
     {
         $input = file_get_contents('php://input');
+        // Get the content type
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-
         $data = $this->decodeBody($input, $contentType);
         match ($this->method) {
             'POST' => $this->post = (object) $data,

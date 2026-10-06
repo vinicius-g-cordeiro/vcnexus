@@ -26,14 +26,14 @@
 
         <form @submit.prevent="handleSubmit" class="flex flex-col gap-2">
             <div class="gap-x-4 grid grid-cols-1 sm:grid-cols-2">
-                <Input v-model="form.firstname" label="First Name" name="firstname" id="firstname" required />
-                <Input v-model="form.surname" label="Surname" name="surname" id="surname" />
-                <Input v-model="form.lastname" label="Last Name" name="lastname" id="lastname" required />
+                <Input v-model="form.firstname" type="text" label="First Name" name="firstname" id="firstname" required />
+                <Input v-model="form.surname" type="text" label="Surname" name="surname" id="surname" />
+                <Input v-model="form.lastname" type="text" label="Last Name" name="lastname" id="lastname" required />
                 <Input v-model="form.birthdate" type="date" label="Birth Date" name="birthdate" id="birthdate" />
                 <Select v-model="form.locale" label="Locale" name="locale" id="locale" :options="localeOptions" placeholder="Select locale" />
             </div>
 
-            <div class="flex justify-end pt-2">
+            <div v-if="mode === 'edit'" class="flex justify-end pt-2">
                 <button type="submit" class="bg-zinc-900 hover:bg-zinc-700 dark:bg-zinc-100 dark:hover:bg-zinc-300 px-4 py-2 rounded-md font-medium text-white dark:text-zinc-900 text-sm transition-colors">
                     Save Changes
                 </button>
@@ -50,8 +50,11 @@ import Input from '@/components/inputs/Input.vue'
 import Select from '@/components/inputs/Select.vue'
 
 const props = defineProps({
-    profile: { type: Object, default: () => ({}) }
+    profile: { type: Object, default: () => ({}) },
+    mode: { type: String, default: 'edit' }, // 'edit' | 'create'
 })
+
+const emit = defineEmits(['update:modelValue'])
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -74,15 +77,30 @@ const fileInput = ref(null)
 const avatarPreview = ref('')
 const avatarFile = ref(null)
 
-watch(() => props.profile, (val) => {
+function seedFromProfile(val) {
     form.firstname = val?.firstname ?? ''
     form.surname = val?.surname ?? ''
     form.lastname = val?.lastname ?? ''
     form.birthdate = val?.birthdate ?? ''
     form.locale = val?.locale ?? 'en-US'
     avatarPreview.value = val?.avatar ?? ''
-    avatarFile.value = null
-}, { immediate: true })
+    avatarFile.value = val?.avatarFile ?? null
+}
+
+if (props.mode === 'create') {
+    // seed once from whatever draft the parent already has (e.g. returning to
+    // this tab after visiting another one), then stop listening — the prop
+    // and local form stay in sync via the emit below, so re-watching the prop
+    // would just echo our own edits back and reset mid-keystroke
+    seedFromProfile(props.profile)
+    watch(form, (val) => {
+        emit('update:modelValue', { ...val, avatarFile: avatarFile.value })
+    }, { deep: true })
+} else {
+    // edit mode: the prop comes from the store and can legitimately change
+    // underneath us (e.g. a fresh fetch), so keep reacting to it
+    watch(() => props.profile, seedFromProfile, { immediate: true })
+}
 
 function triggerFilePicker() {
     fileInput.value?.click()
@@ -93,15 +111,19 @@ function handleFileChange(e) {
     if (!file) return
     avatarFile.value = file
     avatarPreview.value = URL.createObjectURL(file)
+    if (props.mode === 'create') emit('update:modelValue', { ...form, avatarFile: file })
 }
 
 function removeAvatar() {
     avatarFile.value = null
     avatarPreview.value = ''
     if (fileInput.value) fileInput.value.value = ''
+    if (props.mode === 'create') emit('update:modelValue', { ...form, avatarFile: null })
 }
 
+// edit mode only — create mode never calls the store, the parent does on final submit
 async function handleSubmit() {
+    if (props.mode !== 'edit') return
     const payload = new FormData()
     Object.entries(form).forEach(([key, value]) => payload.append(key, value ?? ''))
     if (avatarFile.value) {

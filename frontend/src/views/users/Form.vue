@@ -19,13 +19,14 @@
         </aside>
 
         <main class="flex-1 p-4 sm:p-6">
-            <UserProfile v-if="selectedSection === 'profile'" :profile="profile" />
-            <UserCredentials v-if="selectedSection === 'credentials'" :credentials="credentials" />
-            <UserPermissions v-if="selectedSection === 'permissions'" :permissions="permissions" />
-            <UserAddresses v-if="selectedSection === 'addresses'" :addresses="addresses" />
-            <UserContacts v-if="selectedSection === 'contacts'" :contacts="contacts" />
-            <UserConsents v-if="selectedSection === 'consents'" :consents="consents" />
-            <UserSensitive v-if="selectedSection === 'sensitive'" :sensitive="sensitive" />
+            <UserProfile v-if="selectedSection === 'profile'" mode="edit" :profile="profile" />
+            <UserCredentials v-if="selectedSection === 'credentials'" mode="edit" :credentials="credentials" />
+            <UserPermissions v-if="selectedSection === 'permissions'" mode="edit" :permissions="permissions" />
+            <UserRoles v-if="selectedSection === 'roles'" mode="edit" :roles="roles" />
+            <UserAddresses v-if="selectedSection === 'addresses'" mode="edit" :addresses="addresses" />
+            <UserContacts v-if="selectedSection === 'contacts'" mode="edit" :contacts="contacts" />
+            <UserConsents v-if="selectedSection === 'consents'" mode="edit" :consents="consents" />
+            <UserSensitive v-if="selectedSection === 'sensitive'" mode="edit" :sensitive="sensitive" />
         </main>
     </div>
 </template>
@@ -38,6 +39,7 @@ import { useUserStore } from '@/stores/users/userStore'
 import UserProfile from '@/components/forms/users/UserProfile.vue'
 import UserCredentials from '@/components/forms/users/UserCredentials.vue'
 import UserPermissions from '@/components/forms/users/UserPermissions.vue'
+import UserRoles from '@/components/forms/users/UserRoles.vue'
 import UserAddresses from '@/components/forms/users/UserAddresses.vue'
 import UserContacts from '@/components/forms/users/UserContacts.vue'
 import UserConsents from '@/components/forms/users/UserConsents.vue'
@@ -52,6 +54,7 @@ const sections = ref([
     { name: 'profile', label: 'Profile', icon: 'bi-person' },
     { name: 'credentials', label: 'Credentials', icon: 'bi-key' },
     { name: 'permissions', label: 'Permissions', icon: 'bi-shield-check' },
+    { name: 'roles', label: 'Roles', icon: 'bi-person-badge' },
     { name: 'addresses', label: 'Addresses', icon: 'bi-geo-alt' },
     { name: 'contacts', label: 'Contacts', icon: 'bi-telephone' },
     { name: 'consents', label: 'Consents', icon: 'bi-file-earmark-check' },
@@ -63,6 +66,7 @@ const selectedSection = ref('profile')
 const profile = computed(() => userStore.profile)
 const credentials = computed(() => userStore.credentials)
 const permissions = computed(() => userStore.permissions)
+const roles = computed(() => userStore.roles)
 const addresses = computed(() => userStore.addresses)
 const contacts = computed(() => userStore.contacts)
 const consents = computed(() => userStore.consents)
@@ -71,10 +75,5 @@ const sensitive = computed(() => userStore.sensitive)
 onMounted(async () => {
     await userStore.fetchProfile(route.params.uuid)
     await userStore.fetchCredentials(route.params.uuid)
-    await userStore.fetchPermissions(route.params.uuid)
-    await userStore.fetchAddresses(route.params.uuid)
-    await userStore.fetchContacts(route.params.uuid)
-    await userStore.fetchConsents(route.params.uuid)
-    await userStore.fetchSensitive(route.params.uuid)
 })
 </script>

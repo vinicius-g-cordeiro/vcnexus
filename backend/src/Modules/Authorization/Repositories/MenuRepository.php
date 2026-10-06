@@ -20,7 +20,8 @@ use App\Modules\Authorization\Models\Menu;
 
 final class MenuRepository extends BaseRepository
 {
-    public function __construct( \ADOConnection $db, ?string $tenant_id, ?string $user_id, ?array $roles, private Request $request) {
+    public function __construct(\ADOConnection $db, ?string $tenant_id, ?string $user_id, ?array $roles, private Request $request)
+    {
         parent::__construct($db, $tenant_id, $user_id, $roles);
     }
 
@@ -34,7 +35,8 @@ final class MenuRepository extends BaseRepository
      * 
      * @return array<Menu>
      */
-    public function index() : ?array {
+    public function index(): ?array
+    {
         $result = $this->db->GetAll('SELECT
     p.id,
     p.uuid,
@@ -72,29 +74,12 @@ ORDER BY p."order", p.id;');
         // Group the menus by parent_id and the parent with the children
         $menus = [];
 
-        foreach ($result  as $key => $row) {
+        foreach ($result as $key => $row) {
             $result[$key]['children'] = json_decode($row['children'], true);
         }
 
         $result = Hydrator::hydrateMany(MenusResponseContext::class, $result);
         return $result;
     }
-
-    private function buildTree(array $byParent, int $parentId): array
-{
-    $tree = [];
-
-    foreach ($byParent[$parentId] ?? [] as $row) {
-        $row['children'] = $this->buildTree($byParent, (int) $row['id']);
-
-        if ($row['route'] === null && empty($row['children'])) {
-            continue;
-        }
-
-        $tree[] = $row;
-    }
-
-    return $tree;
-}
 
 }

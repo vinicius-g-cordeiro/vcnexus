@@ -3,6 +3,7 @@ CREATE TABLE user_credentials (
     uuid uuid NOT NULL DEFAULT uuidv7(),
     active smallint NOT NULL DEFAULT 1,
     email varchar(60) NOT NULL,
+    username varchar(100),
     password varchar(128) NOT NULL,
     blocked smallint,
     remember smallint,

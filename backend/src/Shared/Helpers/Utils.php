@@ -14,7 +14,8 @@ namespace App\Shared\Helpers;
 final class Utils
 {
 
-    static function PhpArrayToPg(?array $phpArray) : string {
+    static function PhpArrayToPg(?array $phpArray): string
+    {
         return '{' . implode(',', array_map(
             fn(string $val) => '"' . str_replace('"', '\"', $val) . '"',
             $phpArray
@@ -72,11 +73,12 @@ final class Utils
      * @param string $str The string to remove the accents from.
      * @return string The string with all accents removed.
      */
-    static function removeAccents($str) {
-		$accentsToRemove = ['á', 'à', 'ã', 'â', 'ä', 'é', 'è', 'ê', 'ë', 'í', 'ì', 'î', 'ï', 'ó', 'ò', 'õ', 'ô', 'ö', 'ú', 'ù', 'û', 'ü', 'ç'];
-		$accentsToReplace = ['a', 'a', 'a', 'a', 'a', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'c'];
+    static function removeAccents($str)
+    {
+        $accentsToRemove = ['á', 'à', 'ã', 'â', 'ä', 'é', 'è', 'ê', 'ë', 'í', 'ì', 'î', 'ï', 'ó', 'ò', 'õ', 'ô', 'ö', 'ú', 'ù', 'û', 'ü', 'ç'];
+        $accentsToReplace = ['a', 'a', 'a', 'a', 'a', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'c'];
 
-		return str_replace($accentsToRemove, $accentsToReplace, $str);
+        return str_replace($accentsToRemove, $accentsToReplace, $str);
     }
 
     /**
@@ -92,7 +94,8 @@ final class Utils
      *  - message: string - A message indicating the status of the conversion.
      *  - data: ?DateTime - The converted DateTime object, or null if the conversion failed.
      */
-    static function formatDate($date, $format = 'Y-m-d') {
+    static function formatDate($date, $format = 'Y-m-d')
+    {
         if (empty($date)) {
             return [
                 'success' => false,
@@ -114,42 +117,43 @@ final class Utils
         return $date;
     }
 
-	/**
-	 * 
-	 */
-	static function dateFormat($date, $format = 'd/m/Y') {
-		if(preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $date, $matches)) {
-			$date = \DateTime::createFromFormat('Y-m-d', $matches[0]);
-			return $date->format($format);
-		}
+    /**
+     * 
+     */
+    static function dateFormat($date, $format = 'd/m/Y')
+    {
+        if (preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $date, $matches)) {
+            $date = \DateTime::createFromFormat('Y-m-d', $matches[0]);
+            return $date->format($format);
+        }
 
-		if(preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/', $date, $matches)) {
-			$date = \DateTime::createFromFormat('Y-m-d H:i:s', $matches[0]);
-			return $date->format($format);
-		}
+        if (preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/', $date, $matches)) {
+            $date = \DateTime::createFromFormat('Y-m-d H:i:s', $matches[0]);
+            return $date->format($format);
+        }
 
-		if(preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$/', $date, $matches)) {
-			$date = \DateTime::createFromFormat('Y-m-d H:i', $matches[0]);
-			return $date->format($format);
-		}
+        if (preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$/', $date, $matches)) {
+            $date = \DateTime::createFromFormat('Y-m-d H:i', $matches[0]);
+            return $date->format($format);
+        }
 
-		if(preg_match('/^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/', $date, $matches)) {
-			$date = \DateTime::createFromFormat('d/m/Y', $matches[0]);
-			return $date->format($format);
-		}
+        if (preg_match('/^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/', $date, $matches)) {
+            $date = \DateTime::createFromFormat('d/m/Y', $matches[0]);
+            return $date->format($format);
+        }
 
-		if(preg_match('/^[0-9]{2}\/[0-9]{2}\/[0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}$/', $date, $matches)) {
-			$date = \DateTime::createFromFormat('d/m/Y H:i:s', $matches[0]);
-			return $date->format($format);
-		}
+        if (preg_match('/^[0-9]{2}\/[0-9]{2}\/[0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}$/', $date, $matches)) {
+            $date = \DateTime::createFromFormat('d/m/Y H:i:s', $matches[0]);
+            return $date->format($format);
+        }
 
-		if(preg_match('/^[0-9]{2}\/[0-9]{2}\/[0-9]{4} [0-9]{2}:[0-9]{2}$/', $date, $matches)) {
-			$date = \DateTime::createFromFormat('d/m/Y H:i', $matches[0]);
-			return $date->format($format);
-		}
+        if (preg_match('/^[0-9]{2}\/[0-9]{2}\/[0-9]{4} [0-9]{2}:[0-9]{2}$/', $date, $matches)) {
+            $date = \DateTime::createFromFormat('d/m/Y H:i', $matches[0]);
+            return $date->format($format);
+        }
 
-		return $date;
-	}
+        return $date;
+    }
 
     /**
      * Formats a phone number according to the specified format.
@@ -161,7 +165,8 @@ final class Utils
      * @param string $format The format to apply to the phone number.
      * @return string|array The formatted phone number, or an array with an error message if invalid.
      */
-    static function formatPhone($phone, $format = '+## (##) #####-####') {
+    static function formatPhone($phone, $format = '+## (##) #####-####')
+    {
         if (empty($phone)) {
             return [
                 'success' => false,
@@ -188,7 +193,8 @@ final class Utils
      * @param string $format The format to apply to the CPF number.
      * @return string|array The formatted CPF number, or an array with an error message if invalid.
      */
-    static function formatCpf($cpf, $format = '###.###.###-##') {
+    static function formatCpf($cpf, $format = '###.###.###-##')
+    {
         if (empty($cpf)) {
             return [
                 'success' => false,
@@ -215,7 +221,8 @@ final class Utils
      * @param string $format The format to apply to the CNPJ number.
      * @return string|array The formatted CNPJ number, or an array with an error message if invalid.
      */
-    static function formatCnpj($cnpj, $format = '##.###.###/####-##') {
+    static function formatCnpj($cnpj, $format = '##.###.###/####-##')
+    {
         if (empty($cnpj)) {
             return [
                 'success' => false,
@@ -242,7 +249,8 @@ final class Utils
      * @param string $format The format to apply to the CEP number.
      * @return string|array The formatted CEP number, or an array with an error message if invalid.
      */
-    static function formatCep($cep, $format = '#####-###') {
+    static function formatCep($cep, $format = '#####-###')
+    {
         if (empty($cep)) {
             return [
                 'success' => false,
@@ -265,8 +273,9 @@ final class Utils
      * @param string $str The string to clear.
      * @return string The cleared string.
      */
-    static function clearString($str) {
-		$str = self::removeAccents($str);
+    static function clearString($str)
+    {
+        $str = self::removeAccents($str);
         return preg_replace('/[^a-zA-Z0-9]/', '', $str);
     }
 
@@ -276,7 +285,8 @@ final class Utils
      * @param string $str The string to clear.
      * @return string The cleared string.
      */
-    static function clearNumber($str) {
+    static function clearNumber($str)
+    {
         return preg_replace('/[^0-9]/', '', $str);
     }
 
@@ -286,7 +296,8 @@ final class Utils
      * @param string $str The string to convert.
      * @return string The string with all alphabetic characters converted to lowercase.
      */
-    static function lower($str) {
+    static function lower($str)
+    {
         return mb_strtolower($str, 'UTF-8');
     }
 
@@ -296,7 +307,8 @@ final class Utils
      * @param string $str The string to convert.
      * @return string The string with all alphabetic characters converted to uppercase.
      */
-    static function upper($str) {
+    static function upper($str)
+    {
         return mb_strtoupper($str, 'UTF-8');
     }
 
@@ -306,7 +318,8 @@ final class Utils
      * @param string $str The string to convert.
      * @return string The string with all alphabetic characters converted to title case.
      */
-    static function capitalize($str) {
+    static function capitalize($str)
+    {
         return mb_convert_case($str, MB_CASE_TITLE, 'UTF-8');
     }
 
@@ -317,13 +330,14 @@ final class Utils
      * @param int    $length The length of the string to return.
      * @return string The substring of the given string, of the given length.
      */
-    static function truncate($str, $length, $ellipsis = '...', $type = 'html') {
+    static function truncate($str, $length, $ellipsis = '...', $type = 'html')
+    {
         $text = mb_substr($str, 0, $length, 'UTF-8');
-		if(mb_strlen($str) > $length) {
-			return $text . $ellipsis;
-		}
+        if (mb_strlen($str) > $length) {
+            return $text . $ellipsis;
+        }
 
-		return $text;
+        return $text;
     }
 
     /**
@@ -332,8 +346,30 @@ final class Utils
      * @param string $str The input string to be slugified.
      * @return string The slugified version of the input string.
      */
-    static function slugify($str) {
+    static function slugify($str)
+    {
         return preg_replace('/[^a-zA-Z0-9]/', '-', $str);
     }
+
+
+    static function flatten(array $array): array
+    {
+        $result = [];
+
+        foreach ($array as $key => $value) {
+            if (
+                is_array($value) &&
+                !array_is_list($value)
+            ) {
+                $result = array_merge($result, self::flatten($value));
+                continue;
+            }
+
+            $result[$key] = $value;
+        }
+
+        return $result;
+    }
+
 
 }

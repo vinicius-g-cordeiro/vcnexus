@@ -29,6 +29,11 @@ const userService = {
         const response = await api.query(`/users/sensitive/${uuid}`, { withCredentials: true })
         return response.data
     },
+    async createUser(form) {
+        const response = await api.post('/users/', form)
+        return response.data
+    }
+
 
 }
 

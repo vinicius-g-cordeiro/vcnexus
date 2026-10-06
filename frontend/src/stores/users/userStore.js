@@ -19,6 +19,7 @@ export const useUserStore = defineStore("users", {
     sensitive: null,
     loading: false,
     error: null,
+    permissions: null,
   }),
 
   actions: {
@@ -116,5 +117,17 @@ export const useUserStore = defineStore("users", {
         this.loading = false;
       }
     },
+    async createUser(form) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await userService.createUser(form);
+        return response.data;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    }
   }
 });

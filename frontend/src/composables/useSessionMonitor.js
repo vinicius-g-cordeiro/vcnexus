@@ -11,6 +11,7 @@ export function useSessionMonitor(interval = 60000) {
 
     const router = useRouter()
     const monitor = async () => {
+        console.log(`Checking session.... ${Date.now()}`)
         await authStore.getAuthenticatedUser()
         
         if(!authStore.sessionUser){
@@ -18,14 +19,13 @@ export function useSessionMonitor(interval = 60000) {
         }
 
         if(!authStore.isAuthenticated){
-            await authStore.logout()
             router.replace({ name: 'login' })
         }
 
         if(!authStore.sessionUser){
-            await authStore.logout()
             router.replace({ name: 'login' })
         }
+
     }
 
     onMounted(()=> {

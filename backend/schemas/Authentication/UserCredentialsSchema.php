@@ -13,17 +13,24 @@ declare(strict_types=1);
 namespace App\Schemas\Authentication;
 
 use App\Schemas\AbstractSchema;
-use App\Shared\Schema\Attributes\{Auditable, Column, Comment, Nullable, Timestamps, Unique};
+use App\Shared\Schema\Attributes\{Auditable, Column, Comment, Index, Nullable, Timestamps, Unique};
 
 #[Unique(name: 'uq_users_credentials_email', columns: ['email'])]
+#[Unique(name: 'uq_users_credentials_username', columns: ['username'])]
 #[Timestamps(created_at: 'created_at', updated_at: 'updated_at', deleted_at: 'deleted_at')]
 #[Auditable(created_by: 'created_by', updated_by: 'updated_by', deleted_by: 'deleted_by', deleted_reason: 'deleted_reason')]
+#[Index(name: 'idx_users_credentials_email', references: 'user_credentials', columns: ['email'])]
+#[Index(name: 'idx_users_credentials_username' , references: 'user_credentials', columns: ['username'])]
 final class UserCredentialsSchema extends AbstractSchema
 {
     public string $table = 'user_credentials';
 
     #[Column(type: 'varchar', length: 60)]
     public readonly ?string $email;
+
+    #[Column(type: 'varchar', length: 100)]
+    #[Nullable(nullable: true)]
+    public readonly ?string $username;
 
     #[Column(type: 'varchar', length: 128)]
     public readonly string $password;

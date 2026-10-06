@@ -83,7 +83,7 @@ const routes = [
           {
             path: "new",
             name: "users.create",
-            component: () => import("@/views/users/Form.vue"),
+            component: () => import("@/views/users/CreateForm.vue"),
             meta: {
               breadcrumbs: [],
               actions: [],

@@ -69,7 +69,7 @@ final class UserProfileRepository extends BaseRepository
 
         if (isset($parameters->search) && $parameters->search !== '') {
             $searchTerm = '%' . $parameters->search . '%';
-            $columns = ['up.firstname', 'up.surname', 'up.lastname', 'uc.email'];
+            $columns = ['up.firstname', 'up.surname', 'up.lastname', 'uc.email', 'uc.username', 'b.fantasy_name'];
             $conditions = array_map(fn($col) => "public.unaccent(lower({$col})) LIKE public.unaccent(lower(?))", $columns);
 
             $where .= ' AND (' . implode(' OR ', $conditions) . ')';
@@ -81,7 +81,7 @@ final class UserProfileRepository extends BaseRepository
             $params[] = (int) $parameters->active;
         }
 
-        if (isset($parameters->blocked) && $parameters->blocked !== '') {
+        if (isset($parameters->blocked) && $parameters->blocked !== '' && $parameters->blocked === 1) {
             $where .= ' AND uc.blocked = ?';
             $params[] = (int) $parameters->blocked;
         }

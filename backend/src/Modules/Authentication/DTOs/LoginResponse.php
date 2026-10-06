@@ -24,6 +24,7 @@ final class LoginResponse implements DataTransferObjectInterface
         public readonly ?array $permissions,
         public readonly ?string $name,
         public readonly ?string $email,
+        public readonly ?string $username,
         public readonly ?string $avatar
     ) {
     }
@@ -43,6 +44,7 @@ final class LoginResponse implements DataTransferObjectInterface
             $data['permissions'],
             $data['name'],
             $data['email'],
+            $data['username'],
             $data['avatar']
         );
     }

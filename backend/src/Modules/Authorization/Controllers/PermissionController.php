@@ -10,25 +10,31 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Authentication\Controllers;
+namespace App\Modules\Authorization\Controllers;
 
 use App\Shared\Http\Attributes\{Route, Middleware, Permission};
 use App\Shared\Http\Controllers\BaseController;
-use App\Shared\Http\{Response, Request, Session, DTOValidator};
+use App\Shared\Http\{Response, Request, Session, DTOValidator, Middleware\TenantResolverMiddleware};
 use App\Shared\Http\Middleware\{AuthMiddleware};
+use App\Modules\Authorization\Services\PermissionService;
 
 #[Route(path: '/v1/permissions')]
 #[Middleware(AuthMiddleware::class)]
-#[Permission(['permissions.manage'])]
+#[Middleware(TenantResolverMiddleware::class)]
 final class PermissionController extends BaseController
 {
-    public function __construct(Request $request, Session $session, private DTOValidator $validator) {
+    public function __construct(private PermissionService $service, public Request $request, public Session $session, private DTOValidator $validator) {
         parent::__construct($request, $session);
     }
 
     #[Route('GET', '/')]
-    #[Permission(['permissions.list'])]
+    #[Permission(['permissions.view'])]
     public function index(): ?Response {
-        return Response::json(data: null, message: 'Not implemented yet')->send(501, [], true);
+        try{
+            $permissions = $this->service->index();
+            return Response::json(data: object(list: $permissions), message: 'success')->send(200, [], true);
+        }catch(\Throwable $th) {
+            throw $th;
+        }
     }
 }

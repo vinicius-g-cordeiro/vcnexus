@@ -25,7 +25,7 @@
 
             <p v-if="!form.list.length" class="py-6 text-zinc-400 text-sm text-center">No consent records yet</p>
 
-            <div class="flex justify-end pt-2">
+            <div v-if="mode === 'edit'" class="flex justify-end pt-2">
                 <button type="submit" class="bg-zinc-900 hover:bg-zinc-700 dark:bg-zinc-100 dark:hover:bg-zinc-300 px-4 py-2 rounded-md font-medium text-white dark:text-zinc-900 text-sm transition-colors">
                     Save Changes
                 </button>
@@ -42,8 +42,11 @@ import Input from '@/components/inputs/Input.vue'
 import Select from '@/components/inputs/Select.vue'
 
 const props = defineProps({
-    consents: { type: Array, default: () => [] }
+    consents: { type: Array, default: () => [] },
+    mode: { type: String, default: 'edit' },
 })
+
+const emit = defineEmits(['update:modelValue'])
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -57,9 +60,14 @@ const basisOptions = [
 
 const form = reactive({ list: [] })
 
-watch(() => props.consents, (val) => {
-    form.list = (val ?? []).map(c => ({ ...c }))
-}, { immediate: true })
+if (props.mode === 'create') {
+    form.list = (props.consents ?? []).map(c => ({ ...c }))
+    watch(form, (val) => emit('update:modelValue', val.list), { deep: true })
+} else {
+    watch(() => props.consents, (val) => {
+        form.list = (val ?? []).map(c => ({ ...c }))
+    }, { immediate: true })
+}
 
 function addConsent() {
     form.list.push({
@@ -71,6 +79,7 @@ function addConsent() {
 }
 
 async function handleSubmit() {
+    if (props.mode !== 'edit') return
     await userStore.updateConsents(route.params.uuid, form.list)
 }
 </script>
