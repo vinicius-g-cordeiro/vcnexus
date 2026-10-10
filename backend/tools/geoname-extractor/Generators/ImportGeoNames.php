@@ -425,7 +425,7 @@ final class ImportGeoNames
             $values[] = '(?, ?, ?, ?)';
 
             foreach ($row as $value) {
-                $parameters[] = $value;
+                $parameters[] =  $value;
             }
         }
 

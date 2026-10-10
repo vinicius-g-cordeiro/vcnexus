@@ -14,6 +14,7 @@ namespace App\Modules\Authorization\Repositories;
 
 use App\Infrastructure\Database\Hydrator;
 use App\Modules\Authorization\DTOs\PermissionResponseContext;
+use App\Modules\Authorization\DTOs\UserPermissionResponseContext;
 use App\Shared\Domain\BaseRepository;
 use App\Shared\Http\Request;
 
@@ -52,6 +53,30 @@ final class PermissionRepository extends BaseRepository
         }
 
         $result = Hydrator::hydrateMany(PermissionResponseContext::class, $result);
+        return $result;
+    }
+
+    public function getUserPermissions(string $user_id) : ?array {
+        $query = <<<SQL
+            SELECT up.permission_id, up.user_id, up.id, p.uuid, p.name, p.slug, p.description, p.tenant_id, p.active, p.created_at
+            FROM user_permissions up
+            INNER JOIN user_credentials uc ON uc.id = up.user_id
+            INNER JOIN permissions p ON p.id = up.permission_id
+        SQL;
+
+        $where = 'uc.uuid = ? AND p.tenant_id = ?';
+
+        $query .= " WHERE $where";
+
+        $params = [$user_id,$this->tenant_id];
+
+        $result = $this->scopedQuery($query, $params);
+
+        if (empty($result) || $result === false) {
+            return [];
+        }
+
+        $result = Hydrator::hydrateMany(UserPermissionResponseContext::class, $result);
         return $result;
     }
 

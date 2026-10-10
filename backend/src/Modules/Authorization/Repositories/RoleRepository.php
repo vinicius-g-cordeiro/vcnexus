@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Modules\Authorization\Repositories;
 
 use App\Infrastructure\Database\Hydrator;
-use App\Modules\Authorization\DTOs\RoleResponseContext;
+use App\Modules\Authorization\DTOs\{RoleResponseContext, UserRoleResponseContext};
 use App\Shared\Domain\BaseRepository;
 use App\Shared\Http\Request;
 
@@ -58,6 +58,30 @@ final class RoleRepository extends BaseRepository
         }
 
         $result = Hydrator::hydrateMany(RoleResponseContext::class, $result);
+        return $result;
+    }
+
+    public function getUserRoles(string $user_id) : ?array {
+        $query = <<<SQL
+            SELECT ur.role_id, ur.user_id, ur.id, r.uuid, r.name, r.description, r.tenant_id, r.active, r.created_at
+            FROM user_roles ur
+            INNER JOIN user_credentials uc ON uc.id = ur.user_id
+            INNER JOIN roles r ON r.id = ur.role_id
+        SQL;
+
+        $where = 'uc.uuid = ?';
+
+        $query .= " WHERE $where";
+
+        $params = [$user_id];
+
+        $result = $this->scopedQuery($query, $params);
+
+        if (empty($result) || $result === false) {
+            return [];
+        }
+
+        $result = Hydrator::hydrateMany(UserRoleResponseContext::class, $result);
         return $result;
     }
 

@@ -21,12 +21,13 @@
         <main class="flex-1 p-4 sm:p-6">
             <UserProfile v-if="selectedSection === 'profile'" mode="edit" :profile="profile" />
             <UserCredentials v-if="selectedSection === 'credentials'" mode="edit" :credentials="credentials" />
-            <UserPermissions v-if="selectedSection === 'permissions'" mode="edit" :permissions="permissions" />
-            <UserRoles v-if="selectedSection === 'roles'" mode="edit" :roles="roles" />
+            <UserPermissions v-if="selectedSection === 'permissions'" mode="edit" :permissions="permissionsForDisplay" :availablePermissions="availablePermissions" @update-modelValue="availablePermissions = $event" />
+            <UserRoles v-if="selectedSection === 'roles'" mode="edit" :roles="roles" :availableRoles="availableRoles" @update-modelValue="availableRoles = $event" />
             <UserAddresses v-if="selectedSection === 'addresses'" mode="edit" :addresses="addresses" />
             <UserContacts v-if="selectedSection === 'contacts'" mode="edit" :contacts="contacts" />
             <UserConsents v-if="selectedSection === 'consents'" mode="edit" :consents="consents" />
             <UserSensitive v-if="selectedSection === 'sensitive'" mode="edit" :sensitive="sensitive" />
+            <UserEducation key="education" v-if="selectedSection === 'education'" mode="edit" :education="education" />
         </main>
     </div>
 </template>
@@ -36,6 +37,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authentication/authenticationStore'
 import { useUserStore } from '@/stores/users/userStore'
+import { useAuthorizationStore } from '@/stores/authorization/authorizationStore'
 import UserProfile from '@/components/forms/users/UserProfile.vue'
 import UserCredentials from '@/components/forms/users/UserCredentials.vue'
 import UserPermissions from '@/components/forms/users/UserPermissions.vue'
@@ -44,11 +46,14 @@ import UserAddresses from '@/components/forms/users/UserAddresses.vue'
 import UserContacts from '@/components/forms/users/UserContacts.vue'
 import UserConsents from '@/components/forms/users/UserConsents.vue'
 import UserSensitive from '@/components/forms/users/UserSensitive.vue'
+import UserEducation from '@/components/forms/users/UserEducation.vue'
+
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const userStore = useUserStore()
+const authorizationStore = useAuthorizationStore()
 
 const sections = ref([
     { name: 'profile', label: 'Profile', icon: 'bi-person' },
@@ -59,21 +64,49 @@ const sections = ref([
     { name: 'contacts', label: 'Contacts', icon: 'bi-telephone' },
     { name: 'consents', label: 'Consents', icon: 'bi-file-earmark-check' },
     { name: 'sensitive', label: 'Sensitive', icon: 'bi-eye-slash' },
+    { name: 'education', label: 'Education', icon: 'bi-mortarboard' },
 ])
 
 const selectedSection = ref('profile')
 
 const profile = computed(() => userStore.profile)
 const credentials = computed(() => userStore.credentials)
-const permissions = computed(() => userStore.permissions)
-const roles = computed(() => userStore.roles)
+const permissions = computed(() => authorizationStore.user_permissions)
+const roles = computed(() => authorizationStore.user_roles)
 const addresses = computed(() => userStore.addresses)
 const contacts = computed(() => userStore.contacts)
 const consents = computed(() => userStore.consents)
 const sensitive = computed(() => userStore.sensitive)
+const education = computed(() => userStore.education)
+const availablePermissions = ref([])
+const availableRoles = ref([])
+const grantedPermissions = computed(() => permissions.value.map(p => p.permission_id))
+
+// Show permissions and mark as granted those that are
+const permissionsForDisplay = computed(() => {
+    // The granted permissions should check from the permissions_id 
+    const grantedIds = new Set(grantedPermissions.value)
+    return availablePermissions.value.map(p => ({ ...p, granted: grantedIds.has(p.id) }))
+})
+
 
 onMounted(async () => {
     await userStore.fetchProfile(route.params.uuid)
     await userStore.fetchCredentials(route.params.uuid)
+
+    await authorizationStore.fetchUserPermissions(route.params.uuid)
+    await authorizationStore.fetchUserRoles(route.params.uuid)
+
+    await authorizationStore.fetchPermissions()
+    availablePermissions.value = authorizationStore.permissions ?? []
+
+    await authorizationStore.fetchRoles()
+    availableRoles.value = authorizationStore.roles ?? []
+
+    await userStore.fetchAddresses(route.params.uuid)
+    await userStore.fetchContacts(route.params.uuid)
+    await userStore.fetchConsents(route.params.uuid)
+    await userStore.fetchSensitive(route.params.uuid)
+    await userStore.fetchEducation(route.params.uuid)
 })
 </script>

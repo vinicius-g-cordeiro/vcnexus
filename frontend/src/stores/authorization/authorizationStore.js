@@ -16,6 +16,8 @@ export const useAuthorizationStore = defineStore("authorization", {
     message: null,
     permissions: null,
     roles: null,
+    user_permissions: null,
+    user_roles: null
   }),
   actions: {
     async fetchPermissions() {
@@ -44,5 +46,31 @@ export const useAuthorizationStore = defineStore("authorization", {
         this.loading = false;
       }
     },
+    async fetchUserPermissions(uuid) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await authorizationService.fetchUserPermissions(uuid);
+        this.user_permissions = response.data.list;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchUserRoles(uuid) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await authorizationService.fetchUserRoles(uuid);
+        this.user_roles = response.data.list;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    }
   },
 });

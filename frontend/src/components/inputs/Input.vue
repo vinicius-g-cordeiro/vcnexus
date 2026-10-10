@@ -178,7 +178,7 @@ const updatePasswordMeter = () => {
             </template>
         </label>
 
-        <div class="relative">
+        <div class="relative" v-if="type !== 'textarea'">
             <input @keypress="type === 'password' && showPassword ? updatePasswordMeter() : null" class="bg-zinc-100 dark:bg-zinc-800 p-1 border border-olive-wood-500 dark:border-zinc-600 focus:outline-olive-wood-500 w-full text-xs" ref="input"
                 :type="showPassword ? (isPasswordVisible ? 'text' : 'password') : type" :placeholder="placeholder" :disabled="disabled" :readonly="readonly" :autocomplete="autocomplete" :autofocus="autofocus" :required="required" :name="name" :id="id" :class="classes" :value="modelValue"
                 @input="updateValue" :maxlength="maxlength" :minlength="minlength" />
@@ -189,6 +189,9 @@ const updatePasswordMeter = () => {
                 </button>
             </template>
         </div>
+
+        <textarea v-else-if="type === 'textarea'" class="bg-zinc-100 dark:bg-zinc-800 p-1 border border-olive-wood-500 dark:border-zinc-600 focus:outline-olive-wood-500 w-full text-xs" ref="input" :placeholder="placeholder" :disabled="disabled" :readonly="readonly" :autocomplete="autocomplete" :autofocus="autofocus" :required="required" :name="name" :id="id" :class="classes" :value="modelValue"
+            @input="updateValue" :maxlength="maxlength" :minlength="minlength"></textarea>
         <template v-if="passwordMeter">
             <canvas class="right-0 bottom-1 left-0 h-1 transition-all duration-500 ease-in-out" ref="meter" @input="updatePasswordMeter"></canvas>
             <span ref="meterText" class="text-zinc-600 dark:text-zinc-400 text-xs">Password strength: <span class="font-semibold text-zinc-900 dark:text-zinc-50">Weak</span></span>

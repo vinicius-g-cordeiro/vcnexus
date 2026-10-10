@@ -43,4 +43,8 @@ final class PermissionService extends BaseService
 
         return $permissions;
     }
+
+    public function getUserPermissions(string $uuid) {
+        return $this->permissionsRepository->getUserPermissions($uuid);
+    }
 }

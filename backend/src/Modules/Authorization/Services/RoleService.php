@@ -43,4 +43,8 @@ final class RoleService extends BaseService
 
         return $roles;
     }
+
+    public function getUserRoles(string $user_id) : ?array {
+        return $this->roleRepository->getUserRoles($user_id);
+    }
 }

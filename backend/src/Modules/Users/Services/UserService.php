@@ -15,7 +15,7 @@ namespace App\Modules\Users\Services;
 use App\Modules\Authentication\Models\UserCredentials;
 use App\Modules\Authorization\Models\UserPermission;
 use App\Modules\Users\DTOs\UserCredentialsResponse;
-use App\Modules\Users\Models\{UserProfile, UserAddress, UserConsents, UserContact, UserSensitive};
+use App\Modules\Users\Models\{UserProfile, UserAddress, UserConsents, UserContact, UserEducation, UserSensitive};
 use App\Modules\Authorization\Models\{TenantMembership, UserRole};
 use App\Modules\Authorization\Repositories\{UserRolesRepository, UserPermissionsRepository};
 use App\Modules\Authentication\Repositories\AuthenticationRepository;
@@ -141,7 +141,18 @@ final class UserService extends BaseService
                 }
             }, $userStoreRequest->emails);
 
+            // Educational info
+            array_map(function($value) use ($userCredentials) {
+                $userProfileEducationStoreRequest = UserEducation::fromArray(['user_id' => $userCredentials->id, ...$value]);
+                // Save all the educations for this specific user_credentials
+                $savedEducation = $this->userProfileRepository->store($userProfileEducationStoreRequest, ['id', 'uuid'], 'user_education');
+                if ($savedEducation === false) {
+                    throw new TransactionFailedException('Could not store user education', 409);
+                }
 
+            }, $userStoreRequest->educations);
+
+            
             return $user;
         });
 
@@ -191,6 +202,12 @@ final class UserService extends BaseService
     {
         $user = $this->userProfileRepository->sensitive($uuid);
         return $user;
+    }
+
+    public function education(string $uuid): ?array
+    {
+        $user_education = $this->userProfileRepository->education($uuid);
+        return $user_education;
     }
 
     public function contacts(string $uuid): ?array

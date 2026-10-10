@@ -5,6 +5,7 @@ CREATE TABLE educational_levels (
     name varchar(100) NOT NULL,
     label varchar(100) NOT NULL,
     description varchar(100),
-    priority smallint
+    priority smallint,
+    educational_type_id bigint
 );
 COMMENT ON COLUMN "educational_levels"."uuid" IS 'V7 UUID';

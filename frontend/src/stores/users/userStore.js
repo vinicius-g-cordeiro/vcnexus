@@ -117,6 +117,21 @@ export const useUserStore = defineStore("users", {
         this.loading = false;
       }
     },
+
+    async fetchEducation(uuid) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await userService.fetchEducation(uuid);
+        this.education = response.data;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async createUser(form) {
       this.loading = true;
       this.error = null;

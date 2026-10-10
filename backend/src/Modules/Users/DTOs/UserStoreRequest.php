@@ -36,6 +36,7 @@ final class UserStoreRequest implements DataTransferObjectInterface
     public readonly ?array $contacts,
     public readonly ?array $addresses,
     public readonly ?array $permissions,
+    public readonly ?array $educations,
     public readonly ?string $avatar,
   ) {
 
@@ -68,6 +69,7 @@ final class UserStoreRequest implements DataTransferObjectInterface
       $data['contacts'] ?? null,
       $data['addresses'] ?? null,
       $data['permissions'] ?? null,
+      $data['educations'] ?? null,
       $data['avatar'] ?? null
     );
   }

@@ -33,6 +33,7 @@
             <UserContacts v-show="selectedSection === 'contacts'" mode="create" :contacts="draft.contacts" @update:modelValue="draft.contacts = $event" />
             <UserConsents v-show="selectedSection === 'consents'" mode="create" :consents="draft.consents" @update:modelValue="draft.consents = $event" />
             <UserSensitive v-show="selectedSection === 'sensitive'" mode="create" :sensitive="draft.sensitive" @update:modelValue="draft.sensitive = $event" />
+            <UserEducation v-show="selectedSection === 'education'" mode="create" :educationalLevels="educationalLevels" :education="draft.education" @update:modelValue="draft.education = $event" />
 
             <div class="flex items-center gap-3 mt-6 max-w-2xl">
                 <button type="button" :disabled="submitting" @click="handleCreate" class="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-700 dark:bg-zinc-100 dark:hover:bg-zinc-300 disabled:opacity-50 px-4 py-2 rounded-md font-medium text-white dark:text-zinc-900 text-sm transition-colors">
@@ -58,6 +59,7 @@ import UserAddresses from '@/components/forms/users/UserAddresses.vue'
 import UserContacts from '@/components/forms/users/UserContacts.vue'
 import UserConsents from '@/components/forms/users/UserConsents.vue'
 import UserSensitive from '@/components/forms/users/UserSensitive.vue'
+import UserEducation from '@/components/forms/users/UserEducation.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -72,6 +74,7 @@ const sections = ref([
     { name: 'contacts', label: 'Contacts', icon: 'bi-telephone', required: false },
     { name: 'consents', label: 'Consents', icon: 'bi-file-earmark-check', required: false },
     { name: 'sensitive', label: 'Sensitive', icon: 'bi-eye-slash', required: false },
+    { name: 'education', label: 'Education', icon: 'bi-mortarboard', required: false },
 ])
 
 const selectedSection = ref('profile')
@@ -90,6 +93,7 @@ const draft = reactive({
     contacts: [],
     consents: [],
     sensitive: {},
+    education: [],
 })
 
 const sectionComplete = computed(() => ({
@@ -99,10 +103,6 @@ const sectionComplete = computed(() => ({
     permissions: draft.permissions.length > 0,
 }))
 
-// merges the static catalog with whatever's already checked in draft.permissions,
-// so re-visiting the tab shows previous selections instead of resetting to unchecked.
-// matched by id, not slug — slug grouping is still used for display inside
-// UserPermissions, but identity/selection state is tracked by id throughout
 const permissionsForDisplay = computed(() => {
     const grantedIds = new Set(draft.permissions.map(p => p.id))
     return availablePermissions.value.map(p => ({ ...p, granted: grantedIds.has(p.id) }))
@@ -115,6 +115,7 @@ onMounted(async () => {
 
     await authorizationStore.fetchRoles()
     availableRoles.value = authorizationStore.roles ?? []
+
 })
 
 // Recursively appends a value into FormData using PHP's bracket-array
@@ -196,6 +197,10 @@ async function handleCreate() {
         appendToFormData(payload, 'contacts', draft.contacts)
         appendToFormData(payload, 'consents', draft.consents)
         appendToFormData(payload, 'sensitive', draft.sensitive)
+
+        if (draft.education) {
+            appendToFormData(payload, 'education', draft.education)
+        }
 
         if (draft.profile.avatarFile) payload.append('avatar', draft.profile.avatarFile)
 

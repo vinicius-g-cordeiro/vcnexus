@@ -16,6 +16,7 @@ use App\Schemas\AbstractSchema;
 use App\Shared\Schema\Attributes\{Column, Comment, Nullable, ForeignKey};
 
 #[ForeignKey(name: 'fk_user_contact_user_credentials', foreignKeys: ['user_id'], references: 'user_credentials', columns: ['id'], actionOnUpdate: true, deleteAction: 'CASCADE', deferred: true)]
+#[ForeignKey(name: 'fk_user_contact_contact_category', foreignKeys: ['category_id'], references: 'contact_categories', columns: ['id'], actionOnUpdate: true, deleteAction: 'SET NULL', deferred: true)]
 final class UserContactSchema extends AbstractSchema
 {
     public string $table = 'user_contact';
@@ -37,14 +38,14 @@ final class UserContactSchema extends AbstractSchema
     public readonly int $primary_contact;
 
     // If it's home, work, references, etc..
-    #[Column(type: 'varchar', length: 100)]
+    #[Column(type: 'bigint')]
     #[Nullable]
     #[Comment(comment: 'eg: Home, Work, Reference, etc..')]
-    public readonly ?string $category;
+    public readonly ?int $category_id;
 
     #[Column(type: 'varchar', length: 100)]
     #[Nullable]
-    #[Comment(comment: 'eg: Jociely(Wife)')]
+    #[Comment(comment: 'eg: Wife, Husband, Mother, Father, etc..')]
     public readonly ?string $person;
 }
 

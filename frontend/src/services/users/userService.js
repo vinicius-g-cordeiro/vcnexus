@@ -32,7 +32,11 @@ const userService = {
     async createUser(form) {
         const response = await api.post('/users/', form)
         return response.data
-    }
+    },
+    async fetchEducation(uuid) {
+        const response = await api.query(`/users/education/${uuid}`, { withCredentials: true })
+        return response.data
+    },
 
 
 }

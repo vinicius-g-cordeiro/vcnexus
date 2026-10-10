@@ -1,0 +1,5 @@
+
+ALTER TABLE "user_education" ADD CONSTRAINT "fk_user_education_user_credentials"  FOREIGN KEY ("user_id") REFERENCES "user_credentials" ("id") ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED ;
+ALTER TABLE "user_education" ADD CONSTRAINT "fk_user_education_educational_level"  FOREIGN KEY ("educational_level_id") REFERENCES "educational_levels" ("id") ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED ;
+ALTER TABLE "user_education" ADD CONSTRAINT "fk_user_education_educational_type"  FOREIGN KEY ("educational_type_id") REFERENCES "educational_types" ("id") ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED ;
+ALTER TABLE "user_education" ADD CONSTRAINT "fk_user_education_completion_status"  FOREIGN KEY ("completion_status_id") REFERENCES "completion_statuses" ("id") ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED ;

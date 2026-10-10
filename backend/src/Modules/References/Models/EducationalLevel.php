@@ -4,7 +4,7 @@
  * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
- * @date 06/10/2026
+ * @date 10/10/2026
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  */
 
@@ -23,6 +23,7 @@ final class EducationalLevel extends BaseModel
     public string $label;
     public ?string $description;
     public ?int $priority;
+    public ?int $educational_type_id;
     public function __construct() {}
 
     public function toArray(): array
@@ -40,6 +41,7 @@ final class EducationalLevel extends BaseModel
         $newObject->label = isset($data['label']) ? $data['label'] : null;
         $newObject->description = isset($data['description']) ? $data['description'] : null;
         $newObject->priority = isset($data['priority']) ? (int) $data['priority'] : null;
+        $newObject->educational_type_id = isset($data['educational_type_id']) ? (int) $data['educational_type_id'] : null;
         return $newObject;
     }
 }

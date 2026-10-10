@@ -12,20 +12,10 @@
                     <span v-if="loading" class="font-normal text-zinc-400">(loading...)</span>
                 </label>
 
-                <!-- trigger: selected roles render as removable tags, click anywhere
-                     else in the box opens the dropdown -->
-                <button
-                    type="button"
-                    @click="open = !open"
-                    class="flex flex-wrap items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-2 py-2 border border-olive-wood-500 dark:border-zinc-600 rounded-md focus:outline-olive-wood-500 min-h-[42px] text-left"
-                >
+                <button type="button" @click="open = !open" class="flex flex-wrap items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-2 py-2 border border-olive-wood-500 dark:border-zinc-600 rounded-md focus:outline-olive-wood-500 min-h-[42px] text-left" >
                     <span v-if="!selected.length" class="px-1 text-zinc-400 text-xs">Select roles...</span>
 
-                    <span
-                        v-for="role in selected"
-                        :key="role.id"
-                        class="flex items-center gap-1 bg-zinc-900 dark:bg-zinc-100 px-2 py-1 rounded font-medium text-[11px] text-white dark:text-zinc-900"
-                    >
+                    <span v-for="role in selected" :key="role.id" class="flex items-center gap-1 bg-zinc-900 dark:bg-zinc-100 px-2 py-1 rounded font-medium text-[11px] text-white dark:text-zinc-900" >
                         {{ role.name }}<template v-if="role.organization_name"> ({{ role.organization_name }})</template>
                         <i class="hover:opacity-70 bi bi-x-lg" @click.stop="toggleRole(role)"></i>
                     </span>
@@ -33,7 +23,7 @@
                     <i :class="['bi', open ? 'bi-chevron-up' : 'bi-chevron-down', 'ms-auto text-zinc-400 text-xs shrink-0']"></i>
                 </button>
 
-                <!-- dropdown -->
+                
                 <div v-if="open" class="top-full z-20 absolute inset-x-0 bg-white dark:bg-zinc-900 shadow-lg mt-1 border border-zinc-200 dark:border-zinc-700 rounded-md max-h-80 overflow-hidden">
                     <div class="p-2 border-zinc-200 dark:border-zinc-700 border-b">
                         <input
@@ -45,7 +35,7 @@
                         />
                     </div>
 
-                    <div class="flex flex-col overflow-y-auto">
+                    <div class="flex flex-col max-h-80 overflow-y-auto">
                         <p v-if="loading" class="py-6 text-zinc-400 text-xs text-center">Loading roles...</p>
                         <p v-else-if="!filteredCatalog.length" class="py-6 text-zinc-400 text-xs text-center">No roles found</p>
 
@@ -104,19 +94,14 @@ const rootEl = ref(null)
 const open = ref(false)
 const search = ref('')
 const loading = ref(true)
-const catalog = ref([]) // full role catalog for the current tenant, from the authorization module
-const selectedIds = ref([]) // plain ref, not wrapped in reactive() — avoids any
-                             // ambiguity around deep-watching a reactive object's
-                             // field through a getter; a direct ref watch is
-                             // unambiguous and fires on every push/splice
-const seeded = ref(false) // guards against re-seeding selection from our own echoed prop
+const catalog = ref([]) 
+const selectedIds = ref([]) 
+const seeded = ref(false)
 
 onMounted(async () => {
     loading.value = true
     try {
-        // roles live in the authorization module/service alongside permissions;
-        // RLS already scopes this to the current tenant, so no client-side
-        // tenant grouping is needed here
+        
         const ok = await authorizationStore.fetchRoles() ?? []
         if(ok){            
             catalog.value = authorizationStore.roles ?? []
@@ -143,23 +128,12 @@ function seedSelected() {
 }
 
 if (props.mode === 'create') {
-    // Same failure mode as UserPermissions: the parent's prop is typically backed
-    // by a computed merging catalog + draft state, which gets a new reference
-    // every time draft changes — including because OUR emit just changed it. A
-    // "compare serialized ids" guard is fragile (identity-key mismatches between
-    // parent/child reopen the loop silently). The only reliable fix: seed once,
-    // the first time the catalog is non-empty, then never read the prop again —
-    // after that, local selection and the parent's draft are kept in sync purely
-    // by our own toggles -> emit, one direction only, nothing to echo back into.
     watch(catalog, (val) => {
         if (seeded.value) return
         if (!val || !val.length) return
         seedSelected()
     }, { immediate: true })
 
-    // direct ref watch — fires reliably on every push/splice to selectedIds.value,
-    // no getter/deep-watch ambiguity. this is the only place create-mode
-    // pushes data to the parent; it never reads props.roles again after seeding
     watch(selectedIds, (ids) => {
         emit('update:modelValue', catalog.value.filter(r => ids.includes(r.id)))
     }, { deep: true })

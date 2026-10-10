@@ -14,7 +14,7 @@ namespace App\Modules\References\Repositories;
 
 use App\Infrastructure\Database\Hydrator;
 use App\Modules\References\DTOs\{CountryRequestContext,CountryResponseContext, StateRequestContext, StateResponseContext, CityRequestContext, CityResponseContext, MaritalStatusResponseContext};
-use App\Modules\References\Models\{Disability, EducationalLevel, Ethnicity, Gender, Nationality, Religion, SexualOrientation};
+use App\Modules\References\Models\{CompletionStatus, ContactCategories, ContactTypes, Disability, EducationalLevel, EducationalType, Ethnicity, Gender, Nationality, Religion, SexualOrientation};
 use App\Shared\Domain\BaseRepository;
 use App\Shared\Http\Request;
 
@@ -171,7 +171,7 @@ final class ReferencesRepository extends BaseRepository
 
     public function getEducationalLevels() : ?array {
         $query = <<<SQL
-            SELECT id, uuid, label, description, name
+            SELECT id, uuid, label, description, name, educational_type_id
             FROM educational_levels
             WHERE active = 1
         SQL;
@@ -183,6 +183,45 @@ final class ReferencesRepository extends BaseRepository
         }
 
         $result = Hydrator::hydrateMany(EducationalLevel::class, $result);
+        return $result;
+    }
+
+    public function getEducationalTypes() : ?array {
+        $query = <<<SQL
+            SELECT id, uuid, label, description, name
+            FROM educational_types
+            WHERE active = 1
+        SQL;
+
+        $result = $this->scopedQuery($query);
+
+        if (empty($result) || $result === false) {
+            return [];
+        }
+
+        $result = Hydrator::hydrateMany(EducationalType::class, $result);
+        return $result;
+    }
+
+    public function getCompletionStatuses(?string $type) : ?array {
+        $query = <<<SQL
+            SELECT id, uuid, label, description, name, type
+            FROM completion_statuses
+            WHERE active = 1
+        SQL;
+
+        if (isset($type) && $type !== null) {
+            $query .= ' AND (type = ? OR type IS NULL)';
+            $params[] = $type;
+        }
+
+        $result = $this->scopedQuery($query, $params);
+
+        if (empty($result) || $result === false) {
+            return [];
+        }
+
+        $result = Hydrator::hydrateMany(CompletionStatus::class, $result);
         return $result;
     }
 
@@ -253,6 +292,41 @@ final class ReferencesRepository extends BaseRepository
         $result = Hydrator::hydrateMany(Nationality::class, $result);
         return $result;
     }
+
+    public function getContactCategories() : ?array {
+        $query = <<<SQL
+            SELECT id, uuid, label, description, name
+            FROM contact_categories
+            WHERE active = 1
+        SQL;
+
+        $result = $this->scopedQuery($query);
+
+        if (empty($result) || $result === false) {
+            return [];
+        }
+
+        $result = Hydrator::hydrateMany(ContactCategories::class, $result);
+        return $result;
+    }
+
+    public function getContactTypes() : ?array {
+        $query = <<<SQL
+            SELECT id, uuid, label, description, name
+            FROM contact_types
+            WHERE active = 1
+        SQL;
+
+        $result = $this->scopedQuery($query);
+
+        if (empty($result) || $result === false) {
+            return [];
+        }
+
+        $result = Hydrator::hydrateMany(ContactTypes::class, $result);
+        return $result;
+    }
+
 
 
 }

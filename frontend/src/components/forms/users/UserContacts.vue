@@ -16,11 +16,11 @@
                     <i class="bi bi-trash"></i>
                 </button>
                 <div class="gap-x-4 grid grid-cols-1 sm:grid-cols-2">
-                    <Select v-model="c.type" label="Type" :id="`type-${i}`" :options="typeOptions" placeholder="Select type" required />
+                    <Select v-model="c.type" label="Type" :id="`type-${i}`" :options="typeOptions || []" placeholder="Select type" required />
                     <Input v-model="c.value" label="Value" :id="`value-${i}`" required />
                     <Input v-model="c.label" label="Label" placeholder="Mobile, Work..." :id="`label-${i}`" />
-                    <Input v-model="c.category" label="Category" placeholder="Home, Work, Reference..." :id="`category-${i}`" />
-                    <Input v-model="c.person" label="Person" placeholder="Jociely (Wife)" :id="`person-${i}`" />
+                    <Select v-model="c.category_id" label="Category" :id="`category-${i}`" :options="categoryOptions || []" placeholder="Select category" required />
+                    <Input v-model="c.person" label="Person" placeholder="e.g. João" :id="`person-${i}`" />
                     <label class="flex items-center gap-2 mt-6">
                         <input type="checkbox" v-model="c.primary_contact" class="rounded w-4 h-4 accent-zinc-900 dark:accent-zinc-100" />
                         <span class="text-zinc-700 dark:text-zinc-300 text-sm">Primary contact</span>
@@ -40,9 +40,10 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue'
+import { reactive, watch, computed, onMounted} from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/users/userStore'
+import { useReferencesStore } from '@/stores/references/referencesStore'
 import Input from '@/components/inputs/Input.vue'
 import Select from '@/components/inputs/Select.vue'
 
@@ -55,12 +56,10 @@ const emit = defineEmits(['update:modelValue'])
 
 const route = useRoute()
 const userStore = useUserStore()
+const referencesStore = useReferencesStore()
 
-const typeOptions = [
-    { value: '1', label: 'Email' },
-    { value: '2', label: 'Phone' },
-    { value: '3', label: 'Website' },
-]
+const categoryOptions = computed(() => referencesStore.contact_categories?.map(c => ({ label: c.label, value: c.id })))
+const typeOptions = computed(() => referencesStore.contact_types?.map(t => ({ label: t.label, value: t.id })))
 
 const form = reactive({ list: [] })
 
@@ -72,6 +71,14 @@ if (props.mode === 'create') {
         form.list = (val ?? []).map(c => ({ ...c, primary_contact: !!c.primary_contact }))
     }, { immediate: true })
 }
+
+
+onMounted(async () => {
+    await referencesStore.fetchContactCategories()
+    console.log(referencesStore.contact_categories)
+    await referencesStore.fetchContactTypes()
+    console.log(referencesStore.contact_types)
+})
 
 function addContact() {
     form.list.push({

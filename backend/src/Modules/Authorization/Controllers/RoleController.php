@@ -38,4 +38,15 @@ final class RoleController extends BaseController
             throw $th;
         }
     }
+
+    #[Route(methods: ['GET', 'QUERY'], path: '/{uuid}')]
+    #[Permission(['roles.view'])]
+    public function getUserRoles(string $uuid): ?Response {
+        try{
+            $role = $this->service->getUserRoles($uuid);
+            return Response::json(data: object(list: $role), message: 'success')->send(200, [], true);
+        }catch(\Throwable $th) {
+            throw $th;
+        }
+    }
 }

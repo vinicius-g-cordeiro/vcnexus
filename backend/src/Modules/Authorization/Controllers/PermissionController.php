@@ -37,4 +37,16 @@ final class PermissionController extends BaseController
             throw $th;
         }
     }
+
+    #[Route(methods:['QUERY', 'GET'], path: '/{uuid}')]
+    #[Permission(['permissions.view'])]
+    public function show(string $uuid): ?Response {
+        try{
+            $permission = $this->service->getUserPermissions($uuid);
+            return Response::json(data: object(list: $permission), message: 'success')->send(200, [], true);
+        }catch(\Throwable $th) {
+            throw $th;
+        }
+    }
+
 }

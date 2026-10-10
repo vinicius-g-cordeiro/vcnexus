@@ -1,0 +1,2 @@
+
+ALTER TABLE "educational_levels" ADD CONSTRAINT "fk_educational_level_educational_type"  FOREIGN KEY ("educational_type_id") REFERENCES "educational_types" ("id") ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED ;

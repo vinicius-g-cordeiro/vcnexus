@@ -30,6 +30,15 @@ const referencesService = {
         const response = await api.query('/references/educational-levels/', { params })
         return response.data
     },
+    async fetchEducationalTypes(params) {
+        const response = await api.query('/references/educational-types/', { params })
+        return response.data
+    },
+    async fetchCompletionStatuses(type){
+        const response = await api.query(`/references/completion-statuses/${type}/`)
+        return response.data
+    },
+    
     async fetchReligions(params) {
         const response = await api.query('/references/religions/', { params })
         return response.data
@@ -47,6 +56,16 @@ const referencesService = {
 
     async fetchNationalities(params) {
         const response = await api.query('/references/nationalities/', { params })
+        return response.data
+    },
+
+    async fetchContactCategories(params) {
+        const response = await api.query('/references/contact-categories/', { params })
+        return response.data
+    },
+
+    async fetchContactTypes(params) {
+        const response = await api.query('/references/contact-types/', { params })
         return response.data
     },
 }

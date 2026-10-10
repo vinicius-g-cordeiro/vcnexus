@@ -82,11 +82,6 @@ const userStore = useUserStore()
 const form = reactive({ list: [] })
 const expanded = reactive({})
 
-// true once form.list has been populated at least once — guards re-seeding.
-// must be a real ref: `loading` below depends on it, and a plain object
-// property mutation is invisible to Vue's reactivity system, so `loading`
-// would compute once and then never update — exactly the bug that left the
-// screen stuck on "Loading permissions..." forever even after data arrived
 const seeded = ref(false)
 
 function seedFromPermissions(val) {
@@ -106,16 +101,6 @@ function seedFromPermissions(val) {
 }
 
 if (props.mode === 'create') {
-    // The catalog (permissionsForDisplay in the parent) loads async and is a
-    // *computed*, so it gets a brand-new array reference every time draft.permissions
-    // changes — including when it changes BECAUSE of our own emit below. That makes
-    // "compare incoming vs last snapshot" guards unreliable: the two sides track
-    // identity differently (slug here, id in the parent) and any mismatch reopens
-    // the loop. The only loop-proof rule: seed from the prop exactly once, the
-    // first time real data shows up (form.list still empty, incoming list is not).
-    // After that, the parent's merged `granted` state and this component's local
-    // `form.list` are kept in sync purely by our own checkbox edits -> emit, never
-    // by re-reading the prop — so there is nothing left that can echo.
     watch(() => props.permissions, (val) => {
         if (seeded.value) return
         if (!val || !val.length) return
@@ -131,8 +116,6 @@ if (props.mode === 'create') {
 
 const loading = computed(() => props.mode === 'create' && !seeded.value)
 
-// everything before the first dot in the slug — "users.edit" -> "users",
-// a slug with no dot falls into its own "general" bucket instead of crashing
 function groupKey(slug) {
     const i = slug.indexOf('.')
     return i === -1 ? 'general' : slug.slice(0, i)
@@ -172,9 +155,6 @@ function collapseAll() {
 }
 
 function toggleGroupAll(group) {
-    // native checkbox toggled first, then this runs — group.state was computed
-    // from the PRE-click granted values, so "was 'all'" means the click just
-    // unchecked it, and vice versa
     const nextValue = group.state !== 'all'
     for (const perm of group.items) perm.granted = nextValue
 }

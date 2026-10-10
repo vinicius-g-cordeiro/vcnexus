@@ -32,5 +32,8 @@
     "religions": 31,
     "sexual_orientations": 32,
     "states": 33,
-    "nationality": 34
+    "nationality": 34,
+    "completion_statuses": 35,
+    "educational_types": 36,
+    "user_education": 37
 }

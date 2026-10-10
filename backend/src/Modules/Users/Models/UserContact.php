@@ -4,7 +4,7 @@
  * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
- * @date 06/10/2026
+ * @date 10/10/2026
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  */
 
@@ -24,7 +24,7 @@ final class UserContact extends BaseModel
     public string $value;
     public string $label;
     public int $primary_contact;
-    public ?string $category;
+    public ?int $category_id;
     public ?string $person;
     public function __construct() {}
 
@@ -44,7 +44,7 @@ final class UserContact extends BaseModel
         $newObject->value = isset($data['value']) ? $data['value'] : null;
         $newObject->label = isset($data['label']) ? $data['label'] : null;
         $newObject->primary_contact = isset($data['primary_contact']) ? (int) $data['primary_contact'] : null;
-        $newObject->category = isset($data['category']) ? $data['category'] : null;
+        $newObject->category_id = isset($data['category_id']) ? (int) $data['category_id'] : null;
         $newObject->person = isset($data['person']) ? $data['person'] : null;
         return $newObject;
     }

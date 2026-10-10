@@ -16,7 +16,7 @@ use App\Infrastructure\Redis\RedisConnectionFactory;
 use App\Modules\Users\DTOs\UserCredentialsResponse;
 use App\Modules\Users\DTOs\UserListRequest;
 use App\Modules\Users\DTOs\UsersListResponse;
-use App\Modules\Users\Models\{UserProfile, UserAddress, UserConsents, UserContact, UserSensitive};
+use App\Modules\Users\Models\{UserProfile, UserAddress, UserConsents, UserContact, UserEducation, UserSensitive};
 use App\Shared\Domain\BaseRepository;
 use App\Infrastructure\Database\Hydrator;
 use App\Shared\Http\Request;
@@ -259,6 +259,29 @@ final class UserProfileRepository extends BaseRepository
         }
 
         return Hydrator::hydrate(UserSensitive::class, $user);
+    }
+
+
+    public function education(string $uuid): ?array {
+        $select = <<<SQL
+            SELECT ue.*
+            FROM user_education ue 
+            inner join user_credentials uc on uc.id = ue.user_id
+            inner join user_profile up on uc.id = up.user_id
+            inner join tenant_memberships tm on tm.user_id = uc.id
+            inner join tenants t on t.id = tm.tenant_id
+            inner join business b on b.tenant_id = t.id
+        SQL;
+
+        $where = ' WHERE uc.uuid = ?';
+
+        $user = $this->scopedQuery($select . $where, [$uuid], false) ?? null;
+    
+        if (!$user) {
+            return null;
+        }
+
+        return Hydrator::hydrateMany(UserEducation::class, $user);
     }
     
 

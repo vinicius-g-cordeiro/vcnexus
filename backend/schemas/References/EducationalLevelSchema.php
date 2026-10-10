@@ -14,9 +14,10 @@ declare(strict_types=1);
 namespace App\Schemas\References;
 
 use App\Schemas\AbstractSchema;
-use App\Shared\Schema\Attributes\{Column, Nullable};
+use App\Shared\Schema\Attributes\{Column, ForeignKey, Nullable};
 
 
+#[ForeignKey(name: 'fk_educational_level_educational_type', foreignKeys: ['educational_type_id'], columns: ['id'], references: 'educational_types', deleteAction: 'SET NULL', actionOnUpdate: false, deferred: true)]
 final class EducationalLevelSchema extends AbstractSchema
 {
     public string $table = 'educational_levels';
@@ -36,4 +37,8 @@ final class EducationalLevelSchema extends AbstractSchema
     #[Column(type: 'smallint')]
     #[Nullable]
     public ?string $priority;
+
+    #[Column(type: 'bigint', default: null)]
+    #[Nullable(nullable: true)]
+    public ?int $educational_type_id;
 }

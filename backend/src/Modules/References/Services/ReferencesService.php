@@ -195,6 +195,46 @@ final class ReferencesService extends BaseService
         }
     }
 
+    public function getEducationalTypes(): ?array
+    {
+        $key = 'educational_types';
+
+        $cached = $this->getCached($key);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $educationalTypes = $this->referenceRepository->getEducationalTypes();
+
+        if ($educationalTypes !== null) {
+            $this->setCached($key, $educationalTypes);
+
+            return $educationalTypes;
+        }
+    }
+
+    public function getCompletionStatuses(?string $type): ?array
+    {
+        $key = 'completion_statuses';
+
+        $cached = $this->getCached($key);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $completionStatuses = $this->referenceRepository->getCompletionStatuses($type);
+
+        if ($completionStatuses !== null) {
+            $this->setCached($key, $completionStatuses);
+
+            return $completionStatuses;
+        }
+
+        return [];
+    }
+
     public function getReligions(): ?array
     {
         $key = 'religions';
@@ -249,6 +289,44 @@ final class ReferencesService extends BaseService
             $this->setCached($key, $nationalities);
 
             return $nationalities;
+        }
+    }
+
+    public function getContactCategories(): ?array
+    {
+        $key = 'contact_categories';
+
+        $cached = $this->getCached($key);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $contactCategories = $this->referenceRepository->getContactCategories();
+
+        if ($contactCategories !== null) {
+            $this->setCached($key, $contactCategories);
+
+            return $contactCategories;
+        }
+    }
+
+    public function getContactTypes(): ?array
+    {
+        $key = 'contact_types';
+
+        $cached = $this->getCached($key);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $contactTypes = $this->referenceRepository->getContactTypes();
+
+        if ($contactTypes !== null) {
+            $this->setCached($key, $contactTypes);
+
+            return $contactTypes;
         }
     }
 

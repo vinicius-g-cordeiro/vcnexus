@@ -24,7 +24,11 @@ export const useReferencesStore = defineStore("references", {
     disabilities: null,
     sexual_orientations: null,
     ethnicities: null,
-    nationalities: null
+    nationalities: null,
+    educational_types: null,
+    completion_statuses: null,
+    contact_types: null,
+    contact_categories: null,
   }),
   actions: {
     async fetchCountries(params) {
@@ -120,6 +124,33 @@ export const useReferencesStore = defineStore("references", {
         this.loading = false;
       }
     },
+    async fetchEducationalTypes(params = {}) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await referencesService.fetchEducationalTypes(params);
+        this.educational_types = response.data.list;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async fetchCompletionStatuses(type) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await referencesService.fetchCompletionStatuses(type);
+        this.completion_statuses = response.data.list;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
 
     async fetchDisabilities(params) {
       this.loading = true;
@@ -175,7 +206,33 @@ export const useReferencesStore = defineStore("references", {
       } finally {
         this.loading = false;
       }
-    }
+    },
+    async fetchContactCategories(params) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await referencesService.fetchContactCategories(params);
+        this.contact_categories = response.data.list;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchContactTypes(params) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await referencesService.fetchContactTypes(params);
+        this.contact_types = response.data.list;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
   },
 })
 

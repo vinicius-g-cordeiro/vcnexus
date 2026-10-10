@@ -69,7 +69,7 @@
                         </template>
 
                         <template #content>
-                            <DropdownItem @click="router.push({ name: 'home' })" :deactivated="false" label="Profile" href="#">
+                            <DropdownItem @click="router.push({ name: 'users.edit', params: { uuid: user.uuid } })"  :deactivated="false" label="Profile" :to="{ name: 'users.edit', params: { uuid: user.uuid } }">
                                 <template #icon> <i class="bi-person bi"></i> </template>
                                 <template #label> Profile </template>
                             </DropdownItem>

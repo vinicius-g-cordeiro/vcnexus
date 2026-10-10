@@ -97,6 +97,28 @@ final class ReferencesController extends BaseController
         }
     }
 
+    #[Route(methods: ['QUERY', 'GET'], path: '/educational-types/')]
+    public function getEducationalTypes(): Response
+    {
+        try{
+            $educationalTypes = $this->service->getEducationalTypes();
+            return Response::json(data: object(list: $educationalTypes), message: 'success')->send(200, [], true);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    #[Route(methods: ['QUERY', 'GET'], path: '/completion-statuses/{type}/')]
+    public function getCompletionStatuses(?string $type): Response
+    {
+        try{
+            $completionStatuses = $this->service->getCompletionStatuses($type);
+            return Response::json(data: object(list: $completionStatuses), message: 'success')->send(200, [], true);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     #[Route(methods: ['QUERY', 'GET'], path: '/religions/')]
     public function getReligions(): Response
     {
@@ -147,6 +169,28 @@ final class ReferencesController extends BaseController
         try{
             $nationalities = $this->service->getNationalities();
             return Response::json(data: object(list: $nationalities), message: 'success')->send(200, [], true);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    #[Route(path: '/contact-categories/', methods: ['QUERY', 'GET'])]
+    public function getContactCategories(): Response
+    {
+        try{
+            $contactCategories = $this->service->getContactCategories();
+            return Response::json(data: object(list: $contactCategories), message: 'success')->send(200, [], true);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    #[Route(path: '/contact-types/', methods: ['QUERY', 'GET'])]
+    public function getContactTypes(): Response
+    {
+        try{
+            $contactTypes = $this->service->getContactTypes();
+            return Response::json(data: object(list: $contactTypes), message: 'success')->send(200, [], true);
         } catch (\Throwable $th) {
             throw $th;
         }

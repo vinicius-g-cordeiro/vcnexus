@@ -24,6 +24,8 @@ use App\Shared\Helpers\Utils;
 
 #[Route(path: '/v1/users')]
 #[Middleware(ErrorLogMiddleware::class)]
+#[Middleware(AuthMiddleware::class)]
+#[Middleware(TenantResolverMiddleware::class)]
 final class UserController extends BaseController
 {
     public function __construct(private UserService $service, public Request $request, public Session $session, private DTOValidator $validator) {
@@ -31,8 +33,6 @@ final class UserController extends BaseController
     }
 
     #[Route(methods: 'POST',path: '/')]
-    #[Middleware(AuthMiddleware::class)]
-    #[Middleware(TenantResolverMiddleware::class)]
     public function store() : ?Response {
         try{
             /// @todo implement Idepodency key validation
@@ -50,9 +50,9 @@ final class UserController extends BaseController
         }
     }
 
+
+
     #[Route(methods: 'QUERY',path: '/')]
-    #[Middleware(AuthMiddleware::class)]
-    #[Middleware(TenantResolverMiddleware::class)]
     public function index() : ?Response {
         try{
             $userListRequest = UserListRequest::fromArray((array)$this->request->get());
@@ -64,8 +64,6 @@ final class UserController extends BaseController
     }
 
     #[Route(methods: 'QUERY',path: '/profile/{uuid}')]
-    #[Middleware(AuthMiddleware::class)]
-    #[Middleware(TenantResolverMiddleware::class)]
     public function profile(string $uuid) : ?Response {
         try{
             $user = $this->service->profile($uuid);
@@ -76,8 +74,6 @@ final class UserController extends BaseController
     }
 
     #[Route(methods: 'QUERY',path: '/credentials/{uuid}')]
-    #[Middleware(AuthMiddleware::class)]
-    #[Middleware(TenantResolverMiddleware::class)]
     public function credentials(string $uuid) : ?Response {
         try{
             $user = $this->service->credentials($uuid);
@@ -88,8 +84,6 @@ final class UserController extends BaseController
     }
 
     #[Route(methods: 'QUERY', path: '/addresses/{uuid}')]
-    #[Middleware(AuthMiddleware::class)]
-    #[Middleware(TenantResolverMiddleware::class)]
     public function addresses(string $uuid) : ?Response {
         try{
             $user = $this->service->addresses($uuid);
@@ -99,21 +93,8 @@ final class UserController extends BaseController
         }
     }
 
-    #[Route(methods: 'QUERY', path: '/permissions/{uuid}')]
-    #[Middleware(AuthMiddleware::class)]
-    #[Middleware(TenantResolverMiddleware::class)]
-    public function permissions(string $uuid) : ?Response {
-        try{
-            $user = $this->service->permissions($uuid);
-            return Response::json(data: $user, message: 'success')->send(200, [], true);
-        }catch(\Throwable $th) {
-            throw $th;
-        }
-    }
 
     #[Route(methods: 'QUERY', path: '/contacts/{uuid}')]
-    #[Middleware(AuthMiddleware::class)]
-    #[Middleware(TenantResolverMiddleware::class)]
     public function contacts(string $uuid) : ?Response {
         try{
             $user = $this->service->contacts($uuid);
@@ -124,8 +105,6 @@ final class UserController extends BaseController
     }
 
     #[Route(methods: 'QUERY', path: '/consents/{uuid}')]
-    #[Middleware(AuthMiddleware::class)]
-    #[Middleware(TenantResolverMiddleware::class)]
     public function consents(string $uuid) : ?Response {
         try{
             $user = $this->service->consents($uuid);
@@ -136,11 +115,19 @@ final class UserController extends BaseController
     }
 
     #[Route(methods: 'QUERY', path: '/sensitive/{uuid}')]
-    #[Middleware(AuthMiddleware::class)]
-    #[Middleware(TenantResolverMiddleware::class)]
     public function sensitive(string $uuid) : ?Response {
         try{
             $user = $this->service->sensitive($uuid);
+            return Response::json(data: $user, message: 'success')->send(200, [], true);
+        }catch(\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    #[Route(methods: 'QUERY', path: '/education/{uuid}')]
+    public function education(string $uuid) : ?Response {
+        try{
+            $user = $this->service->education($uuid);
             return Response::json(data: $user, message: 'success')->send(200, [], true);
         }catch(\Throwable $th) {
             throw $th;
