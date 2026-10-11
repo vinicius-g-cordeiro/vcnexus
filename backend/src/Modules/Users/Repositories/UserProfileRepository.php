@@ -16,7 +16,8 @@ use App\Infrastructure\Redis\RedisConnectionFactory;
 use App\Modules\Users\DTOs\UserCredentialsResponse;
 use App\Modules\Users\DTOs\UserListRequest;
 use App\Modules\Users\DTOs\UsersListResponse;
-use App\Modules\Users\Models\{UserProfile, UserAddress, UserConsents, UserContact, UserEducation, UserSensitive};
+use App\Modules\Users\Models\{UserProfile, UserConsents, UserEducation, UserSensitive};
+use App\Modules\Platform\{Addresses\Models\Addresses, Contacts\Models\Contacts};
 use App\Shared\Domain\BaseRepository;
 use App\Infrastructure\Database\Hydrator;
 use App\Shared\Http\Request;
@@ -51,10 +52,10 @@ final class UserProfileRepository extends BaseRepository
             from user_permissions up2 
             inner join permissions upe on up2.permission_id = upe.id
             where up2.user_id = uc.id) "permissions",
-            (select array_agg(r.name) from user_roles ur inner join roles r on ur.role_id = r.id where ur.user_id = uc.id) "roles",
-            (select array_agg(uc2.value) from user_contact uc2 where uc2.user_id = uc.id and uc2.type = 1) "emails",
-            (select array_agg(uc2.value) from user_contact uc2 where uc2.user_id = uc.id and uc2.type = 2) "phones",
-            (select array_agg(ua.address) from user_address ua where ua.user_id = uc.id) "addresses",
+            (select array_agg(r.name) from user_roles ur inner join roles r on ur.role_id = r.id where ur.user_id = uc.id ) "roles",
+            (select array_agg(uc2.value) from contacts uc2 where uc2.type_id = 1 AND uc2.owner_type_id = 1 and uc2.owner_id = uc.id) "emails",
+            (select array_agg(uc2.value) from contacts uc2 where uc2.type_id = 2 AND uc2.owner_type_id = 1 and uc2.owner_id = uc.id) "phones",
+            (select array_agg(ua.address) from addresses ua where ua.owner_type_id = 1 and ua.owner_id = uc.id) "addresses",
             b.fantasy_name as organization_name
         ';
 
@@ -161,13 +162,13 @@ final class UserProfileRepository extends BaseRepository
     /**
      * 
      * @param string $uuid
-     * @return array<UserAddress>|null
+     * @return array<Addresses>|null
      */
     public function addresses(string $uuid): ?array {
         $select = <<<SQL
             select ua.*
-            FROM user_address ua 
-            inner join user_credentials uc on uc.id = ua.user_id
+            FROM addresses ua 
+            inner join user_credentials uc on uc.id = ua.owner_id AND ua.owner_type_id = 1
             inner join user_profile up on uc.id = up.user_id
             inner join tenant_memberships tm on tm.user_id = uc.id
             inner join tenants t on t.id = tm.tenant_id
@@ -182,19 +183,19 @@ final class UserProfileRepository extends BaseRepository
             return null;
         }
 
-        return Hydrator::hydrateMany(UserAddress::class, $user);
+        return Hydrator::hydrateMany(Addresses::class, $user);
     }
 
     /**
      * 
      * @param string $uuid
-     * @return UserContact[]|null
+     * @return Contacts[]|null
      */
     public function contacts(string $uuid): ?array {
         $select = <<<SQL
             select ucon.*
-            FROM user_contact ucon 
-            inner join user_credentials uc on uc.id = ucon.user_id
+            FROM contacts ucon 
+            inner join user_credentials uc on uc.id = ucon.owner_id and ucon.owner_type_id = 1
             inner join user_profile up on uc.id = up.user_id
             inner join tenant_memberships tm on tm.user_id = uc.id
             inner join tenants t on t.id = tm.tenant_id
@@ -209,7 +210,7 @@ final class UserProfileRepository extends BaseRepository
             return null;
         }
 
-        return Hydrator::hydrateMany(UserContact::class, $user);
+        return Hydrator::hydrateMany(Contacts::class, $user);
     }
 
     /**
@@ -283,7 +284,5 @@ final class UserProfileRepository extends BaseRepository
 
         return Hydrator::hydrateMany(UserEducation::class, $user);
     }
-    
 
-    
 }

@@ -65,6 +65,17 @@ const localeOptions = [
     { value: 'es-ES', label: 'Español' },
 ]
 
+function formatDate(date){
+    if(date === undefined || date===null) return ''
+
+    const d = new Date(date)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+
+    return `${year}-${month}-${day}`
+}
+
 const form = reactive({
     firstname: '',
     surname: '',
@@ -81,7 +92,7 @@ function seedFromProfile(val) {
     form.firstname = val?.firstname ?? ''
     form.surname = val?.surname ?? ''
     form.lastname = val?.lastname ?? ''
-    form.birthdate = val?.birthdate ?? ''
+    form.birthdate = formatDate(val?.birthdate) ?? ''
     form.locale = val?.locale ?? 'en-US'
     avatarPreview.value = val?.avatar ?? ''
     avatarFile.value = val?.avatarFile ?? null
@@ -94,7 +105,7 @@ if (props.mode === 'create') {
     // would just echo our own edits back and reset mid-keystroke
     seedFromProfile(props.profile)
     watch(form, (val) => {
-        emit('update:modelValue', { ...val, avatarFile: avatarFile.value })
+        emit('update:modelValue', { ...val, birthdate: formatDate(val.birthdate) ?? '', avatarFile: avatarFile.value })
     }, { deep: true })
 } else {
     // edit mode: the prop comes from the store and can legitimately change

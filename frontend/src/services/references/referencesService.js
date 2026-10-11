@@ -68,6 +68,14 @@ const referencesService = {
         const response = await api.query('/references/contact-types/', { params })
         return response.data
     },
+    async fetchSubscriptionStatuses(params){
+        const response = await api.query('/references/subscription-statuses/', { params })
+        return response.data
+    },
+    async fetchSubscriptionPlans(params){
+        const response = await api.query('/references/subscription-plans/', { params })
+        return response.data
+    }
 }
 
 export default referencesService

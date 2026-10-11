@@ -137,7 +137,7 @@ final class UserController extends BaseController
     public function contactPerTypeSplitter(array $contacts, string $contactType) : array {
         $contactInfo = [];
         foreach($contacts as $contact) {
-            if($contact['type'] == $contactType) {
+            if($contact['type_id'] == $contactType) {
                 $contactInfo[] = $contact;
             }
         }

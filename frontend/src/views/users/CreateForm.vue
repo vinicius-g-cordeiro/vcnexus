@@ -33,7 +33,7 @@
             <UserContacts v-show="selectedSection === 'contacts'" mode="create" :contacts="draft.contacts" @update:modelValue="draft.contacts = $event" />
             <UserConsents v-show="selectedSection === 'consents'" mode="create" :consents="draft.consents" @update:modelValue="draft.consents = $event" />
             <UserSensitive v-show="selectedSection === 'sensitive'" mode="create" :sensitive="draft.sensitive" @update:modelValue="draft.sensitive = $event" />
-            <UserEducation v-show="selectedSection === 'education'" mode="create" :educationalLevels="educationalLevels" :education="draft.education" @update:modelValue="draft.education = $event" />
+            <UserEducation v-show="selectedSection === 'education'" mode="create" :education="draft.education" @update:modelValue="draft.education = $event" />
 
             <div class="flex items-center gap-3 mt-6 max-w-2xl">
                 <button type="button" :disabled="submitting" @click="handleCreate" class="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-700 dark:bg-zinc-100 dark:hover:bg-zinc-300 disabled:opacity-50 px-4 py-2 rounded-md font-medium text-white dark:text-zinc-900 text-sm transition-colors">
@@ -92,7 +92,7 @@ const draft = reactive({
     addresses: [],
     contacts: [],
     consents: [],
-    sensitive: {},
+    sensitive: [],
     education: [],
 })
 
@@ -118,13 +118,6 @@ onMounted(async () => {
 
 })
 
-// Recursively appends a value into FormData using PHP's bracket-array
-// convention, e.g. appendToFormData(fd, 'addresses', [{purpose:'Home'}])
-// produces the key "addresses[0][purpose]" with value "Home". This is what
-// lets a nested array of objects survive a multipart/form-data request and
-// arrive on the PHP side as a proper indexed array of associative arrays —
-// FormData.append('addresses[]', obj) does NOT do this, it just stringifies
-// the object into the literal text "[object Object]".
 function appendToFormData(formData, key, value) {
     if (value === null || value === undefined) {
         return
@@ -139,9 +132,6 @@ function appendToFormData(formData, key, value) {
     }
     if (typeof value === 'object') {
         Object.entries(value).forEach(([childKey, childValue]) => {
-            // avatarFile is carried inside draft.profile for the local preview/upload
-            // flow, but it's sent separately as a top-level "avatar" field below —
-            // skip it here so it isn't also serialized as profile[avatarFile]
             if (childKey === 'avatarFile') return
             appendToFormData(formData, `${key}[${childKey}]`, childValue)
         })
@@ -176,23 +166,12 @@ async function handleCreate() {
 
     submitting.value = true
     try {
-        // one combined payload — createUser takes the whole thing in a single call,
-        // backend wraps the full insert (credentials, profile, roles, permissions,
-        // addresses, contacts, consents, sensitive) in one transaction
         const payload = new FormData()
 
         appendToFormData(payload, 'credentials', draft.credentials)
         appendToFormData(payload, 'profile', draft.profile)
-
-        // roles/permissions are references into existing catalog rows, so only
-        // the ids need to travel — appendToFormData flattens this into
-        // roles[0], roles[1], ... which PHP collects as a plain indexed array
         appendToFormData(payload, 'roles', draft.roles.map(r => r.id))
         appendToFormData(payload, 'permissions', draft.permissions.map(p => p.id))
-
-        // these are full records being created, not references, so the entire
-        // object per row needs to survive — appendToFormData turns each into
-        // addresses[0][purpose], addresses[0][address], addresses[1][purpose], ...
         appendToFormData(payload, 'addresses', draft.addresses)
         appendToFormData(payload, 'contacts', draft.contacts)
         appendToFormData(payload, 'consents', draft.consents)

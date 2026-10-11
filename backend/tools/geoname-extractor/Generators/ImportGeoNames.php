@@ -296,7 +296,7 @@ final class ImportGeoNames
             implode(', ', $parameters)
         );
 
-        file_put_contents('countries.sql', $printSql . "\n", FILE_APPEND);
+        file_put_contents(GEONAMES_DIRECTORY . 'countries.sql', $printSql . "\n", FILE_APPEND);
 
         $this->db->StartTrans();
         try{
@@ -460,7 +460,7 @@ final class ImportGeoNames
             implode(', ', $parameters)    
         );
 
-        file_put_contents('states.sql', $printSql . "\n", FILE_APPEND);
+        file_put_contents(GEONAMES_DIRECTORY . 'states.sql', $printSql . "\n", FILE_APPEND);
         $this->db->StartTrans();
         try{
             $this->db->Execute($sql, $parameters);
@@ -636,7 +636,7 @@ final class ImportGeoNames
             implode(', ', $parameters)    
         );
 
-        file_put_contents('cities.sql', $printSql . "\n", FILE_APPEND);
+        file_put_contents(GEONAMES_DIRECTORY. 'cities.sql', $printSql . "\n", FILE_APPEND);
 
         $this->db->StartTrans();
         try{

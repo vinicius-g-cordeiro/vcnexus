@@ -35,5 +35,10 @@
     "nationality": 34,
     "completion_statuses": 35,
     "educational_types": 36,
-    "user_education": 37
+    "user_education": 37,
+    "subscription_statuses": 38,
+    "subscription_types": 39,
+    "contacts": 40,
+    "ownable_types": 41,
+    "addresses": 42
 }

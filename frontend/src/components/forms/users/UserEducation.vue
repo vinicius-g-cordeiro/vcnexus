@@ -24,7 +24,10 @@
                     </div>
                     <div class="gap-x-4 grid grid-cols-1 sm:grid-cols-1">
                         <Input v-model="edu.institution" label="Institution" :id="`institution-${edu._key}`" required />
-                        
+                    </div>
+
+                    <div class="gap-x-4 grid grid-cols-1 sm:grid-cols-1">
+                        <Input v-model="edu.name" :label="nameFieldLabel(edu)" :placeholder="nameFieldPlaceholder(edu)" :id="`name-${edu._key}`" />
                     </div>
                     
                     <div class="gap-x-4 grid grid-cols-1 sm:grid-cols-2" v-if="edu.educational_type_id === 1 || edu.educational_type_id === 2">
@@ -34,7 +37,7 @@
                     </div>
 
                     <div class="flex flex-col gap-x-4">
-                        <Select v-model="edu.completion_status_id" label="Completion" :id="`completion-${edu._key}`" @change="onInProgressChange(edu)" :options="completionOptions" placeholder="Select" required />
+                        <Select v-model="edu.completion_status_id" v-if="showsLevel(edu) === false" label="Completion" :id="`completion-${edu._key}`" @change="onInProgressChange(edu)" :options="completionOptions" placeholder="Select" required />
                     </div>
 
                     <div class="gap-x-4 grid grid-cols-1 sm:grid-cols-2">
@@ -46,9 +49,6 @@
                         <Input v-model="edu.expiration_date" type="date" label="Expiration Date" :id="`expiration-${edu._key}`" v-if="edu.educational_type_id === 3 || edu.educational_type_id === 4" />
                     </div>
 
-                    <div class="gap-x-4 grid grid-cols-1 sm:grid-cols-1" v-if="showsLevel(edu) && edu.educational_type_id === 2">
-                        <Input v-model="edu.degree" :label="degreeFieldLabel(edu)" :placeholder="degreeFieldPlaceholder(edu)" :id="`degree-${edu._key}`" />
-                    </div>
                     <div class="gap-x-4 grid grid-cols-1 sm:grid-cols-2" v-if="showsLevel(edu) === false">
 
                         <Input v-model="edu.certification_url" label="Certification URL" :id="`url-${edu._key}`" />
@@ -91,11 +91,9 @@ const route = useRoute()
 const userStore = useUserStore()
 const referencesStore = useReferencesStore()
 
-// 1: school, 2: certificate/course, 3: degree — per the spec given
-const typeOptions = computed(() => referencesStore.educational_types.map(t => ({ label: t.label, value: t.id })))
-//'0 = Not Completed, 1 = Completed, 2= In Progress, 3 = On Hold, 4 = Other'
-const completionOptions = computed(() => referencesStore.completion_statuses.map(s => ({ label: s.label, value: s.id })))
 
+const typeOptions = computed(() => referencesStore.educational_types.map(t => ({ label: t.label, value: t.id })))
+const completionOptions = computed(() => referencesStore.completion_statuses.map(s => ({ label: s.label, value: s.id })))
 
 const levelOptions = ref([])
 const loadingLevels = ref(true)
@@ -113,7 +111,7 @@ function onEducationTypeChange(edu){
 }
 
 function formatDate(date){
-    if(date === undefined || date===null) return ''
+    if(date === undefined || date===null || date === '') return null
     date = new Date(date)
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -123,59 +121,95 @@ function formatDate(date){
 }
 function toRow(raw) {
     return {
-        type: raw.type ?? '',
         educational_level_id: raw.educational_level_id ?? '',
         institution: raw.institution ?? '',
-        degree: raw.degree ?? '',
+        name:raw.name ?? raw.certification_name ?? '',
         certification_url: raw.certification_url ?? '',
         educational_type_id: raw.educational_type_id ?? '',
         description: raw.description ?? '',
         certification_status_id: raw.certification_status_id ?? '',
         certification_number: raw.certification_number ?? '',
-        start_date: formatDate(raw.start_date), // convert the datetime to mm-dd-yyyy
-        end_date: formatDate(raw.end_date) ,
-        expiration_date: raw.expiration_date ?? '',
+        start_date: formatDate(raw.start_date) ?? null, // convert the datetime to mm-dd-yyyy
+        end_date: formatDate(raw.end_date) ?? null ,
+        expiration_date: formatDate(raw.expiration_date) ?? null,
         completion_status_id: raw.completion_status_id ?? '',
         _key: makeRowKey(),
     }
 }
 
 function toPayload(row) {
-    const { _key, completion, ...rest } = row
-    const payload = { ...rest, end_date: completion_status_id ? null : rest.end_date }
-    if (row.type === 1) {
-        // school: no degree/certification name, no credential id — level DOES apply
-        payload.degree = null
+    const { _key, completion_status_id, ...rest } = row
+    const payload = { ...rest, end_date: rest.end_date ?? null, completion_status_id: completion_status_id ?? null, expiration_date: rest.expiration_date ?? null }
+    if (row.educational_type_id !== 3) {
+        // school: no name/certification name, no credential id — level DOES apply
         payload.certification_number = null
-    } else if (row.type === 2) {
+        payload.expiration_date = null
+    } else if (row.type === 3) {
         // certificate/course: no educational level
         payload.educational_level_id = null
-    } else if (row.type === 3) {
-        // degree: no credential id, that's a certificate-only concept
-        payload.certification_number = null
+        payload.name = null
     }
     return payload
 }
 
-// type 1 = school, 3 = degree both carry an educational level; only
-// 2 = certificate/course does not, per spec
+/**
+ * 
+ * id|uuid                                |active|name       |label      |description|priority|
+--+------------------------------------+------+-----------+-----------+-----------+--------+
+ 1|01a12508-0a2d-7d43-a8e6-9e33417fd02b|     1|school     |School     |School     |        |
+ 2|01a12508-0a2d-7ebe-8bba-4269b3b478b9|     1|name     |Degree     |Degree     |        |
+ 3|01a12508-0a2d-7ede-b542-a63cf0d07d17|     1|certificate|Certificate|Certificate|        |
+ 4|01a12508-0a2d-7eed-a6d9-a8b633728871|     1|other      |Other      |Other      |        |
+ */
 function showsLevel(edu) {
-    return edu.educational_type_id === 1 || edu.educational_type_id === 2
+    switch (edu.educational_type_id) {
+        case 1:
+        case 2:
+            return true
+        case 3:
+        case 4:
+            return false
+        default:
+            return false
+    }
+
+    return false
 }
 
-function degreeFieldLabel(edu) {
-    return edu.educational_type_id === 3 || edu.educational_type_id === 4 ? 'Certification Name' : 'Degree'
+function nameFieldLabel(edu) {
+    switch (edu.educational_type_id) {
+        case 1:
+            return 'Degree'
+        case 2:
+            return 'Title'
+        case 3:
+            return 'Certification Name'
+        default:
+            return ''
+    }
+
+    return ''
 }
 
-function degreeFieldPlaceholder(edu) {
-    return edu.educational_type_id === 3 || edu.educational_type_id === 4 ? 'AWS Certified Solutions Architect...' : 'B.Sc. Computer Science...'
+function nameFieldPlaceholder(edu) {
+    switch (edu.educational_type_id) {
+        case 1:
+            return 'e.g. High School Diploma'
+        case 2:
+            return 'e.g. Software Engineer'
+        case 3:
+            return 'e.g. AWS Certified Cloud Practitioner'
+        default:
+            return ''
+    }
+
+    return ''
 }
 
 // clears fields that don't apply to the newly selected type, so a value
 // typed in before switching type doesn't linger invisibly and get submitted
 function onTypeChange(edu) {
     if (edu.educational_type_id === 1) {
-        edu.degree = ''
         edu.certification_number = ''
     } else if (edu.educational_type_id === 2) {
         edu.educational_level_id = ''
@@ -232,36 +266,11 @@ async function handleSubmit() {
 onMounted(async () => {
     loadingLevels.value = true
     try {
-        const ok = await referencesStore.fetchEducationalLevels()
-        if (ok === true) {
-            levelOptions.value = (referencesStore.educational_levels ?? [])
-                .slice()
-                .sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0))
-                .map(l => ({
-                    label: l.label,
-                    value: l.id,
-                }))
-        }
+        await referencesStore.fetchEducationalLevels()
 
-        const ok_2 = await referencesStore.fetchEducationalTypes()
-        if (ok_2 === true) {
-            typeOptions.value = (referencesStore.educational_types ?? [])
-                .slice()
-                .map(t => ({
-                    label: t.label,
-                    value: t.id,
-                }))
-        }
+        await referencesStore.fetchEducationalTypes()
 
-        const ok3 = await referencesStore.fetchCompletionStatuses(1)
-        if (ok3 === true) {
-            completionOptions.value = (referencesStore.completion_statuses ?? [])
-                .slice()
-                .map(c => ({
-                    label: c.label,
-                    value: c.id,
-                }))
-        }
+        await referencesStore.fetchCompletionStatuses(1)
     } finally {
         loadingLevels.value = false
     }

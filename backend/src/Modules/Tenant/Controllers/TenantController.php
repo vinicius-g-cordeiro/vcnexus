@@ -18,7 +18,7 @@ use App\Shared\Http\Attributes\Permission;
 use App\Shared\Http\Controllers\BaseController;
 use App\Shared\Http\{DTOValidator, Request, Response, Session};
 use App\Shared\Http\Attributes\{Route, Middleware};
-use App\Shared\Http\Middleware\{AuthMiddleware, PermissionMiddleware};
+use App\Shared\Http\Middleware\{AuthMiddleware};
 
 use App\Modules\Tenant\DTOs\{TenantListRequest};
 
@@ -32,13 +32,12 @@ final class TenantController extends BaseController
     }
 
 
-    #[Route(methods: 'GET', path: '/')]
+    #[Route(methods: ['GET', 'QUERY'], path: '/')]
     #[Permission(['tenants.view'])]
     public function index() : ?Response
     {
         try{
             $tenantListRequest = TenantListRequest::fromArray((array)$this->request->get());
-            /** @var array<\App\Modules\Tenant\DTOs\TenantListResponse> */
             $tenants = $this->service->index($tenantListRequest);
             return Response::json(data: $tenants, message: 'success')->send(200, [], true);
         }catch(\Throwable $th){

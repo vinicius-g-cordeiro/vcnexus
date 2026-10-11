@@ -17,7 +17,7 @@ use App\Shared\Domain\QueryObjectInterface;
 final class TenantListRequest implements QueryObjectInterface
 {
 
-    public function __construct(public ?string $search, public ?int $active, public ?int $blocked, public ?string $created_at)
+    public function __construct(public ?string $search, public ?int $active, public ?int $blocked, public ?string $created_at, public ?int $subscription_type_id, public ?int $subscription_status_id)
     {
     }
 
@@ -28,6 +28,6 @@ final class TenantListRequest implements QueryObjectInterface
 
     public static function fromArray(array $data): self
     {
-        return new self($data['search'] ?? null, isset($data['active']) ? (int) $data['active'] : null , isset($data['blocked']) ? (int) $data['blocked'] : null, $data['created_at'] ?? null);
+        return new self($data['search'] ?? null, isset($data['active']) ? (int) $data['active'] : null , isset($data['blocked']) ? (int) $data['blocked'] : null, $data['created_at'] ?? null, isset($data['subscription_type_id']) ? (int) $data['subscription_type_id'] : null, isset($data['subscription_status_id']) ? (int) $data['subscription_status_id'] : null);
     }
 }

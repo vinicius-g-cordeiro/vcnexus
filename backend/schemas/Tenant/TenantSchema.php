@@ -14,22 +14,24 @@ declare(strict_types=1);
 namespace App\Schemas\Tenant;
 
 use App\Schemas\AbstractSchema;
-use App\Shared\Schema\Attributes\{Column, Timestamps, Nullable, Auditable};
+use App\Shared\Schema\Attributes\{Column, Timestamps, Nullable, Auditable, ForeignKey};
 
 
 #[Timestamps(created_at: 'created_at', updated_at: 'updated_at', deleted_at: 'deleted_at')]
 #[Auditable(created_by: 'created_by', updated_by: 'updated_by', deleted_by: 'deleted_by', deleted_reason: 'deleted_reason')]
+#[ForeignKey(name: 'fk_tenants_subscription_type', foreignKeys: ['subscription_type_id'], references: 'subscription_types', columns: ['id'], actionOnUpdate: true, deleteAction: 'SET NULL')]
+#[ForeignKey(name: 'fk_tenants_subscription_status', foreignKeys: ['subscription_status_id'], references: 'subscription_statuses', columns: ['id'], actionOnUpdate: true, deleteAction: 'SET NULL')]
 final class TenantSchema extends AbstractSchema
 {
     public string $table = 'tenants';
 
     #[Column(type: 'smallint', length: 1, default: 1)]
     #[Nullable(nullable: false)]
-    public ?int $subscription_type;
+    public ?int $subscription_type_id;
 
     #[Column(type: 'smallint', length: 1, default: 1)]
     #[Nullable(nullable: false)]
-    public ?int $subscription_status;
+    public ?int $subscription_status_id;
     
     #[Column(type: 'varchar', length: 100, default: null)]
     #[Nullable(nullable: true)]

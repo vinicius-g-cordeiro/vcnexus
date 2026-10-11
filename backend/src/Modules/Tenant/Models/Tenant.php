@@ -4,7 +4,7 @@
  * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
- * @date 10/10/2026
+ * @date 11/10/2026
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  */
 
@@ -19,8 +19,8 @@ final class Tenant extends BaseModel
     public ?int $id;
     public ?string $uuid;
     public ?int $active;
-    public int $subscription_type;
-    public int $subscription_status;
+    public int $subscription_type_id;
+    public int $subscription_status_id;
     public ?string $domain;
     public string $slug;
     public ?string $created_at;
@@ -43,8 +43,8 @@ final class Tenant extends BaseModel
         $newObject->id = isset($data['id']) ? (int) $data['id'] : null;
         $newObject->uuid = isset($data['uuid']) ? $data['uuid'] : null;
         $newObject->active = isset($data['active']) ? (int) $data['active'] : null;
-        $newObject->subscription_type = isset($data['subscription_type']) ? (int) $data['subscription_type'] : null;
-        $newObject->subscription_status = isset($data['subscription_status']) ? (int) $data['subscription_status'] : null;
+        $newObject->subscription_type_id = isset($data['subscription_type_id']) ? (int) $data['subscription_type_id'] : null;
+        $newObject->subscription_status_id = isset($data['subscription_status_id']) ? (int) $data['subscription_status_id'] : null;
         $newObject->domain = isset($data['domain']) ? $data['domain'] : null;
         $newObject->slug = isset($data['slug']) ? $data['slug'] : null;
         $newObject->created_at = isset($data['created_at']) ? $data['created_at'] : null;

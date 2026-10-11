@@ -15,7 +15,7 @@
                 <Select v-model="form.religion_id" label="Religion" name="religion_id" id="religion_id" :options="religionOptions" placeholder="Select" />
                 <Select v-model="form.ethnicity_id" label="Ethnicity" name="ethnicity_id" id="ethnicity_id" :options="ethnicityOptions" placeholder="Select" />
                 <Select v-model="form.nationality_id" label="Nationality" name="nationality_id" id="nationality_id" :options="nationalityOptions" placeholder="Select" />
-                <Select v-model="form.sexual_orientation" label="Sexual Orientation" name="sexual_orientation" id="sexual_orientation" :options="sexualOptions" placeholder="Select" />
+                <Select v-model="form.sexual_orientation_id" label="Sexual Orientation" name="sexual_orientation_id" id="sexual_orientation_id" :options="sexualOptions" placeholder="Select" />
                 <Select v-model="form.gender_id" label="Gender" name="gender_id" id="gender_id" :options="genderOptions" placeholder="Select" />
                 <Select v-model="form.disability_id" label="Disability" name="disability_id" id="disability_id" :options="disabilityOptions" placeholder="Select" />
                 
@@ -86,7 +86,7 @@ onMounted(async () => {
 
     const sexual_orientation_ok = await referencesStore.fetchSexualOrientations();
     if(sexual_orientation_ok === true){
-        sexualOptions.value = referencesStore.sexual_orientations.map(s => ({ label: s.label, value: s.label }))
+        sexualOptions.value = referencesStore.sexual_orientations.map(s => ({ label: s.label, value: String(s.id) }))
     }
 
     const disability_ok = await referencesStore.fetchDisabilities();
@@ -103,7 +103,7 @@ const form = reactive({
     ethnicity_id: '',
     nationality_id: '',
     marital_status_id: '',
-    sexual_orientation: '',
+    sexual_orientation_id: '',
     disability_id: '',
 })
 
@@ -114,7 +114,7 @@ function seedFromSensitive(val) {
     form.ethnicity_id = val?.ethnicity_id ?? ''
     form.nationality_id = val?.nationality_id ?? ''
     form.marital_status_id = val?.marital_status_id != null ? String(val.marital_status_id) : ''
-    form.sexual_orientation = val?.sexual_orientation ?? ''
+    form.sexual_orientation_id = Number(val?.sexual_orientation_id) ?? ''
     form.disability_id = val?.disability_id ?? ''
 }
 

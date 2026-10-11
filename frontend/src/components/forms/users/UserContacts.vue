@@ -16,7 +16,7 @@
                     <i class="bi bi-trash"></i>
                 </button>
                 <div class="gap-x-4 grid grid-cols-1 sm:grid-cols-2">
-                    <Select v-model="c.type" label="Type" :id="`type-${i}`" :options="typeOptions || []" placeholder="Select type" required />
+                    <Select v-model="c.type_id" label="Type" :id="`type_id-${i}`" :options="typeOptions || []" placeholder="Select type" required />
                     <Input v-model="c.value" label="Value" :id="`value-${i}`" required />
                     <Input v-model="c.label" label="Label" placeholder="Mobile, Work..." :id="`label-${i}`" />
                     <Select v-model="c.category_id" label="Category" :id="`category-${i}`" :options="categoryOptions || []" placeholder="Select category" required />
@@ -64,25 +64,23 @@ const typeOptions = computed(() => referencesStore.contact_types?.map(t => ({ la
 const form = reactive({ list: [] })
 
 if (props.mode === 'create') {
-    form.list = (props.contacts ?? []).map(c => ({ ...c, primary_contact: !!c.primary_contact }))
+    form.list = (props.contacts ?? []).map(c => ({ ...c, person: c.person ?? '', primary_contact: !!c.primary_contact }))
     watch(form, (val) => emit('update:modelValue', val.list), { deep: true })
 } else {
     watch(() => props.contacts, (val) => {
-        form.list = (val ?? []).map(c => ({ ...c, primary_contact: !!c.primary_contact }))
+        form.list = (val ?? []).map(c => ({ ...c, person: c.person ?? '', primary_contact: !!c.primary_contact }))
     }, { immediate: true })
 }
 
 
 onMounted(async () => {
     await referencesStore.fetchContactCategories()
-    console.log(referencesStore.contact_categories)
     await referencesStore.fetchContactTypes()
-    console.log(referencesStore.contact_types)
 })
 
 function addContact() {
     form.list.push({
-        type: '',
+        type_id: '',
         value: '',
         label: '',
         category: '',

@@ -86,12 +86,17 @@ if($res !== 'y') {
 }
 else{
     // Get table names from .sqls
-    $tablesToDrop = glob(__DIR__ . '/../../../database/migrations/tables/modules/**/*.sql') ;
     
+    $directory = new RecursiveDirectoryIterator('database/migrations/tables/modules', FilesystemIterator::SKIP_DOTS);
+    $iterator = new RecursiveIteratorIterator($directory);
+    $tablesToDrop = new RegexIterator($iterator, '/[0-9]{3}_create_(.*?)_table.sql/');
+
+
+
     // Drop all tables
     foreach($tablesToDrop as $file) {
         // remove the number padding 001_create_**_table keeping only the ** on the filename
-        $tableName = preg_replace('/[0-9]{3}_create_(.*?)_table.sql/', '$1', basename($file));
+        $tableName = preg_replace('/[0-9]{3}_create_(.*?)_table.sql/', '$1', basename($file->getPathname()));
         
         $db->Execute(sprintf('DROP TABLE IF EXISTS %s CASCADE', $tableName));
         
@@ -99,14 +104,23 @@ else{
     }
 }
 
-$tableCreations = glob(__DIR__ . '/../../../database/migrations/tables/modules/**/*.sql') ;
+
+
+// $tableCreations = glob(__DIR__ . '/../../../database/migrations/tables/modules/**/*.sql') ;
+$directory = new RecursiveDirectoryIterator('database/migrations/tables/modules', FilesystemIterator::SKIP_DOTS);
+$iterator = new RecursiveIteratorIterator($directory);
+$tableCreations = new RegexIterator($iterator, '/[0-9]{3}_create_(.*?)_table.sql/');
+
 foreach($tableCreations as $file) {
-    $db->Execute(trim(file_get_contents($file)));
+    $db->Execute(trim(file_get_contents($file->getPathname())));
 }
 
-$constraints = glob(__DIR__ . '/../../../database/migrations/constraints/modules/**/*.sql') ;
+// $constraints = glob(__DIR__ . '/../../../database/migrations/constraints/modules/**/*.sql') ;
+$directory = new RecursiveDirectoryIterator('database/migrations/constraints/modules', FilesystemIterator::SKIP_DOTS);
+$iterator = new RecursiveIteratorIterator($directory);
+$constraints = new RegexIterator($iterator, '/[0-9]{3}_constraints_(.*?)_fk.sql/');
 foreach($constraints as $file) {
-    $db->Execute(trim(file_get_contents($file)));
+    $db->Execute(trim(file_get_contents($file->getPathname())));
 }
 
 echo "\n";

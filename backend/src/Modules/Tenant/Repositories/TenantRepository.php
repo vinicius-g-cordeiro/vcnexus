@@ -38,35 +38,62 @@ final class TenantRepository extends BaseRepository
      */
     public function list(?TenantListRequest $parameters = null): ?array
     {
-         $sql = 'SELECT t.uuid, t.id, b.fantasy_name, b.trade_name, b.type, b.tax_id, b.website, t.domain, t.slug, b.state_registration, b.municipal_registration,
-                    t.created_at, t.active, t.subscription_type, t.subscription_status, bb.app_name, bb.logo
-                    FROM tenants t 
+        $select = 'SELECT t.uuid, t.id, b.fantasy_name, b.trade_name, b.type, b.tax_id, b.website, t.domain, t.slug, 
+                    b.state_registration, b.municipal_registration, t.created_at, t.active, t.subscription_type_id, t.subscription_status_id,
+                    bb.app_name, bb.logo, 
+                    (select st.label from subscription_types st where st.id = t.subscription_type_id) subscription_type,
+                    (select ss.label from subscription_statuses ss where ss.id = t.subscription_status_id) subscription_status';
+        $from = ' FROM tenants t 
                     INNER JOIN business b on b.tenant_id = t.id 
                     INNER JOIN business_brandings bb on bb.business_id = b.id';
-
+         
         $params = [];
+
+        $where = ' WHERE 1 = 1';
 
         if (isset($parameters->search) && $parameters->search !== '') {
             $searchTerm = '%' . $parameters->search . '%';
-            $columns = ['b.fantasy_name', 'b.trade_name', 'b.website', 'b.tax_id', 't.slug', 't.domain', 'b.state_registration', 'b.municipal_registration'];
+            $columns = ['b.fantasy_name', 'b.trade_name', 'b.website', 'b.tax_id', 't.slug', 'b.state_registration', 'b.municipal_registration'];
             $conditions = array_map(fn($col) => "public.unaccent(lower({$col})) LIKE public.unaccent(lower(?))", $columns);
 
-            $sql .= ' AND (' . implode(' OR ', $conditions) . ')';
+            $where .= ' AND (' . implode(' OR ', $conditions) . ')';
             $params = [...$params, ...array_fill(0, count($columns), $searchTerm)];
         }
 
         if(isset($parameters->active) && $parameters->active !== '') {
-            $sql .= ' AND t.active = ?';
+            $where .= ' AND t.active = ?';
             $params[] = $parameters->active;
         }
 
         if(isset($parameters->created_at) && $parameters->created_at !== '') {
-            $sql .= ' AND t.created_at >= ? AND t.created_at <= ?';
+            $where .= ' AND t.created_at >= ? AND t.created_at <= ?';
             $params[] = $parameters->created_at;
         }
 
-        $result = $this->scopedQuery($sql, $params);
-        
-        return !empty($result) && $result !== false ? Hydrator::hydrateMany(TenantListResponse::class, $result) : null;
+        if(isset($parameters->subscription_type_id) && $parameters->subscription_type_id !== '') {
+            $where .= ' AND t.subscription_type_id = ?';
+            $params[] = $parameters->subscription_type_id;
+        }
+
+        if(isset($parameters->subscription_status_id) && $parameters->subscription_status_id !== '') {
+            $where .= ' AND t.subscription_status_id = ?';
+            $params[] = $parameters->subscription_status_id;
+        }
+
+        $order = ' ORDER BY t.created_at ASC';
+
+        $response = $this->scopedQuery(
+            $select . $from . $where . $order,
+            $params,
+            true,
+            $parameters?->per_page ?? 15,
+            $parameters?->page ?? 1,
+            'SELECT COUNT(*)' . $from . $where
+        );
+
+        return [
+            'list' => Hydrator::hydrateMany(TenantListResponse::class, $response['data']),
+            'meta' => $response['meta'],
+        ];
     }
 }
