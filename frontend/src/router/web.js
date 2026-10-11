@@ -116,6 +116,14 @@ const routes = [
               title: "Tenants",
             },
           },
+          {
+            path: "/tenants/:uuid",
+            name: "tenants.edit",
+            component: () => import("@/views/tenants/Tenants.vue"),
+            meta: {
+              
+            }
+          }
         ]
       }
     ],

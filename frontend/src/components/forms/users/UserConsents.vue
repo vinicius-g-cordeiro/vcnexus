@@ -60,12 +60,23 @@ const basisOptions = [
 
 const form = reactive({ list: [] })
 
+function formatDate(date){
+    if(date === undefined || date===null) return ''
+    const d = new Date(date)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    const hours = String(d.getHours()).padStart(2, '0')
+    const minutes = String(d.getMinutes()).padStart(2, '0')
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
 if (props.mode === 'create') {
-    form.list = (props.consents ?? []).map(c => ({ ...c }))
+    form.list = (props.consents ?? []).map(c => ({ ...c, granted_at: formatDate(c.granted_at) ?? '', revoked_at: formatDate(c.revoked_at) ?? '' }))
     watch(form, (val) => emit('update:modelValue', val.list), { deep: true })
 } else {
     watch(() => props.consents, (val) => {
-        form.list = (val ?? []).map(c => ({ ...c }))
+        form.list = (val ?? []).map(c => ({ ...c, granted_at: formatDate(c.granted_at) ?? '', revoked_at: formatDate(c.revoked_at) ?? '' }))
     }, { immediate: true })
 }
 

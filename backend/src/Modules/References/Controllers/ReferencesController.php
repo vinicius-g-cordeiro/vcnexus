@@ -195,4 +195,27 @@ final class ReferencesController extends BaseController
             throw $th;
         }
     }
+
+    #[Route(path: '/subscription-plans/', methods: ['QUERY', 'GET'])]
+    public function getSubscriptionPlans(): Response
+    {
+        try{
+            $subscriptionPlans = $this->service->getSubscriptionPlans();
+            return Response::json(data: object(list: $subscriptionPlans), message: 'success')->send(200, [], true);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+
+    #[Route(path: '/subscription-statuses', methods: ['QUERY', 'GET'])]
+    public function getSubscriptionStatuses(): Response
+    {
+        try{
+            $subscriptionStatuses = $this->service->getSubscriptionStatuses();
+            return Response::json(data: object(list: $subscriptionStatuses), message: 'success')->send(200, [], true);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }

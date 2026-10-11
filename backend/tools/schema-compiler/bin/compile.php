@@ -14,9 +14,13 @@ $compiler = new Tools\SchemaCompiler\Compiler(
 error_reporting(E_ALL ^E_DEPRECATED ^E_WARNING);
 
 
-foreach (glob('schemas/**/*Schema.php') as $file) {
-    require_once $file;
-    $class = str_replace('/', '\\', str_replace(['schemas/', '.php'], ['App\Schemas\\', ''], $file));
+$directory = new RecursiveDirectoryIterator('schemas', FilesystemIterator::SKIP_DOTS);
+$iterator = new RecursiveIteratorIterator($directory);
+$files = new RegexIterator($iterator, '/Schema\.php$/');
+
+foreach ($files as $file) {
+    $relativePath = str_replace(__DIR__ . '/schemas/', '', $file->getPathname());
+    $class = str_replace('/', '\\', str_replace(['schemas/', '.php'], ['App\Schemas\\', ''], $relativePath));
     if (is_subclass_of($class, \App\Schemas\AbstractSchema::class)) {
         $compiler->compile($class, $argv[1]);
     }

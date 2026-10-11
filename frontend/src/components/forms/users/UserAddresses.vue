@@ -74,6 +74,9 @@ function makeRowKey() {
 function toRow(raw) {
     return {
         ...raw,
+        complement: raw.complement ?? '',
+        reference: raw.reference ?? '',
+        extra_info: raw.extra_info ?? '',
         _key: makeRowKey(),
         _stateOptions: [],
         _cityOptions: [],

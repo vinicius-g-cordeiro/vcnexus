@@ -14,7 +14,7 @@ namespace App\Modules\References\Repositories;
 
 use App\Infrastructure\Database\Hydrator;
 use App\Modules\References\DTOs\{CountryRequestContext,CountryResponseContext, StateRequestContext, StateResponseContext, CityRequestContext, CityResponseContext, MaritalStatusResponseContext};
-use App\Modules\References\Models\{CompletionStatus, ContactCategories, ContactTypes, Disability, EducationalLevel, EducationalType, Ethnicity, Gender, Nationality, Religion, SexualOrientation};
+use App\Modules\References\Models\{CompletionStatus, ContactCategories, ContactTypes, Disability, EducationalLevel, EducationalType, Ethnicity, Gender, Nationality, Religion, SexualOrientation, SubscriptionStatus, SubscriptionType};
 use App\Shared\Domain\BaseRepository;
 use App\Shared\Http\Request;
 
@@ -327,6 +327,37 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
+    public function getSubscriptionPlans() : ?array {
+        $query = <<<SQL
+            SELECT id, uuid, label, description, name, active
+            FROM subscription_types
+            WHERE active = 1
+        SQL;
 
+        $result = $this->scopedQuery($query);
 
+        if (empty($result) || $result === false) {
+            return [];
+        }
+
+        $result = Hydrator::hydrateMany(SubscriptionType::class, $result);
+        return $result;
+    }
+
+    public function getSubscriptionStatuses() : ?array {
+        $query = <<<SQL
+            SELECT id, uuid, label, description, name, active
+            FROM subscription_statuses
+            WHERE active = 1
+        SQL;
+
+        $result = $this->scopedQuery($query);
+
+        if (empty($result) || $result === false) {
+            return [];
+        }
+
+        $result = Hydrator::hydrateMany(SubscriptionStatus::class, $result);
+        return $result;
+    }
 }

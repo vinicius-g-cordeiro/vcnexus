@@ -38,6 +38,7 @@ abstract class BaseService
             
         }catch(\Throwable $th){
             $this->db->FailTrans();
+            $this->db->CompleteTrans();
             throw $th;
         }finally{
             $this->db->CompleteTrans();

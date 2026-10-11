@@ -29,6 +29,8 @@ export const useReferencesStore = defineStore("references", {
     completion_statuses: null,
     contact_types: null,
     contact_categories: null,
+    subscription_plans: [],
+    subscription_statuses: []
   }),
   actions: {
     async fetchCountries(params) {
@@ -233,6 +235,32 @@ export const useReferencesStore = defineStore("references", {
         this.loading = false;
       }
     },
+    async fetchSubscriptionPlans(params){
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await referencesService.fetchSubscriptionPlans(params);
+        this.subscription_plans = response.data.list;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchSubscriptionStatuses(params){
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await referencesService.fetchSubscriptionStatuses(params);
+        this.subscription_statuses = response.data.list;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    }
   },
 })
 

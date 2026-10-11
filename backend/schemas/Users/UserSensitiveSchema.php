@@ -56,7 +56,7 @@ final class UserSensitiveSchema extends AbstractSchema
     #[Column(type: 'smallint', length: 1)]
     #[Nullable(nullable: true)]
     #[Comment(comment: 'see: sexual_orientation table')]
-    public readonly ?int $sexual_orientation;
+    public readonly ?int $sexual_orientation_id;
 
     #[Column(type: 'smallint', length: 1)]
     #[Nullable(nullable: true)]

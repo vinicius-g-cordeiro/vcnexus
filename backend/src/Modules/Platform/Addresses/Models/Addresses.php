@@ -1,25 +1,26 @@
 <?php
 /**
- * GENERATED from App\Schemas\Users\UserAddressSchema — do not edit directly. Edit the schema and recompile.
+ * GENERATED from App\Schemas\Platform\Addresses\AddressesSchema — do not edit directly. Edit the schema and recompile.
  * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
- * @date 10/10/2026
+ * @date 11/10/2026
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  */
 
 declare(strict_types=1);
 
-namespace App\Modules\Users\Models;
+namespace App\Modules\Platform\Addresses\Models;
 
 use App\Shared\Schema\BaseModel;
 
-final class UserAddress extends BaseModel
+final class Addresses extends BaseModel
 {
     public ?int $id;
     public ?string $uuid;
     public ?int $active;
-    public int $user_id;
+    public int $owner_type_id;
+    public int $owner_id;
     public string $purpose;
     public string $address;
     public ?string $zip_code;
@@ -43,7 +44,8 @@ final class UserAddress extends BaseModel
         $newObject->id = isset($data['id']) ? (int) $data['id'] : null;
         $newObject->uuid = isset($data['uuid']) ? $data['uuid'] : null;
         $newObject->active = isset($data['active']) ? (int) $data['active'] : null;
-        $newObject->user_id = isset($data['user_id']) ? (int) $data['user_id'] : null;
+        $newObject->owner_type_id = isset($data['owner_type_id']) ? (int) $data['owner_type_id'] : null;
+        $newObject->owner_id = isset($data['owner_id']) ? (int) $data['owner_id'] : null;
         $newObject->purpose = isset($data['purpose']) ? $data['purpose'] : null;
         $newObject->address = isset($data['address']) ? $data['address'] : null;
         $newObject->zip_code = isset($data['zip_code']) ? $data['zip_code'] : null;

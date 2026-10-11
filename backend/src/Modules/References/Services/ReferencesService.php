@@ -367,4 +367,43 @@ final class ReferencesService extends BaseService
             return $disabilities;
         }
     }
+
+    public function getSubscriptionPlans(): ?array
+    {
+        $key = 'subscription_types';
+
+        $cached = $this->getCached($key);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $subscriptionPlans = $this->referenceRepository->getSubscriptionPlans();
+
+        if ($subscriptionPlans !== null) {
+            $this->setCached($key, $subscriptionPlans);
+
+            return $subscriptionPlans;
+        }
+    }
+
+    public function getSubscriptionStatuses(): ?array
+    {
+        $key = 'subscription_statuses';
+
+        $cached = $this->getCached($key);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $subscriptionStatuses = $this->referenceRepository->getSubscriptionStatuses();
+
+        if ($subscriptionStatuses !== null) {
+            $this->setCached($key, $subscriptionStatuses);
+
+            return $subscriptionStatuses;
+        }
+    }
+
 }

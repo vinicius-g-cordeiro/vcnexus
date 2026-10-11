@@ -1,26 +1,27 @@
 <?php
 /**
- * GENERATED from App\Schemas\Users\UserContactSchema — do not edit directly. Edit the schema and recompile.
+ * GENERATED from App\Schemas\Platform\Contacts\ContactsSchema — do not edit directly. Edit the schema and recompile.
  * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
- * @date 10/10/2026
+ * @date 11/10/2026
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  */
 
 declare(strict_types=1);
 
-namespace App\Modules\Users\Models;
+namespace App\Modules\Platform\Contacts\Models;
 
 use App\Shared\Schema\BaseModel;
 
-final class UserContact extends BaseModel
+final class Contacts extends BaseModel
 {
     public ?int $id;
     public ?string $uuid;
     public ?int $active;
-    public int $user_id;
-    public int $type;
+    public int $owner_type_id;
+    public int $owner_id;
+    public int $type_id;
     public string $value;
     public string $label;
     public int $primary_contact;
@@ -39,8 +40,9 @@ final class UserContact extends BaseModel
         $newObject->id = isset($data['id']) ? (int) $data['id'] : null;
         $newObject->uuid = isset($data['uuid']) ? $data['uuid'] : null;
         $newObject->active = isset($data['active']) ? (int) $data['active'] : null;
-        $newObject->user_id = isset($data['user_id']) ? (int) $data['user_id'] : null;
-        $newObject->type = isset($data['type']) ? (int) $data['type'] : null;
+        $newObject->owner_type_id = isset($data['owner_type_id']) ? (int) $data['owner_type_id'] : null;
+        $newObject->owner_id = isset($data['owner_id']) ? (int) $data['owner_id'] : null;
+        $newObject->type_id = isset($data['type_id']) ? (int) $data['type_id'] : null;
         $newObject->value = isset($data['value']) ? $data['value'] : null;
         $newObject->label = isset($data['label']) ? $data['label'] : null;
         $newObject->primary_contact = isset($data['primary_contact']) ? (int) $data['primary_contact'] : null;

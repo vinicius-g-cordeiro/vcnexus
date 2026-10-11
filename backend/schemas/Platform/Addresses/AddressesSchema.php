@@ -10,18 +10,21 @@
 
 declare(strict_types=1);
 
-namespace App\Schemas\Users;
+namespace App\Schemas\Platform\Addresses;
 
 use App\Schemas\AbstractSchema;
 use App\Shared\Schema\Attributes\{Column, Comment, Nullable, ForeignKey};
 
-#[ForeignKey(name: 'fk_user_address_user_credentials', foreignKeys: ['user_id'], references: 'user_credentials', columns: ['id'], actionOnUpdate: true, deleteAction: 'CASCADE', deferred: true)]
-final class UserAddressSchema extends AbstractSchema
+#[ForeignKey(name: 'fk_addresses_ownable_types', foreignKeys: ['owner_type_id'], references: 'ownable_types', columns: ['id'], actionOnUpdate: true, deleteAction: 'CASCADE', deferred: true)]
+final class AddressesSchema extends AbstractSchema
 {
-    public string $table = 'user_address';
+    public string $table = 'addresses';
 
     #[Column(type: 'bigint')]
-    public readonly int $user_id;
+    public readonly int $owner_type_id;
+
+    #[Column(type: 'bigint')]
+    public readonly int $owner_id;
 
     #[Column(type: 'varchar')]
     #[Comment(comment: 'eg: Home, Work, etc..')]

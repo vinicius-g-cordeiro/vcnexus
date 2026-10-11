@@ -14,6 +14,8 @@ namespace App\Modules\Users\Services;
 
 use App\Modules\Authentication\Models\UserCredentials;
 use App\Modules\Authorization\Models\UserPermission;
+use App\Modules\Platform\Addresses\Models\Addresses;
+use App\Modules\Platform\Contacts\Models\Contacts;
 use App\Modules\Users\DTOs\UserCredentialsResponse;
 use App\Modules\Users\Models\{UserProfile, UserAddress, UserConsents, UserContact, UserEducation, UserSensitive};
 use App\Modules\Authorization\Models\{TenantMembership, UserRole};
@@ -85,6 +87,8 @@ final class UserService extends BaseService
             if ($userTenantMember === false) {
                 throw new TransactionFailedException('Could not store user tenant membership', 409);
             }
+            
+            // Roles
             array_map(function ($value) use ($userCredentials) {
                 $userRolesStoreRequest = UserRole::fromArray(['user_id' => $userCredentials->id, 'role_id' => $value, 'created_by' => $this->session->get('user')->id ?? 1, 'created_at' => date('Y-m-d H:i:s')]);
                 // Save all the roles for this specific user_credentials
@@ -95,6 +99,7 @@ final class UserService extends BaseService
                 }
             }, $userStoreRequest->roles);
 
+            // Permissions
             array_map(function ($value) use ($userCredentials) {
                 $userPermissionsStoreRequest = UserPermission::fromArray(['user_id' => $userCredentials->id, 'permission_id' => $value, 'created_by' => $this->session->get('user')->id ?? 1, 'created_at' => date('Y-m-d H:i:s')]);
                 // Save all the permissions for this specific user_credentials
@@ -106,36 +111,32 @@ final class UserService extends BaseService
             }, $userStoreRequest->permissions);
 
             // Addresses
-
             array_map(function ($value) use ($userCredentials) {
-                $userProfileAddressStoreRequest = UserAddress::fromArray(['user_id' => $userCredentials->id, ...$value]);
+                $userProfileAddressStoreRequest = Addresses::fromArray(['owner_id' => $userCredentials->id, 'owner_type_id' => 1, ...$value]);
                 // Save all the addresses for this specific user_credentials
-                $savedAddress = $this->userProfileRepository->store($userProfileAddressStoreRequest, ['id', 'uuid'], 'user_address');
+                $savedAddress = $this->userProfileRepository->store($userProfileAddressStoreRequest, ['id', 'uuid'], 'addresses');
                 if ($savedAddress === false) {
                     error_log(sprintf("%s - Could not store user address, address_id: %s, user_id: %s", __METHOD__, $value, $userCredentials->id));
                     throw new TransactionFailedException('Could not store user address', 409);
                 }
             }, $userStoreRequest->addresses);
 
-            // Contact info -- phone
-
-
+            // Contact info -- phones
             array_map(function ($value) use ($userCredentials) {
-                $userProfilePhoneStoreRequest = UserContact::fromArray(['user_id' => $userCredentials->id, ...$value]);
+                $userProfilePhoneStoreRequest = Contacts::fromArray(['owner_id' => $userCredentials->id, 'owner_type_id' => 1, ...$value]);
 
                 // Save all the phones for this specific user_credentials
-                $savedPhone = $this->userProfileRepository->store($userProfilePhoneStoreRequest, ['id', 'uuid'], 'user_contact');
+                $savedPhone = $this->userProfileRepository->store($userProfilePhoneStoreRequest, ['id', 'uuid'], 'contacts');
                 if ($savedPhone === false) {
                     throw new TransactionFailedException('Could not store user phone', 409);
                 }
             }, $userStoreRequest->phones);
 
-            // Contact info -- email
-
+            // Contact info -- emails
             array_map(function ($value) use ($userCredentials) {
-                $userProfileEmailStoreRequest = UserContact::fromArray(['user_id' => $userCredentials->id, ...$value]);
+                $userProfileEmailStoreRequest = Contacts::fromArray(['owner_id' => $userCredentials->id, 'owner_type_id' => 1, ...$value]);
                 // Save all the emails for this specific user_credentials
-                $savedEmail = $this->userProfileRepository->store($userProfileEmailStoreRequest, ['id', 'uuid'], 'user_contact');
+                $savedEmail = $this->userProfileRepository->store($userProfileEmailStoreRequest, ['id', 'uuid'], 'contacts');
                 if ($savedEmail === false) {
                     throw new TransactionFailedException('Could not store user email', 409);
                 }
@@ -143,6 +144,7 @@ final class UserService extends BaseService
 
             // Educational info
             array_map(function($value) use ($userCredentials) {
+
                 $userProfileEducationStoreRequest = UserEducation::fromArray(['user_id' => $userCredentials->id, ...$value]);
                 // Save all the educations for this specific user_credentials
                 $savedEducation = $this->userProfileRepository->store($userProfileEducationStoreRequest, ['id', 'uuid'], 'user_education');
@@ -150,8 +152,26 @@ final class UserService extends BaseService
                     throw new TransactionFailedException('Could not store user education', 409);
                 }
 
-            }, $userStoreRequest->educations);
+            }, $userStoreRequest->educations ?? []);
 
+
+            // consents
+            array_map(function ($value) use ($userCredentials) {
+                $userProfileConsentStoreRequest = UserConsents::fromArray(['user_id' => $userCredentials->id, ...$value]);
+                // Save all the consents for this specific user_credentials
+                $savedConsent = $this->userProfileRepository->store($userProfileConsentStoreRequest, ['id', 'uuid'], 'user_consents');
+                if ($savedConsent === false) {
+                    throw new TransactionFailedException('Could not store user consent', 409);
+                }
+            }, $userStoreRequest->consents);
+
+            // sensitive information
+            $userProfileSensitiveStoreRequest = UserSensitive::fromArray(['user_id' => $userCredentials->id, ...$userStoreRequest->toArray()]);
+            // Save all the sensitive information for this specific user_credentials
+            $savedSensitive = $this->userProfileRepository->store($userProfileSensitiveStoreRequest, ['id', 'uuid'], 'user_sensitive');
+            if ($savedSensitive === false) {
+                throw new TransactionFailedException('Could not store user sensitive information', 409);
+            }
             
             return $user;
         });

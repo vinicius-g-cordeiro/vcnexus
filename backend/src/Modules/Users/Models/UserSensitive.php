@@ -4,7 +4,7 @@
  * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
- * @date 10/10/2026
+ * @date 11/10/2026
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  */
 
@@ -26,7 +26,7 @@ final class UserSensitive extends BaseModel
     public ?int $ethnicity_id;
     public ?int $nationality_id;
     public ?int $marital_status_id;
-    public ?int $sexual_orientation;
+    public ?int $sexual_orientation_id;
     public ?int $disability_id;
     public ?string $updated_at;
     public function __construct() {}
@@ -49,7 +49,7 @@ final class UserSensitive extends BaseModel
         $newObject->ethnicity_id = isset($data['ethnicity_id']) ? (int) $data['ethnicity_id'] : null;
         $newObject->nationality_id = isset($data['nationality_id']) ? (int) $data['nationality_id'] : null;
         $newObject->marital_status_id = isset($data['marital_status_id']) ? (int) $data['marital_status_id'] : null;
-        $newObject->sexual_orientation = isset($data['sexual_orientation']) ? (int) $data['sexual_orientation'] : null;
+        $newObject->sexual_orientation_id = isset($data['sexual_orientation_id']) ? (int) $data['sexual_orientation_id'] : null;
         $newObject->disability_id = isset($data['disability_id']) ? (int) $data['disability_id'] : null;
         $newObject->updated_at = isset($data['updated_at']) ? $data['updated_at'] : null;
         return $newObject;
