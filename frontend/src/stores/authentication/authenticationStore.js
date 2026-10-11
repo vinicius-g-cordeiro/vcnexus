@@ -7,6 +7,7 @@ export const useAuthStore = defineStore("auth", {
     loading: false,
     error: null,
     hydration: false,
+    monitorHydration: false,
     menus: [],
   }),
  
@@ -44,6 +45,7 @@ export const useAuthStore = defineStore("auth", {
         const response = await authenticationService.login(credentials);
         this.sessionUser = response.data;
         this.hydration = true;
+
         return true;
       } catch (e) {
         this.error = e.response?.data?.message || "Erro ao fazer login";
@@ -84,6 +86,18 @@ export const useAuthStore = defineStore("auth", {
       } finally {
         this.loading = false;
         this.hydration = true;
+      }
+    },
+
+    async monitorUser() {
+      try {
+        const response = await authenticationService.getAuthenticatedUser();
+        this.sessionUser = response.data;
+        return true;
+      } catch (e) {
+        this.sessionUser = null;
+        this.error = e?.response?.data?.message || "Erro ao carregar usuário";
+        return false;
       }
     },
     async getMenus() {

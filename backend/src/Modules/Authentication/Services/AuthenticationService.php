@@ -35,7 +35,7 @@ final class AuthenticationService extends BaseService
     public function getAuthenticatedUser() : ?AuthenticatedUserResponse {        
 
         if($this?->session->get('user') === null) {
-            return null;
+            throw new InvalidCredentialsException();
         }
         
         return Hydrator::hydrate(AuthenticatedUserResponse::class, $this?->session->get('user')?->toArray() ?? []);

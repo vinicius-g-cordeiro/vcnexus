@@ -8,23 +8,21 @@
 
 <script setup="js">
 import { useI18n } from 'vue-i18n'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/authentication/authenticationStore'
 import { useSessionMonitor } from '@/composables/useSessionMonitor.js'
 
+const authStore = useAuthStore()
 
+const { sessionUser } = storeToRefs(authStore)
 
-// Check the session every 60 seconds
-useSessionMonitor(60000)
+useSessionMonitor()
 
 const { t } = useI18n()
 // send the intl to all the components
 window.intl = t
 
-const authStore = useAuthStore()
-
-const { sessionUser } = storeToRefs(authStore)
 const layout = computed(() => {
   if (sessionUser.value) {
     return 'Guest'
