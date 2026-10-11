@@ -70,7 +70,11 @@ async function handleSubmit() {
     if (!validate()) return;
     const ok = await authStore.login(form)
     if (ok) {
-        router.push({ name: "home" });
+        // restart the session monitor on the main app
+        emit('emit', 'session:monitor')
+        
+        router.push({ name: "home.auth" });
+
     }
 }
 

@@ -77,6 +77,10 @@ final class Session
 
         ini_set('session.save_handler', 'redis');
         ini_set('session.save_path', $this->buildRedisDsn());
+        ini_set('session.cookie_httponly', '1');
+        ini_set('session.cookie_secure', '1');
+        ini_set('session.cookie_samesite', 'Lax');
+        ini_set('session.cookie_lifetime', '3600');
 
         session_set_cookie_params([
             'samesite' => 'Lax',
