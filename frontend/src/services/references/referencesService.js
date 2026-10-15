@@ -80,7 +80,11 @@ const referencesService = {
     async fetchLegalBasis(params){
         const response = await api.query('/references/legal-basis/', { params })
         return response.data
-    }
+    },
+    async fetchTenantTypes(params){
+        const response = await api.query('/references/tenant-types/', { params })
+        return response.data
+    },
 }
 
 export default referencesService

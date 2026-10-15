@@ -14,7 +14,7 @@ namespace App\Modules\References\Repositories;
 
 use App\Infrastructure\Database\Hydrator;
 use App\Modules\References\DTOs\{CountryRequestContext,CountryResponseContext, StateRequestContext, StateResponseContext, CityRequestContext, CityResponseContext, MaritalStatusResponseContext};
-use App\Modules\References\Models\{CompletionStatus, ContactCategories, ContactTypes, Disability, EducationalLevel, EducationalType, Ethnicity, Gender, LegalBasis, Nationality, Religion, SexualOrientation, SubscriptionStatus, SubscriptionType};
+use App\Modules\References\Models\{BusinessType, CompletionStatus, ContactCategories, ContactTypes, Disability, EducationalLevel, EducationalType, Ethnicity, Gender, LegalBasis, Nationality, Religion, SexualOrientation, SubscriptionStatus, SubscriptionType};
 use App\Shared\Domain\BaseRepository;
 use App\Shared\Http\Request;
 
@@ -375,6 +375,23 @@ final class ReferencesRepository extends BaseRepository
         }
 
         $result = Hydrator::hydrateMany(LegalBasis::class, $result);
+        return $result;
+    }
+
+    public function getTenantTypes() : ? array {
+        $query = <<<SQL
+            SELECT id, uuid, label, description, name, active
+            FROM business_types
+            WHERE active = 1
+        SQL;
+
+        $result = $this->scopedQuery($query);
+
+        if (empty($result) || $result === false) {
+            return [];
+        }
+
+        $result = Hydrator::hydrateMany(BusinessType::class, $result);
         return $result;
     }
 }

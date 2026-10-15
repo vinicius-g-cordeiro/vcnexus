@@ -38,47 +38,25 @@ use Symfony\Component\Validator\Constraints as Assert;
 //   "active": 1,
 //   "subscription_type": 1,
 //   "subscription_plan": 1,
-//   "subscription_status": 1,
+//   "subscription_status_id": 1,
 //   "created_by": 1
 // }
 final class TenantStoreInRequest implements DataTransferObjectInterface
 {
 
     public function __construct(
-        #[Assert\NotBlank]
-        #[Assert\Length(min: 3, max: 255)]
         public ?string $fantasy_name,
-        #[Assert\NotBlank]
-        #[Assert\Length(min: 3, max: 255)]
         public ?string $trade_name,
-        #[Assert\NotBlank]
-        #[Assert\Type('string')]
-        #[Assert\Length(min: 3, max: 255)]
-        #[Assert\Regex(pattern: '/^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$/')]
         public ?string $tax_id,
-        #[Assert\Type('string')]
-        #[Assert\Length(min: 3, max: 255)]
-        #[Assert\Url()]
         public ?string $website,
-        #[Assert\Type('string')]
-        #[Assert\Length(min: 3, max: 255)]
         public ?string $domain,
-        #[Assert\NotBlank]
-        #[Assert\Type('string')]
-        #[Assert\Length(min: 3, max: 255)]
-        #[Assert\Regex(pattern: '/^[a-z0-9]+(?:-[a-z0-9]+)*$/')]
         public string $slug,
         public ?string $state_registration,
         public ?string $municipal_registration,
-        #[Assert\Type('int')]
         public ?int $active,
-        #[Assert\Type('int')]
-        public ?int $subscription_type,
-        #[Assert\Type('int')]
-        public ?int $subscription_status,
-        #[Assert\Type('int')]
+        public ?int $subscription_type_id,
+        public ?int $subscription_status_id,
         public ?int $created_by,
-        #[Assert\Type('int')]
         public ?int $type,
         public ?string $description,
         public ?string $logo,
@@ -109,8 +87,8 @@ final class TenantStoreInRequest implements DataTransferObjectInterface
             state_registration: $data['state_registration'] ?? null,
             municipal_registration: $data['municipal_registration'] ?? null,
             active: isset($data['active']) ? (int)$data['active'] : null,
-            subscription_type: isset($data['subscription_type']) ? (int)$data['subscription_type'] : null,
-            subscription_status: isset($data['subscription_status']) ? (int)$data['subscription_status'] : null,
+            subscription_type_id: isset($data['subscription_type_id']) ? (int)$data['subscription_type_id'] : null,
+            subscription_status_id: isset($data['subscription_status_id']) ? (int)$data['subscription_status_id'] : null,
             created_by: isset($data['created_by']) ? (int)$data['created_by'] : null,
             type: isset($data['type']) ? (int)$data['type'] : null,
             description: $data['description'] ?? null,

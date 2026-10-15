@@ -229,4 +229,15 @@ final class ReferencesController extends BaseController
             throw $th;
         }
     }
+
+    #[Route(path: '/tenant-types/', methods: ['QUERY', 'GET'])]
+    public function getTenantTypes(): Response
+    {
+        try{
+            $tenantTypes = $this->service->getTenantTypes();
+            return Response::json(data: object(list: $tenantTypes), message: 'success')->send(200, [], true);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }

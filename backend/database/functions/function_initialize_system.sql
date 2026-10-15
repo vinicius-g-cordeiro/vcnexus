@@ -1590,6 +1590,14 @@ VALUES (
               NOW()
        );
 
+INSERT INTO business_types (name, label, description)
+VALUES ('real_estate', 'Real Estate', 'Real Estate'),
+('union', 'Union', 'Union'),
+('education', 'Education', 'Education'),
+('medical_clinic', 'Medical Clinic', 'Medical Clinic'),
+('others', 'Others', 'Others')
+ON CONFLICT DO NOTHING;
+
 INSERT INTO user_sensitive (
               user_id,
               socialname,

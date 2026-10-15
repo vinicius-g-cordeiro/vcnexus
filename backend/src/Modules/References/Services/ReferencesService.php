@@ -424,4 +424,22 @@ final class ReferencesService extends BaseService
         }
     }
 
+    public function getTenantTypes() : ?array {
+        $key = 'tenant_types';
+
+        $cached = $this->getCached($key);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $tenantTypes = $this->referenceRepository->getTenantTypes();
+
+        if ($tenantTypes !== null) {
+            $this->setCached($key, $tenantTypes);
+
+            return $tenantTypes;
+        }
+    }
+
 }
