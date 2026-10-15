@@ -3,6 +3,10 @@ import { ref, computed, onMounted } from 'vue'
 import FilterForm from '@/components/forms/FilterForm.vue'
 import { useListing } from '@/composables/useListing'
 import { useUserStore } from '@/stores/users/userStore'
+import { useAuthStore } from '@/stores/authentication/authenticationStore'
+
+
+const authStore = useAuthStore()
 
 const filters = ref({})
 
@@ -13,7 +17,7 @@ const fields = [
     { name: 'created_at', label: 'Created', type: 'date' },
 ]
 
-const { items, loading, error, meta, load , clear} = useListing('/users', 10)
+const { items, loading, error, meta, load, clear } = useListing('/users', 10)
 
 const lastPage = computed(() => Math.max(1, Math.ceil(meta.total / meta.perPage)))
 const from = computed(() => (meta.total === 0 ? 0 : (meta.page - 1) * meta.perPage + 1))
@@ -66,8 +70,43 @@ function getStatus(status) {
 const storageBase = import.meta.env.VITE_API_URL
 
 const userStore = useUserStore()
-async function deactivate(uuid){
-    await userStore.deactivate(uuid)
+async function deactivate(uuid) {
+    const deactivated = await userStore.deactivate(uuid)
+
+    if (deactivated) {
+        // refresh the page, by reloading the loaded users
+        search(filters.value)
+    }
+}
+
+async function activate(uuid) {
+    const activated = await userStore.activate(uuid)
+
+    if (activated) {
+        // refresh the page, by reloading the loaded users
+        search(filters.value)
+
+    }
+}
+
+async function block(uuid) {
+    const blocked = await userStore.block(uuid)
+
+    if (blocked) {
+        // refresh the page, by reloading the loaded users
+        search(filters.value)
+
+    }
+}
+
+async function unblock(uuid) {
+    const unblocked = await userStore.unblock(uuid)
+
+    if (unblocked) {
+        // refresh the page, by reloading the loaded users
+        search(filters.value)
+
+    }
 }
 </script>
 
@@ -123,27 +162,27 @@ async function deactivate(uuid){
                             </td>
                             <td class="flex flex-col gap-2 px-4 py-3">
 
-                                <p class="items-center rounded-full text-md" >
+                                <p class="items-center rounded-full text-md">
                                     <b class="text-olive-wood-400">Organization:</b>
-                                    <strong class="font-bold">{{ item.organization_name }}</strong> 
+                                    <strong class="font-bold">{{ item.organization_name }}</strong>
                                 </p>
-                                <span class="flex mb-2 rounded-full font-medium text-xs" >
+                                <span class="flex mb-2 rounded-full font-medium text-xs">
                                     <b>Created:</b>{{ formatDate(item.created_at) }}
                                 </span>
                                 <div class="flex items-center gap-2">
-                                <span class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full font-medium text-xs" :class="getStatus(item.online_status).spanColor + ' ' + getStatus(item.online_status).spanTextColor">
-                                    <span class="rounded-full w-1.5 h-1.5" :class="getStatus(item.online_status).color"></span>
-                                    {{ getStatus(item.online_status).label }}
-                                </span>
-                                <span class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full font-medium text-xs" :class="item.active === 1
-                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
-                                    : 'bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'">
-                                    <span class="rounded-full w-1.5 h-1.5" :class="item.active === 1 ? 'bg-emerald-500' : 'bg-zinc-400'"></span>
-                                    {{ Number(item.active) === 1 ? 'Active' : 'Inactive' }}
-                                </span>
-                                <span class="inline-flex px-2.5 py-0.5 rounded-full font-medium text-xs" v-if="item.blocked === 1" :class="item.blocked === 1 ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400' : 'bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'">
-                                    {{ item.blocked === 1 ? 'Blocked' : 'Not Blocked' }}
-                                </span>
+                                    <span class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full font-medium text-xs" :class="getStatus(item.online_status).spanColor + ' ' + getStatus(item.online_status).spanTextColor">
+                                        <span class="rounded-full w-1.5 h-1.5" :class="getStatus(item.online_status).color"></span>
+                                        {{ getStatus(item.online_status).label }}
+                                    </span>
+                                    <span class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full font-medium text-xs" :class="item.active === 1
+                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
+                                        : 'bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'">
+                                        <span class="rounded-full w-1.5 h-1.5" :class="item.active === 1 ? 'bg-emerald-500' : 'bg-zinc-400'"></span>
+                                        {{ Number(item.active) === 1 ? 'Active' : 'Inactive' }}
+                                    </span>
+                                    <span class="inline-flex px-2.5 py-0.5 rounded-full font-medium text-xs" v-if="item.blocked === 1" :class="item.blocked === 1 ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400' : 'bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'">
+                                        {{ item.blocked === 1 ? 'Blocked' : 'Not Blocked' }}
+                                    </span>
                                 </div>
 
                             </td>
@@ -152,10 +191,22 @@ async function deactivate(uuid){
                                     <RouterLink :to="{ name: 'users.edit', params: { uuid: item.uuid } }" class="text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 dark:text-zinc-400 hover:underline">
                                         <i class="bi bi-pencil-fill"></i>
                                     </RouterLink>
-
-                                    <button type="button" @click="deactivate(item.uuid)" class="text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 dark:text-zinc-400 hover:underline">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </button>
+                                    <template v-if="authStore.sessionUser.uuid !== item.uuid">
+                                        <button type="button" @click="deactivate(item.uuid)" class="text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 dark:text-zinc-400 hover:underline" v-if="item.active === 1">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                        <button type="button" @click="activate(item.uuid)" class="text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 dark:text-zinc-400 hover:underline" v-else>
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </button>
+                                    </template>
+                                    <template v-if="authStore.sessionUser.uuid !== item.uuid">
+                                        <button v-if="item.blocked === 1" type="button" @click="unblock(item.uuid)" class="text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 dark:text-zinc-400 hover:underline">
+                                            <i class="bi bi-unlock-fill"></i>
+                                        </button>
+                                        <button v-else type="button" @click="block(item.uuid)" class="text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 dark:text-zinc-400 hover:underline">
+                                            <i class="bi bi-lock-fill"></i>
+                                        </button>
+                                    </template>
                                 </div>
                             </td>
                         </tr>

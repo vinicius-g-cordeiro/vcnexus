@@ -285,4 +285,46 @@ final class UserProfileRepository extends BaseRepository
         return Hydrator::hydrateMany(UserEducation::class, $user);
     }
 
+    public function deactivateAddresses(string $uuid ){
+        $sql = <<<SQL
+            UPDATE addresses
+            SET active = 0
+            WHERE owner_type_id = 1 AND owner_id IN (
+                SELECT uc.id
+                FROM user_credentials uc
+                inner join user_profile up on uc.id = up.user_id
+                inner join tenant_memberships tm on tm.user_id = uc.id
+                inner join tenants t on t.id = tm.tenant_id
+                inner join business b on b.tenant_id = t.id
+                WHERE uc.uuid = ?
+                LIMIT 1
+            )
+        SQL;
+
+        $result = $this->scopedQuery($sql, [$uuid]);
+
+        return $result;
+    }
+
+    public function deactivateContacts(string $uuid ){
+        $sql = <<<SQL
+            UPDATE contacts
+            SET active = 0
+            WHERE owner_type_id = 1 AND owner_id IN (
+                SELECT uc.id
+                FROM user_credentials uc
+                inner join user_profile up on uc.id = up.user_id
+                inner join tenant_memberships tm on tm.user_id = uc.id
+                inner join tenants t on t.id = tm.tenant_id
+                inner join business b on b.tenant_id = t.id
+                WHERE uc.uuid = ?
+                LIMIT 1
+            )
+        SQL;
+
+        $result = $this->scopedQuery($sql, [$uuid]);
+
+        return $result;
+    }
+
 }

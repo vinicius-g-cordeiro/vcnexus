@@ -56,7 +56,7 @@ final class UserController extends BaseController
         }
     }
 
-    #[Route(methods: 'DELETE',path: '/{uuid}')]
+    #[Route(methods: 'DELETE',path: '/deactivate/{uuid}')]
     public function deactivate(string $uuid) : ?Response {
         try{
             $user = $this->service->deactivate($uuid);
@@ -66,12 +66,31 @@ final class UserController extends BaseController
         }
     }
 
+    #[Route(methods: 'PUT',path: '/activate/{uuid}')]
+    public function activate(string $uuid) : ?Response {
+        try{
+            $user = $this->service->activate($uuid);
+            return Response::json(data: object(activated: $user), message: 'success')->send(200, [], true);
+        }catch(\Throwable $th) {
+            throw $th;
+        }
+    }
 
-    #[Route(methods: 'DELETE',path: '/block/{uuid}')]
+    #[Route(methods: 'PUT',path: '/block/{uuid}')]
     public function block(string $uuid) : ?Response {
         try{
             $user = $this->service->block($uuid);
             return Response::json(data: object(blocked: $user), message: 'success')->send(200, [], true);
+        }catch(\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    #[Route(methods: 'PUT',path: '/unblock/{uuid}')]
+    public function unblock(string $uuid) : ?Response {
+        try{
+            $user = $this->service->unblock($uuid);
+            return Response::json(data: object(unblocked: $user), message: 'success')->send(200, [], true);
         }catch(\Throwable $th) {
             throw $th;
         }

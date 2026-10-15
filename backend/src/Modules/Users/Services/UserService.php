@@ -16,9 +16,8 @@ use App\Modules\Authentication\Models\UserCredentials;
 use App\Modules\Authorization\Models\UserPermission;
 use App\Modules\Platform\Addresses\Models\Addresses;
 use App\Modules\Platform\Contacts\Models\Contacts;
-use App\Modules\Users\DTOs\UserAvatarUpdateRequest;
 use App\Modules\Users\DTOs\UserCredentialsResponse;
-use App\Modules\Users\Models\{UserProfile, UserAddress, UserConsents, UserContact, UserEducation, UserSensitive};
+use App\Modules\Users\Models\{UserProfile, UserConsents, UserEducation, UserSensitive};
 use App\Modules\Authorization\Models\{TenantMembership, UserRole};
 use App\Modules\Authorization\Repositories\{UserRolesRepository, UserPermissionsRepository};
 use App\Modules\Authentication\Repositories\AuthenticationRepository;
@@ -32,23 +31,8 @@ use App\Shared\Domain\Exceptions\TransactionFailedException;
 
 final class UserService extends BaseService
 {
-    public function __construct(
-        \ADOConnection $db,
-        string $tenant_id,
-        ?string $user_id,
-        ?array $roles,
-        private Request $request,
-        private Session $session,
-        private AuthenticationRepository $authenticationRepository,
-        private UserProfileRepository $userProfileRepository,
-        private UserProfileConsentsRepository $userProfileConsentsRepository,
-        private UserTenantMembershipRepository $userTenantMembershipRepository,
-        private UserRolesRepository $userRolesRepository,
-        private UserPermissionsRepository $userPermissionsRepository
-    ) {
+    public function __construct(\ADOConnection $db, string $tenant_id, ?string $user_id, ?array $roles, private Request $request, private Session $session, private AuthenticationRepository $authenticationRepository, private UserProfileRepository $userProfileRepository, private UserProfileConsentsRepository $userProfileConsentsRepository, private UserTenantMembershipRepository $userTenantMembershipRepository, private UserRolesRepository $userRolesRepository, private UserPermissionsRepository $userPermissionsRepository ) {
         parent::__construct($db, $tenant_id, $user_id, $roles);
-
-
     }
 
     /**
@@ -158,8 +142,6 @@ final class UserService extends BaseService
             }
 
             if(isset($userStoreRequest->emails)){
-                
-                
                 // Contact info -- emails
                 array_map(function ($value) use ($userCredentials, $fileUtils, $avatarResponse) {
                     $userProfileEmailStoreRequest = Contacts::fromArray(['owner_id' => $userCredentials->id, 'owner_type_id' => 1, ...$value]);
@@ -234,27 +216,27 @@ final class UserService extends BaseService
                 throw new TransactionFailedException('Could not deactivate user', 409);
             }
 
-            $userProfile = $this->userProfileRepository->deactivate($uuid, 'user_profile', true);
+            $userProfile = $this->userProfileRepository->deactivate($uuid, 'user_profile', false);
             if($userProfile === false){
                 throw new TransactionFailedException('Could not deactivate user', 409);
             }
-            $userSensitive = $this->userProfileRepository->deactivate($uuid, 'user_sensitive', true);
+            $userSensitive = $this->userProfileRepository->deactivate($uuid, 'user_sensitive', false);
             if($userSensitive === false){
                 throw new TransactionFailedException('Could not deactivate user sensitive information', 409);
             }
-            $userEducation = $this->userProfileRepository->deactivate($uuid, 'user_education', true);
+            $userEducation = $this->userProfileRepository->deactivate($uuid, 'user_education', false);
             if($userEducation === false){
                 throw new TransactionFailedException('Could not deactivate user education information', 409);
             }
-            $userConsents = $this->userProfileRepository->deactivate($uuid, 'user_consents', true);
+            $userConsents = $this->userProfileRepository->deactivate($uuid, 'user_consents', false);
             if($userConsents === false){
                 throw new TransactionFailedException('Could not deactivate user consents', 409);
             }
-            $userAddresses = $this->userProfileRepository->deactivate($uuid, 'user_addresses', true);
+            $userAddresses = $this->userProfileRepository->deactivateAddresses($uuid);
             if($userAddresses === false){
                 throw new TransactionFailedException('Could not deactivate user addresses', 409);
             }
-            $userContacts = $this->userProfileRepository->deactivate($uuid, 'contacts', true);
+            $userContacts = $this->userProfileRepository->deactivateContacts($uuid);
             if($userContacts === false){
                 throw new TransactionFailedException('Could not deactivate user contacts', 409);
             }
@@ -264,9 +246,8 @@ final class UserService extends BaseService
         return $destroyed;
     }
 
-    public function block(string $uuid): bool
-    {
-        $destroyed = $this->transactional(function () use ($uuid) {
+    public function block(string $uuid): bool {
+        $blocked = $this->transactional(function () use ($uuid) {
             $userProfile = $this->userProfileRepository->block($uuid, 'user_credentials', true);
             if($userProfile === false){
                 return false;
@@ -274,7 +255,32 @@ final class UserService extends BaseService
             return true;
         });
 
-        return $destroyed;
+        return $blocked;
+    }
+
+    public function unblock(string $uuid): bool {
+        $unblocked = $this->transactional(function () use ($uuid) {
+            $userProfile = $this->userProfileRepository->unblock($uuid, 'user_credentials');
+            if($userProfile === false){
+                return false;
+            }
+            return true;
+        });
+
+        return $unblocked;
+    }
+
+    public function activate(string $uuid) : bool {
+        $activated = $this->transactional(function () use ($uuid) {
+            $userProfile = $this->userProfileRepository->activate($uuid, 'user_credentials');
+            if($userProfile === false){
+                return false;
+            }
+
+            return true;
+        });
+
+        return $activated;
     }
 
     /**

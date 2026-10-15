@@ -163,7 +163,7 @@ abstract class BaseRepository
         return new UpdateResponse((int) $row['id'], $row['uuid'] ?? null, (int) $this->tenant_id);
     }
 
-    public function deactivate($uuid, $table = null, $setDeletedBy = false ): bool
+    public function deactivate($uuid, $table = null, $setDeletedBy = false): bool
     {
         $table = $table ?? $this->table();
         $fields = [];
@@ -219,6 +219,55 @@ abstract class BaseRepository
         return $result !== false;
     }
 
+    public function unblock($uuid, $table = null): bool{
+        $table = $table ?? $this->table();
+        $fields = [];
+        $fields['blocked'] = 0;
+        $fields['blocked_by'] = null;
+        $fields['blocked_at'] = null;
+
+        $this->applyContext($this->user_id, $this->tenant_id, $this->roles);
+
+        $this->db->StartTrans();
+        try {
+            $result = $this->db->Execute(
+                "UPDATE $table SET " . implode(', ', array_map(fn(string $key) => "$key = ?", array_keys($fields))) . " WHERE uuid = ?",
+                array_merge(array_values($fields), [$uuid])
+            );
+
+            $this->db->CompleteTrans();
+        } catch (\Exception $e) {
+            $this->db->FailTrans();
+            $this->db->CompleteTrans();
+            throw $e;
+        }
+        return $result !== false;
+    }
+
+    public function activate($uuid, $table = null): bool{
+        $table = $table ?? $this->table();
+        $fields = [];
+        $fields['active'] = 1;
+        $fields['deleted_by'] = null;
+        $fields['deleted_at'] = null;
+
+        $this->applyContext($this->user_id, $this->tenant_id, $this->roles);
+
+        $this->db->StartTrans();
+        try {
+            $result = $this->db->Execute(
+                "UPDATE $table SET " . implode(', ', array_map(fn(string $key) => "$key = ?", array_keys($fields))) . " WHERE uuid = ?",
+                array_merge(array_values($fields), [$uuid])
+            );
+
+            $this->db->CompleteTrans();
+        } catch (\Exception $e) {
+            $this->db->FailTrans();
+            $this->db->CompleteTrans();
+            throw $e;
+        }
+        return $result !== false;
+    }
 
     protected function scopedQuery(string $query = '', array $params = [], bool $paginate = false, int $limit = 15, int $page = 1, ?string $countQuery = null): array|false
     {

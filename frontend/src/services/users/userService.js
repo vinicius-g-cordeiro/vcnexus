@@ -38,7 +38,19 @@ const userService = {
         return response.data
     },
     async deactivate(uuid) {
-        const response = await api.delete(`/users/${uuid}`, { withCredentials: true })
+        const response = await api.delete(`/users/deactivate/${uuid}`, { withCredentials: true })
+        return response.data
+    },
+    async activate(uuid) {
+        const response = await api.put(`/users/activate/${uuid}`, { withCredentials: true })
+        return response.data
+    },
+    async block(uuid){
+        const response = await api.put(`/users/block/${uuid}`, { withCredentials: true })
+        return response.data
+    },
+    async unblock(uuid){
+        const response = await api.put(`/users/unblock/${uuid}`, { withCredentials: true })
         return response.data
     }
 
