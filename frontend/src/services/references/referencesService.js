@@ -75,6 +75,11 @@ const referencesService = {
     async fetchSubscriptionPlans(params){
         const response = await api.query('/references/subscription-plans/', { params })
         return response.data
+    },
+
+    async fetchLegalBasis(params){
+        const response = await api.query('/references/legal-basis/', { params })
+        return response.data
     }
 }
 

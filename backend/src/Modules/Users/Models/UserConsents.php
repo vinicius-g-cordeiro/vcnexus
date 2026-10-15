@@ -4,7 +4,6 @@
  * @brief 
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
- * @date 11/10/2026
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  */
 
@@ -21,7 +20,7 @@ final class UserConsents extends BaseModel
     public ?int $active;
     public int $user_id;
     public string $purpose;
-    public string $legal_basis;
+    public int $legal_basis_id;
     public string $granted_at;
     public ?string $revoked_at;
     public function __construct() {}
@@ -39,9 +38,9 @@ final class UserConsents extends BaseModel
         $newObject->active = isset($data['active']) ? (int) $data['active'] : null;
         $newObject->user_id = isset($data['user_id']) ? (int) $data['user_id'] : null;
         $newObject->purpose = isset($data['purpose']) ? $data['purpose'] : null;
-        $newObject->legal_basis = isset($data['legal_basis']) ? $data['legal_basis'] : null;
-        $newObject->granted_at = isset($data['granted_at']) && $data['granted_at'] != '' ? $data['granted_at'] : null;
-        $newObject->revoked_at = isset($data['revoked_at']) && $data['revoked_at'] != '' ? $data['revoked_at'] : null;
+        $newObject->legal_basis_id = isset($data['legal_basis_id']) ? (int) $data['legal_basis_id'] : null;
+        $newObject->granted_at = isset($data['granted_at']) ? $data['granted_at'] : null;
+        $newObject->revoked_at = isset($data['revoked_at']) ? $data['revoked_at'] : null;
         return $newObject;
     }
 }

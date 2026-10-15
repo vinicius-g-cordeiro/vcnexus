@@ -16,6 +16,7 @@ const {
     requestMicrophonePermission
 } = useAudioDevices()
 const selectedMicrophone = ref('')
+const storageBase = import.meta.env.VITE_API_URL
 onMounted(async () => {
     try {
         await requestMicrophonePermission()
@@ -479,7 +480,7 @@ const toggleChat = (event) => {
                     ? 'bg-olive-wood-500/10 dark:bg-olive-wood-500/20'
                     : 'hover:bg-zinc-100 dark:hover:bg-zinc-700/50'">
                     <div class="relative shrink-0">
-                        <img v-if="user.avatar" class="rounded-full w-9 h-9 object-cover" :src="user.avatar" :alt="user.name">
+                        <img v-if="user?.avatar" :src="`${storageBase}/storage/users/avatars/${user?.avatar}`" loading="lazy" class="rounded-full w-8 h-8 object-cover" alt="avatar" />
                         <span v-else class="flex justify-center items-center bg-zinc-300 dark:bg-zinc-600 rounded-full w-9 h-9 text-zinc-600 dark:text-zinc-300 text-sm">
                             <i class="bi bi-person-fill"></i>
                         </span>
@@ -498,13 +499,16 @@ const toggleChat = (event) => {
 
             <div class="flex flex-col flex-1 min-w-0">
                 <div v-if="selectedChat" class="flex flex-row items-center gap-3 px-4 py-2.5 border-zinc-200 dark:border-zinc-700 border-b">
-                    <img v-if="selectedChat?.avatar" class="rounded-full w-9 h-9 object-cover" :src="selectedChat?.avatar" :alt="selectedChat?.name">
+                    <img v-if="selectedChat?.avatar" :src="`${storageBase}/storage/users/avatars/${selectedChat?.avatar}`" loading="lazy" class="rounded-full w-8 h-8 object-cover" alt="avatar" />
                     <span v-else class="flex justify-center items-center bg-zinc-300 dark:bg-zinc-600 rounded-full w-9 h-9 text-zinc-600 dark:text-zinc-300 text-sm">
                         <i class="bi bi-person-fill"></i>
                     </span>
                     <div class="flex flex-col min-w-0">
                         <strong class="font-semibold text-zinc-900 dark:text-zinc-100 text-sm truncate">
-                            {{ selectedChat.name }} {{ selectedChat.id === authStore.sessionUser.id ? '(You)' : '' }}
+                            {{ selectedChat.name }} {{ selectedChat.surname }} {{ selectedChat.username }} {{ selectedChat.id === authStore.sessionUser.id ? '(You)' : '' }}
+                            <p class="text-zinc-500 dark:text-zinc-400 text-xs truncate">
+                                @{{ selectedChat.username }}
+                            </p>
                         </strong>
                         <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400 text-xs">
                             <span class="rounded-full w-1.5 h-1.5" :class="{

@@ -35,9 +35,10 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue'
+import { reactive, watch , computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/users/userStore'
+import { useReferencesStore } from '@/stores/references/referencesStore'
 import Input from '@/components/inputs/Input.vue'
 import Select from '@/components/inputs/Select.vue'
 
@@ -50,13 +51,9 @@ const emit = defineEmits(['update:modelValue'])
 
 const route = useRoute()
 const userStore = useUserStore()
+const referencesStore = useReferencesStore()
 
-const basisOptions = [
-    { value: 'consent', label: 'Consent' },
-    { value: 'legal obligation', label: 'Legal Obligation' },
-    { value: 'legitimate interest', label: 'Legitimate Interest' },
-    { value: 'contract', label: 'Contract' },
-]
+const basisOptions = computed(() => referencesStore.legal_basis.map(b => ({ label: b.label, value: b.id })))
 
 const form = reactive({ list: [] })
 
@@ -93,4 +90,8 @@ async function handleSubmit() {
     if (props.mode !== 'edit') return
     await userStore.updateConsents(route.params.uuid, form.list)
 }
+
+onMounted(async () => {
+    await referencesStore.fetchLegalBasis()
+})
 </script>

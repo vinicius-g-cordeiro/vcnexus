@@ -43,7 +43,7 @@ final class UserStoreRequest implements DataTransferObjectInterface
     public readonly ?array $addresses,
     public readonly ?array $permissions,
     public readonly ?array $educations,
-    public readonly ?string $avatar,
+    public readonly ?array $avatar,
   ) {
 
   }

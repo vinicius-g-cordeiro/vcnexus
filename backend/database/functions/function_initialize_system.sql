@@ -15,6 +15,7 @@ VALUES ('user_credentials'),
        ('suppliers'),
        ('deliveries'),
        ('orders') ON CONFLICT DO NOTHING;
+
 INSERT INTO subscription_types (name, label, description)
 VALUES('free', 'Free', 'Free plan'),
        ('trial', 'Trial', 'Trial plan'),
@@ -23,6 +24,14 @@ VALUES('free', 'Free', 'Free plan'),
        ('gold', 'Gold', 'Gold plan'),
        ('platinum', 'Platinum', 'Platinum plan'),
        ('diamond', 'Diamond', 'Diamond plan') ON CONFLICT DO NOTHING;
+
+INSERT INTO legal_basis (name, label, description)
+VALUES ('consent', 'Consent', 'Legal consented by the user'),
+('legal_obligation', 'Legal Obligation', 'Legal obligation'),
+('legitimate_interest', 'Legitimate Interest', 'Legitimate interest'),
+('contract', 'Contract', 'Contract')
+ON CONFLICT DO NOTHING;
+
 INSERT INTO subscription_statuses (name, label, description)
 VALUES('active', 'Active', 'Active subscription'),
        (
@@ -1572,13 +1581,15 @@ VALUES (
               '1999-04-23',
               'pt-BR'
        );
-INSERT INTO user_consents (user_id, purpose, legal_basis, granted_at)
+
+INSERT INTO user_consents (user_id, purpose, legal_basis_id, granted_at)
 VALUES (
               v_user_id,
               'Diversity reporting',
-              'Legal obligation (legitimate interest)',
+              4,
               NOW()
        );
+
 INSERT INTO user_sensitive (
               user_id,
               socialname,
@@ -1878,7 +1889,7 @@ VALUES (
               'SCRUMstudy',
               'Scrum for Operations & DevOps Fundamentals Certified (SODFC™)',
               '2026-08-01',
-              null,
+              '2026-08-01',
               1181284,
               'https://www.scrumstudy.com/certification/verify?type=SODFC&number=',
               'Scrum for Operations & DevOps Fundamentals Certified Certificate from SCRUMstudy',
@@ -1906,7 +1917,7 @@ VALUES (
               'SCRUMstudy',
               'Scrum Fundamentals Certified (SFC™)',
               '2026-08-01',
-              null,
+              '2026-08-01',
               1181260,
               'https://www.scrumstudy.com/certification/verify?type=SFC&number=',
               'Scrum Fundamentals Certified Certificate from SCRUMstudy',

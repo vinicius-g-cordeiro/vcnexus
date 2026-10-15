@@ -21,21 +21,21 @@ final class UserConsentsSchema extends AbstractSchema
     public string $table = 'user_consents';
 
     #[Column(type: 'bigint')]
-    public readonly int $user_id;
+    public int $user_id;
 
     #[Column(type: 'varchar', length: 64)]
     #[Comment(comment: 'eg: \'diversity reporting\', \'legal compliance\'')]
-    public readonly string $purpose;
+    public string $purpose;
 
-    #[Column(type: 'varchar', length: 32)]
+    #[Column(type: 'smallint')]
     #[Comment(comment: 'eg: \'legal obligation\' , \'consent\'')]
-    public readonly string $legal_basis;
+    public ?int $legal_basis_id;
 
     #[Column(type: 'timestamp', default: 'current_timestamp')]
-    public readonly ?string $granted_at;
+    public ?string $granted_at;
 
     #[Column(type: 'timestamp', default: null)]
     #[Nullable(nullable: true)]
-    public readonly ?string $revoked_at;
+    public ?string $revoked_at;
 }
 

@@ -41,6 +41,7 @@ final class ChatRepository extends BaseRepository {
                 uc.id as id,
                 up.firstname as name,
                 CONCAT(up.surname || ' ' || up.lastname) as surname,
+                uc.username as username,
                 uc.status as online_status,
                 b.fantasy_name as organization_name,
                 up.avatar as avatar

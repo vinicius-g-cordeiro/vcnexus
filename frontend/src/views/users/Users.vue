@@ -2,12 +2,13 @@
 import { ref, computed, onMounted } from 'vue'
 import FilterForm from '@/components/forms/FilterForm.vue'
 import { useListing } from '@/composables/useListing'
+import { useUserStore } from '@/stores/users/userStore'
 
 const filters = ref({})
 
 const fields = [
     { name: 'search', label: 'Search', type: 'text', placeholder: 'Search by name, email or role', classes: 'lg:col-span-2' },
-    { name: 'status', label: 'Status', type: 'select', options: [{ value: '1', label: 'Active' }, { value: '0', label: 'Inactive' }] },
+    { name: 'active', label: 'Status', type: 'select', default: 1, options: [{ value: '1', label: 'Active' }, { value: '0', label: 'Inactive' }] },
     { name: 'blocked', label: 'Blocked', type: 'select', options: [{ value: '1', label: 'Blocked' }, { value: '0', label: 'Not Blocked' }] },
     { name: 'created_at', label: 'Created', type: 'date' },
 ]
@@ -61,6 +62,13 @@ function getStatus(status) {
 
     return statuses[status] || statuses[0]
 }
+
+const storageBase = import.meta.env.VITE_API_URL
+
+const userStore = useUserStore()
+async function deactivate(uuid){
+    await userStore.deactivate(uuid)
+}
 </script>
 
 <template>
@@ -95,7 +103,12 @@ function getStatus(status) {
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <div class="flex justify-center items-center bg-olive-wood-400/20 rounded-full w-9 h-9 font-semibold text-olive-wood-400 text-xs shrink-0">
-                                        {{ initials(item.firstname) }}
+                                        <template v-if="item.avatar">
+                                            <img v-if="item.avatar" :src="`${storageBase}/storage/users/avatars/${item.avatar}`" loading="lazy" class="rounded-full w-full h-full object-cover" alt="avatar" />
+                                        </template>
+                                        <template v-else>
+                                            {{ initials(item.name) }}
+                                        </template>
                                     </div>
                                     <div class="min-w-0">
                                         <p class="font-medium truncate">{{ item.firstname }}</p>
@@ -140,7 +153,7 @@ function getStatus(status) {
                                         <i class="bi bi-pencil-fill"></i>
                                     </RouterLink>
 
-                                    <button type="button" @click="destroy(item.id)" class="text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 dark:text-zinc-400 hover:underline">
+                                    <button type="button" @click="deactivate(item.uuid)" class="text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 dark:text-zinc-400 hover:underline">
                                         <i class="bi bi-trash-fill"></i>
                                     </button>
                                 </div>

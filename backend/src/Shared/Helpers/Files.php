@@ -121,6 +121,16 @@ final class Files {
         return $result;
     }
 
+
+    /**
+     * 
+     * @param mixed $allowedExtensions
+     * @param mixed $folderRoot
+     * @param mixed $folderUrl
+     * @param mixed $fileInputName
+     * @param mixed $newFilename
+     * @return array<array|array{error: string, file: array|string, filename: array|string, "full_path": string, path: mixed|array{error: string, file: mixed, filename: mixed, "full_path": string, path: mixed}>|array{error: string, extension: string, file: array|string, filename: array|mixed|string, "full_path": string, path: mixed}|array{error: string, extension: string, file: array|string, filename: mixed, "full_path": string, path: mixed}}
+     */
     function upload_files_to_folder($allowedExtensions = ['.jpg', '.png', '.jpeg', '.webp', '.docx', '.pdf'], $folderRoot = '/var/www/storage/upload/', $folderUrl = '/storage/upload/', $fileInputName = 'file', $newFilename = 'file'){
         $errors = 0;
         $result = [];

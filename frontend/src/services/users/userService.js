@@ -37,7 +37,10 @@ const userService = {
         const response = await api.query(`/users/education/${uuid}`, { withCredentials: true })
         return response.data
     },
-
+    async deactivate(uuid) {
+        const response = await api.delete(`/users/${uuid}`, { withCredentials: true })
+        return response.data
+    }
 
 }
 

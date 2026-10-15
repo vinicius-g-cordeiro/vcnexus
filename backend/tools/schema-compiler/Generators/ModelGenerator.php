@@ -25,9 +25,7 @@ final class ModelGenerator
         $properties = array_map(fn($col) => $this->renderProperty($col), $columns);
         $propertiesFromArray = array_map(fn($col) => $this->renderPropertyFromArray($col), $columns);
 
-        $date = new \DateTime();
         $year = new \DateTime()->format('Y');
-        $date = $date->format('d/m/Y');
         $projectVersion = getenv('APP_VERSION');
         return <<<PHP
         <?php
@@ -36,7 +34,6 @@ final class ModelGenerator
          * @brief 
          * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
          * @version {$projectVersion}
-         * @date {$date}
          * @copyright Copyright (c) {$year} - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
          */
         

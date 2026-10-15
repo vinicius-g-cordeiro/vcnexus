@@ -406,4 +406,22 @@ final class ReferencesService extends BaseService
         }
     }
 
+    public function getLegalBasis() : ?array {
+        $key = 'legal_basis';
+
+        $cached = $this->getCached($key);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $legalBasis = $this->referenceRepository->getLegalBasis();
+
+        if ($legalBasis !== null) {
+            $this->setCached($key, $legalBasis);
+
+            return $legalBasis;
+        }
+    }
+
 }
