@@ -77,7 +77,7 @@ final class UserProfileRepository extends BaseRepository
             $params = [...$params, ...array_fill(0, count($columns), $searchTerm)];
         }
 
-        if (isset($parameters->active) && $parameters->active !== '') {
+        if (isset($parameters->active) && $parameters->active !== '' && $parameters->active === 1) {
             $where .= ' AND uc.active = ?';
             $params[] = (int) $parameters->active;
         }

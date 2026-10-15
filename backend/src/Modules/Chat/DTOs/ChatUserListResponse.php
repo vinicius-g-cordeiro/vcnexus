@@ -22,6 +22,7 @@ final class ChatUserListResponse implements DataTransferObjectInterface
         public readonly ?string $uuid,
         public readonly ?string $name,
         public readonly ?string $surname,
+        public readonly ?string $username,
         public readonly ?int $online_status,
         public readonly ?string $avatar
     ) {}
@@ -38,6 +39,7 @@ final class ChatUserListResponse implements DataTransferObjectInterface
             isset($data['uuid']) ? $data['uuid'] : null,
             isset($data['name']) ? $data['name'] : null,            
             isset($data['surname']) ? $data['surname'] : null,
+            isset($data['username']) ? $data['username'] : null,
             isset($data['online_status']) ? (int) $data['online_status'] : null,
             isset($data['avatar']) ? $data['avatar'] : null
         );

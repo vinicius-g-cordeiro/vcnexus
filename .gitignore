@@ -56,6 +56,8 @@ docker-compose.override.yml
 **/storage/logs/*
 !**/storage/logs/.gitkeep
 **/storage/rate_limits.json
+**/storage/upload/
+
 
 *.pem
 *.key

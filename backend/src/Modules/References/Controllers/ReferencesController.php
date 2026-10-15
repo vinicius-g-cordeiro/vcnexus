@@ -218,4 +218,15 @@ final class ReferencesController extends BaseController
             throw $th;
         }
     }
+
+    #[Route(path: '/legal-basis/', methods: ['QUERY', 'GET'])]
+    public function getLegalBasis(): Response
+    {
+        try{
+            $legalBasis = $this->service->getLegalBasis();
+            return Response::json(data: object(list: $legalBasis), message: 'success')->send(200, [], true);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }

@@ -15,12 +15,10 @@ namespace App\Schemas\Authentication;
 use App\Schemas\AbstractSchema;
 use App\Shared\Schema\Attributes\{Auditable, Column, Comment, Index, Nullable, Timestamps, Unique};
 
-#[Unique(name: 'uq_users_credentials_email', columns: ['email'])]
-#[Unique(name: 'uq_users_credentials_username', columns: ['username'])]
+#[Index(name: 'idx_uq_users_credentials_email', columns: ['email'], references: 'user_credentials', condition: ['active' => 1], unique: true)]
+#[Index(name: 'idx_uq_users_credentials_username', columns: ['username'], references: 'user_credentials', condition: ['active' => 1], unique: true)]
 #[Timestamps(created_at: 'created_at', updated_at: 'updated_at', deleted_at: 'deleted_at')]
 #[Auditable(created_by: 'created_by', updated_by: 'updated_by', deleted_by: 'deleted_by', deleted_reason: 'deleted_reason')]
-#[Index(name: 'idx_users_credentials_email', references: 'user_credentials', columns: ['email'])]
-#[Index(name: 'idx_users_credentials_username' , references: 'user_credentials', columns: ['username'])]
 final class UserCredentialsSchema extends AbstractSchema
 {
     public string $table = 'user_credentials';
@@ -38,6 +36,14 @@ final class UserCredentialsSchema extends AbstractSchema
     #[Column(type: 'smallint', length: 1, default: null)]
     #[Nullable(nullable: true)]
     public readonly ?int $blocked;
+
+    #[Column(type: 'bigint')]
+    #[Nullable(nullable: true)]
+    public readonly ?string $blocked_by;
+
+    #[Column(type: 'timestamp', default: null)]
+    #[Nullable(nullable: true)]
+    public readonly ?string $blocked_at;
 
     #[Column(type: 'smallint', length: 1,  default: null)]
     #[Comment("User's Remember for login (1 = Remember), so the user dont need to login again ")]

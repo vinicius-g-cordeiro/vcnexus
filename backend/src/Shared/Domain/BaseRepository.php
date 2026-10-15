@@ -99,7 +99,7 @@ abstract class BaseRepository
             "INSERT INTO $table ($columns) VALUES ($placeholders) RETURNING " . implode(', ', $returning),
             array_values($row)
         );
-        
+
         if ($result === false) {
             return false;
         }
@@ -138,8 +138,8 @@ abstract class BaseRepository
             $row[$key] = $value;
         }
 
-        $columns = implode(', ', array_map(fn(string $key) => "$key = ?", array_keys($row)) );
-        
+        $columns = implode(', ', array_map(fn(string $key) => "$key = ?", array_keys($row)));
+
 
         $returning = implode(', ', $returning);
 
@@ -148,8 +148,8 @@ abstract class BaseRepository
             "UPDATE $table SET $columns WHERE uuid = ? RETURNING $returning",
             array_merge(array_values($row), [$data->uuid])
         );
-        
-        
+
+
         if ($result === false) {
             return false;
         }
@@ -162,37 +162,93 @@ abstract class BaseRepository
 
         return new UpdateResponse((int) $row['id'], $row['uuid'] ?? null, (int) $this->tenant_id);
     }
-    
 
-protected function scopedQuery(string $query = '', array $params = [], bool $paginate = false, int $limit = 15, int $page = 1, ?string $countQuery = null): array|false
-{
-    $limit = min(100, max(1, $limit));
-    $page = max(1, $page);
-
-    $this->db->StartTrans();
-    try {
-        $this->applyContext($this->user_id, $this->tenant_id, $this->roles);
-
-        if (!$paginate) {
-            $result = $this->db->GetAll($query, $params);
-        } else {
-            $total = (int) $this->db->GetOne($countQuery, $params);
-            $rs = $this->db->SelectLimit($query, $limit, ($page - 1) * $limit, $params);
-            $result = [
-                'data' => $rs ? $rs->GetArray() : [],
-                'meta' => ['page' => $page, 'per_page' => $limit, 'total' => $total],
-            ];
+    public function deactivate($uuid, $table = null, $setDeletedBy = false ): bool
+    {
+        $table = $table ?? $this->table();
+        $fields = [];
+        $fields['active'] = 0;
+        if($setDeletedBy === true){
+            $fields['deleted_by'] = $this->user_id;
+            $fields['deleted_at'] = "'" . date('Y-m-d H:i:s') . "'";
         }
 
-        $this->db->CompleteTrans();
-    } catch (\Throwable $e) {
-        $this->db->FailTrans();
-        $this->db->CompleteTrans();
-        throw new TransactionFailedException('Transaction failed!', 500, $e);
+        $this->applyContext($this->user_id, $this->tenant_id, $this->roles);
+
+        $this->db->StartTrans();
+        try {
+            $result = $this->db->Execute(
+                "UPDATE $table SET " . implode(', ', array_map(fn(string $key) => "$key = ?", array_keys($fields))) . " WHERE uuid = ?",
+                array_merge(array_values($fields), [$uuid])
+            );
+
+            $this->db->CompleteTrans();
+        } catch (\Exception $e) {
+            $this->db->FailTrans();
+            $this->db->CompleteTrans();
+            throw $e;
+        }
+        return $result !== false;
     }
 
-    return $result;
-}
+    public function block($uuid, $table = null, $setBlockedBy = false ): bool
+    {
+        $table = $table ?? $this->table();
+        $fields = [];
+        $fields['blocked'] = 1;
+        if($setBlockedBy === true){
+            $fields['blocked_by'] = $this->user_id;
+            $fields['blocked_at'] = "'" . date('Y-m-d H:i:s') . "'";
+        }
+
+        $this->applyContext($this->user_id, $this->tenant_id, $this->roles);
+
+        $this->db->StartTrans();
+        try {
+            $result = $this->db->Execute(
+                "UPDATE $table SET " . implode(', ', array_map(fn(string $key) => "$key = ?", array_keys($fields))) . " WHERE uuid = ?",
+                array_merge(array_values($fields), [$uuid])
+            );
+
+            $this->db->CompleteTrans();
+        } catch (\Exception $e) {
+            $this->db->FailTrans();
+            $this->db->CompleteTrans();
+            throw $e;
+        }
+        return $result !== false;
+    }
+
+
+    protected function scopedQuery(string $query = '', array $params = [], bool $paginate = false, int $limit = 15, int $page = 1, ?string $countQuery = null): array|false
+    {
+        $limit = min(100, max(1, $limit));
+        $page = max(1, $page);
+
+        $this->db->StartTrans();
+        try {
+            $this->applyContext($this->user_id, $this->tenant_id, $this->roles);
+
+            if (!$paginate) {
+                $result = $this->db->GetAll($query, $params);
+            } else {
+                $total = (int) $this->db->GetOne($countQuery, $params);
+                $rs = $this->db->SelectLimit($query, $limit, ($page - 1) * $limit, $params);
+                $result = [
+                    'data' => $rs ? $rs->GetArray() : [],
+                    'meta' => ['page' => $page, 'per_page' => $limit, 'total' => $total],
+                ];
+            }
+
+            $this->db->CompleteTrans();
+        } catch (\Throwable $e) {
+            $this->db->FailTrans();
+            $this->db->CompleteTrans();
+            throw new TransactionFailedException('Transaction failed!', 500, $e);
+        }
+
+        return $result;
+    }
 
     protected function buildSearchClause(array $columns, string $searchTerm): array
     {
@@ -260,7 +316,8 @@ protected function scopedQuery(string $query = '', array $params = [], bool $pag
         return $result;
     }
 
-    public function setTenantId(?string $tenant_id){
+    public function setTenantId(?string $tenant_id)
+    {
         $this->tenant_id = $tenant_id;
     }
 

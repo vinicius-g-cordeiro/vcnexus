@@ -143,6 +143,18 @@ export const useUserStore = defineStore("users", {
       } finally {
         this.loading = false;
       }
+    },
+    async deactivate(uuid){
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await userService.deactivate(uuid);
+        return response.data;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
     }
   }
 });

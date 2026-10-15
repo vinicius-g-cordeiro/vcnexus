@@ -16,6 +16,7 @@ use App\Modules\Authentication\Models\UserCredentials;
 use App\Modules\Authorization\Models\UserPermission;
 use App\Modules\Platform\Addresses\Models\Addresses;
 use App\Modules\Platform\Contacts\Models\Contacts;
+use App\Modules\Users\DTOs\UserAvatarUpdateRequest;
 use App\Modules\Users\DTOs\UserCredentialsResponse;
 use App\Modules\Users\Models\{UserProfile, UserAddress, UserConsents, UserContact, UserEducation, UserSensitive};
 use App\Modules\Authorization\Models\{TenantMembership, UserRole};
@@ -24,6 +25,7 @@ use App\Modules\Authentication\Repositories\AuthenticationRepository;
 use App\Modules\Users\DTOs\{UserListRequest, UsersListResponse};
 use App\Modules\Users\Repositories\{UserProfileConsentsRepository, UserProfileRepository, UserTenantMembershipRepository};
 use App\Shared\Domain\BaseService;
+use App\Shared\Helpers\Files;
 use App\Shared\Http\{Session, Request};
 use App\Modules\Users\DTOs\{UserStoreRequest, UserStoreResponse};
 use App\Shared\Domain\Exceptions\TransactionFailedException;
@@ -57,20 +59,24 @@ final class UserService extends BaseService
      */
     public function store(UserStoreRequest $userStoreRequest): ?UserStoreResponse
     {
-
+        
         /// @TODO Validate user data before storing
         $result = $this->transactional(function () use ($userStoreRequest) {
             $userCredentialsStoreRequest = UserCredentials::fromArray([...$userStoreRequest->toArray(), 'created_by' => $this->session->get('user')->id ?? 1]);
             $userCredentials = $this->authenticationRepository->store($userCredentialsStoreRequest);
             
-            
             if ($userCredentials === false) {
                 throw new TransactionFailedException('Could not store user credentials', 409);
             }
 
-            $userProfileStoreRequest = UserProfile::fromArray(['user_id' => $userCredentials->id, ...$userStoreRequest->toArray()]);
+            $fileUtils = new Files();
+            $avatarResponse = $fileUtils->upload_files_to_folder(['.jpg', '.png', '.jpeg'], '/var/www/storage/upload/users/avatars/', '/storage/upload/users/avatars/', 'avatar', $userCredentials->uuid);
+            $userProfileStoreRequest = UserProfile::fromArray(['user_id' => $userCredentials->id, ...$userStoreRequest->toArray(), 'avatar' => $avatarResponse['avatar0']['filename'] ?? null]);
             $user = $this->userProfileRepository->store($userProfileStoreRequest);
             if ($user === false) {
+                if($avatarResponse['avatar0']['error'] !== ''){
+                    $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                }
                 throw new TransactionFailedException('Could not store user profile');
             }
 
@@ -85,91 +91,128 @@ final class UserService extends BaseService
             $userTenantMember = $this->userTenantMembershipRepository->store($userTenantMembershipRequest);
 
             if ($userTenantMember === false) {
+                if($avatarResponse['avatar0']['error'] !== ''){
+                    $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                }
                 throw new TransactionFailedException('Could not store user tenant membership', 409);
             }
             
             // Roles
-            array_map(function ($value) use ($userCredentials) {
+            array_map(function ($value) use ($userCredentials, $fileUtils, $avatarResponse) {
                 $userRolesStoreRequest = UserRole::fromArray(['user_id' => $userCredentials->id, 'role_id' => $value, 'created_by' => $this->session->get('user')->id ?? 1, 'created_at' => date('Y-m-d H:i:s')]);
                 // Save all the roles for this specific user_credentials
                 $savedRole = $this->userRolesRepository->store($userRolesStoreRequest);
                 if ($savedRole === false) {
                     error_log(sprintf("%s - Could not store user role, role_id: %s, user_id: %s", __METHOD__, $value, $userCredentials->id));
+                    if($avatarResponse['avatar0']['error'] !== ''){
+                        $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                    }
                     throw new TransactionFailedException('Could not store user role', 409);
                 }
             }, $userStoreRequest->roles);
 
             // Permissions
-            array_map(function ($value) use ($userCredentials) {
+            array_map(function ($value) use ($userCredentials, $fileUtils, $avatarResponse) {
                 $userPermissionsStoreRequest = UserPermission::fromArray(['user_id' => $userCredentials->id, 'permission_id' => $value, 'created_by' => $this->session->get('user')->id ?? 1, 'created_at' => date('Y-m-d H:i:s')]);
                 // Save all the permissions for this specific user_credentials
                 $savedPermission = $this->userPermissionsRepository->store($userPermissionsStoreRequest);
                 if ($savedPermission === false) {
                     error_log(sprintf("%s - Could not store user permission, permission_id: %s, user_id: %s", __METHOD__, $value, $userCredentials->id));
+                    if($avatarResponse['avatar0']['error'] !== ''){
+                        $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                    }
                     throw new TransactionFailedException('Could not store user permission', 409);
                 }
             }, $userStoreRequest->permissions);
 
-            // Addresses
-            array_map(function ($value) use ($userCredentials) {
-                $userProfileAddressStoreRequest = Addresses::fromArray(['owner_id' => $userCredentials->id, 'owner_type_id' => 1, ...$value]);
-                // Save all the addresses for this specific user_credentials
-                $savedAddress = $this->userProfileRepository->store($userProfileAddressStoreRequest, ['id', 'uuid'], 'addresses');
-                if ($savedAddress === false) {
-                    error_log(sprintf("%s - Could not store user address, address_id: %s, user_id: %s", __METHOD__, $value, $userCredentials->id));
-                    throw new TransactionFailedException('Could not store user address', 409);
-                }
-            }, $userStoreRequest->addresses);
+            if(isset($userStoreRequest->addresses)){
+                // Addresses
+                array_map(function ($value) use ($userCredentials, $fileUtils, $avatarResponse) {
+                    $userProfileAddressStoreRequest = Addresses::fromArray(['owner_id' => $userCredentials->id, 'owner_type_id' => 1, ...$value]);
+                    // Save all the addresses for this specific user_credentials
+                    $savedAddress = $this->userProfileRepository->store($userProfileAddressStoreRequest, ['id', 'uuid'], 'addresses');
+                    if ($savedAddress === false) {
+                        error_log(sprintf("%s - Could not store user address, address_id: %s, user_id: %s", __METHOD__, $value, $userCredentials->id));
+                        if($avatarResponse['avatar0']['error'] !== ''){
+                            $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                        }
+                        throw new TransactionFailedException('Could not store user address', 409);
+                    }
+                }, $userStoreRequest->addresses);
+            }
 
-            // Contact info -- phones
-            array_map(function ($value) use ($userCredentials) {
-                $userProfilePhoneStoreRequest = Contacts::fromArray(['owner_id' => $userCredentials->id, 'owner_type_id' => 1, ...$value]);
+            if(isset($userStoreRequest->phones)){    
+                // Contact info -- phones
+                array_map(function ($value) use ($userCredentials, $fileUtils, $avatarResponse) {
+                    $userProfilePhoneStoreRequest = Contacts::fromArray(['owner_id' => $userCredentials->id, 'owner_type_id' => 1, ...$value]);
 
-                // Save all the phones for this specific user_credentials
-                $savedPhone = $this->userProfileRepository->store($userProfilePhoneStoreRequest, ['id', 'uuid'], 'contacts');
-                if ($savedPhone === false) {
-                    throw new TransactionFailedException('Could not store user phone', 409);
-                }
-            }, $userStoreRequest->phones);
+                    // Save all the phones for this specific user_credentials
+                    $savedPhone = $this->userProfileRepository->store($userProfilePhoneStoreRequest, ['id', 'uuid'], 'contacts');
+                    if ($savedPhone === false) {
+                        if($avatarResponse['avatar0']['error'] !== ''){
+                            $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                        }
+                        throw new TransactionFailedException('Could not store user phone', 409);
+                    }
+                }, $userStoreRequest->phones);
+            }
 
-            // Contact info -- emails
-            array_map(function ($value) use ($userCredentials) {
-                $userProfileEmailStoreRequest = Contacts::fromArray(['owner_id' => $userCredentials->id, 'owner_type_id' => 1, ...$value]);
-                // Save all the emails for this specific user_credentials
-                $savedEmail = $this->userProfileRepository->store($userProfileEmailStoreRequest, ['id', 'uuid'], 'contacts');
-                if ($savedEmail === false) {
-                    throw new TransactionFailedException('Could not store user email', 409);
-                }
-            }, $userStoreRequest->emails);
+            if(isset($userStoreRequest->emails)){
+                
+                
+                // Contact info -- emails
+                array_map(function ($value) use ($userCredentials, $fileUtils, $avatarResponse) {
+                    $userProfileEmailStoreRequest = Contacts::fromArray(['owner_id' => $userCredentials->id, 'owner_type_id' => 1, ...$value]);
+                    // Save all the emails for this specific user_credentials
+                    $savedEmail = $this->userProfileRepository->store($userProfileEmailStoreRequest, ['id', 'uuid'], 'contacts');
+                    if ($savedEmail === false) {
+                        if($avatarResponse['avatar0']['error'] !== ''){
+                            $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                        }
+                        throw new TransactionFailedException('Could not store user email', 409);
+                    }
+                }, $userStoreRequest->emails);
+            }
 
-            // Educational info
-            array_map(function($value) use ($userCredentials) {
+            if(isset($userStoreRequest->educations)){
+                // Educational info
+                array_map(function($value) use ($userCredentials, $fileUtils, $avatarResponse) {
 
-                $userProfileEducationStoreRequest = UserEducation::fromArray(['user_id' => $userCredentials->id, ...$value]);
-                // Save all the educations for this specific user_credentials
-                $savedEducation = $this->userProfileRepository->store($userProfileEducationStoreRequest, ['id', 'uuid'], 'user_education');
-                if ($savedEducation === false) {
-                    throw new TransactionFailedException('Could not store user education', 409);
-                }
+                    $userProfileEducationStoreRequest = UserEducation::fromArray(['user_id' => $userCredentials->id, ...$value]);
+                    // Save all the educations for this specific user_credentials
+                    $savedEducation = $this->userProfileRepository->store($userProfileEducationStoreRequest, ['id', 'uuid'], 'user_education');
+                    if ($savedEducation === false) {
+                        if($avatarResponse['avatar0']['error'] !== ''){
+                            $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                        }
+                        throw new TransactionFailedException('Could not store user education', 409);
+                    }
 
-            }, $userStoreRequest->educations ?? []);
+                }, $userStoreRequest->educations ?? []);
+            }  
 
-
-            // consents
-            array_map(function ($value) use ($userCredentials) {
-                $userProfileConsentStoreRequest = UserConsents::fromArray(['user_id' => $userCredentials->id, ...$value]);
-                // Save all the consents for this specific user_credentials
-                $savedConsent = $this->userProfileRepository->store($userProfileConsentStoreRequest, ['id', 'uuid'], 'user_consents');
-                if ($savedConsent === false) {
-                    throw new TransactionFailedException('Could not store user consent', 409);
-                }
-            }, $userStoreRequest->consents);
-
+            if(isset($userStoreRequest->consents)){
+                // consents
+                array_map(function ($value) use ($userCredentials, $fileUtils, $avatarResponse) {
+                    $userProfileConsentStoreRequest = UserConsents::fromArray(['user_id' => $userCredentials->id, ...$value]);
+                    // Save all the consents for this specific user_credentials
+                    $savedConsent = $this->userProfileRepository->store($userProfileConsentStoreRequest, ['id', 'uuid'], 'user_consents');
+                    if ($savedConsent === false) {
+                        if($avatarResponse['avatar0']['error'] !== ''){
+                            $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                        }
+                        throw new TransactionFailedException('Could not store user consent', 409);
+                    }
+                }, $userStoreRequest->consents);
+            }
             // sensitive information
             $userProfileSensitiveStoreRequest = UserSensitive::fromArray(['user_id' => $userCredentials->id, ...$userStoreRequest->toArray()]);
             // Save all the sensitive information for this specific user_credentials
             $savedSensitive = $this->userProfileRepository->store($userProfileSensitiveStoreRequest, ['id', 'uuid'], 'user_sensitive');
             if ($savedSensitive === false) {
+                if($avatarResponse['avatar0']['error'] !== ''){
+                    $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                }
                 throw new TransactionFailedException('Could not store user sensitive information', 409);
             }
             
@@ -181,6 +224,57 @@ final class UserService extends BaseService
         }
 
         return new UserStoreResponse(uuid: $result->uuid);
+    }
+
+    public function deactivate(string $uuid): bool
+    {
+        $destroyed = $this->transactional(function () use ($uuid) {
+            $userProfile = $this->userProfileRepository->deactivate($uuid, 'user_credentials', true);
+            if($userProfile === false){
+                throw new TransactionFailedException('Could not deactivate user', 409);
+            }
+
+            $userProfile = $this->userProfileRepository->deactivate($uuid, 'user_profile', true);
+            if($userProfile === false){
+                throw new TransactionFailedException('Could not deactivate user', 409);
+            }
+            $userSensitive = $this->userProfileRepository->deactivate($uuid, 'user_sensitive', true);
+            if($userSensitive === false){
+                throw new TransactionFailedException('Could not deactivate user sensitive information', 409);
+            }
+            $userEducation = $this->userProfileRepository->deactivate($uuid, 'user_education', true);
+            if($userEducation === false){
+                throw new TransactionFailedException('Could not deactivate user education information', 409);
+            }
+            $userConsents = $this->userProfileRepository->deactivate($uuid, 'user_consents', true);
+            if($userConsents === false){
+                throw new TransactionFailedException('Could not deactivate user consents', 409);
+            }
+            $userAddresses = $this->userProfileRepository->deactivate($uuid, 'user_addresses', true);
+            if($userAddresses === false){
+                throw new TransactionFailedException('Could not deactivate user addresses', 409);
+            }
+            $userContacts = $this->userProfileRepository->deactivate($uuid, 'contacts', true);
+            if($userContacts === false){
+                throw new TransactionFailedException('Could not deactivate user contacts', 409);
+            }
+            return true;
+        });
+
+        return $destroyed;
+    }
+
+    public function block(string $uuid): bool
+    {
+        $destroyed = $this->transactional(function () use ($uuid) {
+            $userProfile = $this->userProfileRepository->block($uuid, 'user_credentials', true);
+            if($userProfile === false){
+                return false;
+            }
+            return true;
+        });
+
+        return $destroyed;
     }
 
     /**

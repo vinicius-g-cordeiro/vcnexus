@@ -30,7 +30,8 @@ export const useReferencesStore = defineStore("references", {
     contact_types: null,
     contact_categories: null,
     subscription_plans: [],
-    subscription_statuses: []
+    subscription_statuses: [],
+    legal_basis: []
   }),
   actions: {
     async fetchCountries(params) {
@@ -254,6 +255,19 @@ export const useReferencesStore = defineStore("references", {
       try {
         const response = await referencesService.fetchSubscriptionStatuses(params);
         this.subscription_statuses = response.data.list;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchLegalBasis(params){
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await referencesService.fetchLegalBasis(params);
+        this.legal_basis = response.data.list;
         return true;
       } catch (e) {
         this.error = e.message;

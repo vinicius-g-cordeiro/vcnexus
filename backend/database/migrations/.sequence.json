@@ -40,5 +40,6 @@
     "subscription_types": 39,
     "contacts": 40,
     "ownable_types": 41,
-    "addresses": 42
+    "addresses": 42,
+    "legal_basis": 43
 }

@@ -35,12 +35,18 @@ final class UserController extends BaseController
     #[Route(methods: 'POST',path: '/')]
     public function store() : ?Response {
         try{
+
+            
             /// @todo implement Idepodency key validation
             $post = (array)$this->request->params(); // But params is the one that is getting the information on this specific request, instead of the post
             // flat the array to one level
-            $post = Utils::flatten($post);        
-            $post['emails'] = $this->contactPerTypeSplitter($post['contacts'], '1');
-            $post['phones'] = $this->contactPerTypeSplitter($post['contacts'], '2');
+            $post = Utils::flatten($post);
+
+            if(isset($post['contacts'])) {
+                $post['emails'] = $this->contactPerTypeSplitter($post['contacts'], '1');
+                $post['phones'] = $this->contactPerTypeSplitter($post['contacts'], '2');
+            }
+            $post['avatar'] = $this->request->files('avatar');
             $userStoreRequest = UserStoreRequest::fromArray($post);
             $this->validator->validate($userStoreRequest);
             $users = $this->service->store($userStoreRequest);
@@ -50,7 +56,26 @@ final class UserController extends BaseController
         }
     }
 
+    #[Route(methods: 'DELETE',path: '/{uuid}')]
+    public function deactivate(string $uuid) : ?Response {
+        try{
+            $user = $this->service->deactivate($uuid);
+            return Response::json(data: object(deactivated: $user), message: 'success')->send(200, [], true);
+        }catch(\Throwable $th) {
+            throw $th;
+        }
+    }
 
+
+    #[Route(methods: 'DELETE',path: '/block/{uuid}')]
+    public function block(string $uuid) : ?Response {
+        try{
+            $user = $this->service->block($uuid);
+            return Response::json(data: object(blocked: $user), message: 'success')->send(200, [], true);
+        }catch(\Throwable $th) {
+            throw $th;
+        }
+    }
 
     #[Route(methods: 'QUERY',path: '/')]
     public function index() : ?Response {
