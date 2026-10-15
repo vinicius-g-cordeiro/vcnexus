@@ -19,7 +19,7 @@ use App\Shared\Http\Controllers\BaseController;
 use App\Shared\Http\{DTOValidator, Request, Response, Session};
 use App\Shared\Http\Attributes\{Route, Middleware};
 use App\Shared\Http\Middleware\{AuthMiddleware};
-
+use App\Shared\Helpers\Utils;
 use App\Modules\Tenant\DTOs\{TenantListRequest};
 
 
@@ -48,11 +48,9 @@ final class TenantController extends BaseController
     #[Route(methods: 'POST',path: '/')]
     public function store() : ?Response {
         try{
-            
-            $dto = TenantStoreInRequest::fromArray((array)$this->request->post());
-            
-            $this->validator->validate($dto);
-            
+            $post = Utils::flatten((array)$this->request->post());
+            $dto = TenantStoreInRequest::fromArray($post);
+            $this->validator->validate($dto);            
             $tenant = $this->service->store($dto);
             return Response::json(data: $tenant, message: 'success')->send(201, [], true);
         }catch(\Throwable $th){
@@ -60,5 +58,24 @@ final class TenantController extends BaseController
         }
     }
 
+    #[Route(methods: ['DELETE', 'PUT'], path: '/deactivate/{id}/')]
+    public function deactivate($id) : ?Response {
+        try{
+            $tenant = $this->service->deactivate($id);
+            return Response::json(data: object(deactivated: $tenant), message: 'success')->send(200, [], true);
+        }catch(\Throwable $th){
+            throw $th;
+        }
+    }
+
+    #[Route(methods: ['DELETE', 'PUT'], path: '/activate/{id}/')]
+    public function activate($id) : ?Response {
+        try{
+            $tenant = $this->service->activate($id);
+            return Response::json(data: object(activated: $tenant), message: 'success')->send(200, [], true);
+        }catch(\Throwable $th){
+            throw $th;
+        }
+    }
 }
 

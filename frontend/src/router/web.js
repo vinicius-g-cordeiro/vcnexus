@@ -117,6 +117,16 @@ const routes = [
             },
           },
           {
+            path: '/tenants/new',
+            name: "tenants.create",
+            component: () => import("@/views/tenants/NewForm.vue"),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "New Tenant",
+            },
+          },
+          {
             path: "/tenants/:uuid",
             name: "tenants.edit",
             component: () => import("@/views/tenants/Tenants.vue"),

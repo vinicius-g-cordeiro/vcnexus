@@ -17,20 +17,50 @@ use App\Shared\Domain\QueryObjectInterface;
 final class TenantListResponse implements QueryObjectInterface
 {
 
-    public function __construct( public ?string $uuid, public ?string $fantasy_name, public ?string $trade_name, public ?string $tax_id, public ?string $website, public ?string $domain, public ?string $slug,
-                                public ?string $state_registration, public ?string $municipal_registration, public ?string $created_at, public ?int $active, public ?string $subscription_type,
-                                public ?string $subscription_status, public ?int $subscription_type_id, public ?int $subscription_status_id, public ?string $logo
-    ) {}
+    public function __construct(
+        public ?string $uuid,
+        public ?string $fantasy_name,
+        public ?string $trade_name,
+        public ?string $tax_id,
+        public ?string $website,
+        public ?string $domain,
+        public ?string $slug,
+        public ?string $state_registration,
+        public ?string $municipal_registration,
+        public ?string $created_at,
+        public ?int $active,
+        public ?string $subscription_type,
+        public ?string $subscription_status,
+        public ?int $subscription_type_id,
+        public ?int $subscription_status_id,
+        public ?string $logo
+    ) {
+    }
 
-    public function toArray(): array{
+    public function toArray(): array
+    {
         return get_object_vars($this);
     }
 
-    public static function fromArray(array $data): self{
-        return new self($data['uuid'], $data['fantasy_name'], $data['trade_name'], $data['tax_id'], $data['website'], $data['domain'], $data['slug'],
-                        $data['state_registration'], $data['municipal_registration'], $data['created_at'], (int)$data['active'], $data['subscription_type'], 
-                        $data['subscription_status'],
-                        (int)$data['subscription_type_id'], (int)$data['subscription_status_id'],
-                        $data['logo']);
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            $data['uuid'],
+            $data['fantasy_name'],
+            $data['trade_name'],
+            $data['tax_id'],
+            $data['website'],
+            $data['domain'],
+            $data['slug'],
+            $data['state_registration'],
+            $data['municipal_registration'],
+            $data['created_at'],
+            (int) $data['active'],
+            $data['subscription_type'],
+            $data['subscription_status'],
+            (int) $data['subscription_type_id'],
+            (int) $data['subscription_status_id'],
+            $data['logo']
+        );
     }
 }

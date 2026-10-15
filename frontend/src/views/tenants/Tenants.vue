@@ -3,8 +3,10 @@ import { ref, computed, watch,onMounted } from 'vue'
 import FilterForm from '@/components/forms/FilterForm.vue'
 import { useListing } from '@/composables/useListing'
 import { useReferencesStore } from '@/stores/references/referencesStore'
+import { useTenantStore } from '@/stores/tenants/tenantStore'
 
 const referencesStore = useReferencesStore()
+const tenantsStore = useTenantStore()
 const subscriptionStatuses = computed(() => referencesStore.subscription_statuses.map(s => ({ label: s.label, value: s.id })))
 const subscriptionTypes = computed(() => referencesStore.subscription_plans.map(s => ({ label: s.label, value: s.id })))
 
@@ -13,7 +15,7 @@ const filters = ref({})
 
 let fields = [
     { name: 'search', label: 'Search', type: 'text', placeholder: 'Search by Tax Identification, Trade Name, or Fantasy Name ', classes: 'lg:col-span-2' },
-    { name: 'status', label: 'Status', type: 'select', options: [{ value: '1', label: 'Active' }, { value: '0', label: 'Inactive' }] },
+    { name: 'status', label: 'Status', type: 'select', default: 1 , options: [{ value: '1', label: 'Active' }, { value: '0', label: 'Inactive' }] },
     { name: 'subscription_status_id', label: 'Subscription Status', type: 'select', options: subscriptionStatuses.value },
     { name: 'subscription_type_id', label: 'Subscription Type', type: 'select', options: subscriptionTypes.value },
 ]
@@ -133,6 +135,24 @@ onMounted(async () => {
 })
 
 
+function deactivate(uuid) {
+    const deactivated = tenantsStore.deactivate(uuid)
+
+    if (deactivated) {
+        // refresh the page, by reloading the loaded users
+        search(filters.value)
+    }
+}
+
+function activate(uuid) {
+    const activated = tenantsStore.activate(uuid)
+
+    if (activated) {
+        // refresh the page, by reloading the loaded users
+        search(filters.value)
+    }
+}
+
 </script>
 
 <template>
@@ -173,6 +193,7 @@ onMounted(async () => {
                                         <p class="font-medium truncate">{{ item.fantasy_name }}</p>
                                         <p class="text-zinc-500 dark:text-zinc-400 text-xs truncate">{{ item.trade_name }}</p>
                                         <p class="text-zinc-500 dark:text-zinc-400 text-xs truncate">{{ item.tax_id }} </p>
+                                        <a :href="`${item.domain}`" class="font-medium text-olive-wood-400 text-xs hover:underline" target="_blank" rel="noopener noreferrer">{{ item.domain }}</a>
                                     </div>
                                 </div>
                             </td>
@@ -205,8 +226,15 @@ onMounted(async () => {
                                         <i class="bi bi-pencil-fill"></i>
                                     </RouterLink>
 
-                                    <button type="button" @click="destroy(item.id)" class="text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 dark:text-zinc-400 hover:underline">
+                                    <button v-if="item.active === 1" type="button" @click="deactivate(item.uuid)" class="text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 dark:text-zinc-400 hover:underline">
                                         <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                    <button v-else type="button" @click="activate(item.uuid)" class="text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 dark:text-zinc-400 hover:underline">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </button>
+
+                                    <button v-if="item.subscription_type_id === 1" type="button" @click="block(item.uuid)" class="text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 dark:text-zinc-400 hover:underline">
+                                        <i class="bi bi-lock-fill"></i>
                                     </button>
                                 </div>
                             </td>

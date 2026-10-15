@@ -15,7 +15,7 @@ namespace App\Modules\Tenant\Services;
 use App\Modules\Tenant\Models\{Business, BusinessBranding, Tenant};
 use App\Shared\Domain\BaseService;
 use App\Modules\Tenant\Repositories\{TenantRepository, BusinessRepository};
-use App\Modules\Tenant\DTOs\{TenantListRequest, TenantListResponse, TenantStoreInRequest, TenantStoreRequest, TenantStoreResponse};
+use App\Modules\Tenant\DTOs\{TenantListRequest, TenantListResponse, TenantStoreInRequest, TenantStoreResponse};
 use App\Shared\Domain\Exceptions\TransactionFailedException;
 
 final class TenantService extends BaseService
@@ -70,5 +70,14 @@ final class TenantService extends BaseService
         });
 
         return $tenant;
+    }
+
+    public function deactivate(string $uuid): bool {
+        return $this->tenantRepository->deactivate($uuid);
+    }
+
+
+    public function activate(string $uuid): bool {
+        return $this->tenantRepository->activate($uuid);
     }
 }
