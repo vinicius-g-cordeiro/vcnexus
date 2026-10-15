@@ -40,7 +40,7 @@ final class UserConsents extends BaseModel
         $newObject->purpose = isset($data['purpose']) ? $data['purpose'] : null;
         $newObject->legal_basis_id = isset($data['legal_basis_id']) ? (int) $data['legal_basis_id'] : null;
         $newObject->granted_at = isset($data['granted_at']) ? $data['granted_at'] : null;
-        $newObject->revoked_at = isset($data['revoked_at']) ? $data['revoked_at'] : null;
+        $newObject->revoked_at = isset($data['revoked_at']) && $data['revoked_at'] !== '' ? $data['revoked_at'] : null;
         return $newObject;
     }
 }

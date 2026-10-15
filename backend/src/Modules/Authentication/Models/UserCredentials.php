@@ -22,6 +22,8 @@ final class UserCredentials extends BaseModel
     public ?string $username;
     public string $password;
     public ?int $blocked;
+    public ?int $blocked_by;
+    public ?string $blocked_at;
     public ?int $remember;
     public ?string $token;
     public ?string $token_expires_at;
@@ -55,6 +57,8 @@ final class UserCredentials extends BaseModel
         $newObject->username = isset($data['username']) ? $data['username'] : null;
         $newObject->password = isset($data['password']) ? $data['password'] : null;
         $newObject->blocked = isset($data['blocked']) ? (int) $data['blocked'] : null;
+        $newObject->blocked_by = isset($data['blocked_by']) ? (int) $data['blocked_by'] : null;
+        $newObject->blocked_at = isset($data['blocked_at']) ? $data['blocked_at'] : null;
         $newObject->remember = isset($data['remember']) ? (int) $data['remember'] : null;
         $newObject->token = isset($data['token']) ? $data['token'] : null;
         $newObject->token_expires_at = isset($data['token_expires_at']) ? $data['token_expires_at'] : null;

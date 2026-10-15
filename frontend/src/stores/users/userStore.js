@@ -155,6 +155,42 @@ export const useUserStore = defineStore("users", {
       } finally {
         this.loading = false;
       }
+    },
+    async activate(uuid){
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await userService.activate(uuid);
+        return response.data;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async block(uuid){
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await userService.block(uuid);
+        return response.data;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async unblock(uuid){
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await userService.unblock(uuid);
+        return response.data;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
     }
   }
 });

@@ -6,6 +6,8 @@ CREATE TABLE user_credentials (
     username varchar(100),
     password varchar(128) NOT NULL,
     blocked smallint,
+    blocked_by bigint,
+    blocked_at timestamp,
     remember smallint,
     token varchar(255),
     token_expires_at timestamp,

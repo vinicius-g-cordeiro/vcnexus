@@ -10,17 +10,14 @@ export function useSessionMonitor(interval = 60000) {
     const router = useRouter()
     const monitor = async () => {
         const isAuthenticated = await authStore.monitorUser()
-        console.log(`is authenticated: ${isAuthenticated}`)
         if(!isAuthenticated){
             router.push({ name: 'login' })
         }
     }
-
     onMounted(()=> {
         monitor()
         timer = setInterval(monitor,interval)
     })
-
     onUnmounted(() => {
         clearInterval(timer)
     })

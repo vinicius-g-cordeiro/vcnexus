@@ -17,9 +17,9 @@
                 </button>
                 <div class="gap-x-4 grid grid-cols-1 sm:grid-cols-2">
                     <Input v-model="c.purpose" label="Purpose" placeholder="Diversity reporting..." :id="`purpose-${i}`" required />
-                    <Select v-model="c.legal_basis" label="Legal Basis" :id="`basis-${i}`" :options="basisOptions" placeholder="Select basis" required />
-                    <Input v-model="c.granted_at" type="datetime-local" label="Granted At" :id="`granted-${i}`" />
-                    <Input v-model="c.revoked_at" type="datetime-local" label="Revoked At" :id="`revoked-${i}`" />
+                    <Select v-model="c.legal_basis_id" label="Legal Basis" :id="`basis-${i}`" :options="basisOptions" placeholder="Select basis" required />
+                    <Input v-model="c.granted_at" type="date" label="Granted At" :id="`granted-${i}`" />
+                    <Input v-model="c.revoked_at" type="date" label="Revoked At" :id="`revoked-${i}`" />
                 </div>
             </div>
 
@@ -80,7 +80,7 @@ if (props.mode === 'create') {
 function addConsent() {
     form.list.push({
         purpose: '',
-        legal_basis: '',
+        legal_basis_id: '',
         granted_at: '',
         revoked_at: '',
     })
