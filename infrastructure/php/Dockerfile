@@ -63,6 +63,10 @@ RUN mkdir -p /var/www/storage /var/www/bootstrap/cache && \
 RUN mkdir -p /run/secrets && \
     chown -R www:www /run/secrets
 
+## make executable the backend/bin/nexus.php file with chown and chmod
+RUN mkdir -p /var/www/bin && \
+    chown -R www:www /var/www/bin \
+    && chmod +x /var/www/bin/nexus.php
 
 USER www
 

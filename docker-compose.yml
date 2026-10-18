@@ -81,6 +81,8 @@ services:
       - XDEBUG_MODE=${XDEBUG_MODE-debug,develop}
       - XDEBUG_CONFIG=client_host=${XDEBUG_CLIENT_HOST-host.docker.internal} client_port=${XDEBUG_CLIENT_PORT-9003}
       - PHP_IDE_CONFIG=serverName=${XDEBUG_SERVER_NAME-app}
+      - DB_ROOT_PASSWORD=/run/secrets/db_root_password
+      - DB_ROOT_USERNAME=/run/secrets/db_root_username
     working_dir: /var/www
     depends_on:
       pgdog:
@@ -120,6 +122,8 @@ services:
       - admin_password
       - db_app_password
       - pgdog_admin_password
+      - db_root_password
+      - db_root_username
     networks:
       - app_network
 
@@ -339,6 +343,8 @@ secrets:
     file: ./secrets/database/pgdog_admin_password
   db_root_password:
     file: ./secrets/database/db_root_password
+  db_root_username:
+    file: ./secrets/database/db_root_username
   jwt_secret:
     file: ./secrets/jwt/jwt_secret
   redis_password:
