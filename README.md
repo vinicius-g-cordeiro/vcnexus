@@ -24,25 +24,24 @@ VCNexus is a multi-tenant ERP built as a **modular monolith** — one PHP applic
 ## Getting Started
 
 ```bash
+docker compose down --remove-orphans; docker ps -aq --filter "label=com.docker.compose.project=$(docker compose config --format json | jq -r '.name')" | xargs -r docker rm -f; docker network prune -f && docker ps -a && docker compose --profile dev up --build # to remove the container and it's pesky networks if it happens to exist when rebuilding or restarting the container but do not remove volumes (if doesn't want to build the container everytime, just remove the --build from the last command)
+
+docker compose down --remove-orphans -v; docker ps -aq --filter "label=com.docker.compose.project=$(docker compose config --format json | jq -r '.name')" | xargs -r docker rm -f; docker network prune -f && docker ps -a && docker compose --profile dev up --build # to remove the container and it's pesky networks if it happens to exist when rebuilding or restarting the container removing volumes on the process (if doesn't want to build the container everytime, just remove the --build from the last command)
+```
+
+```bash
 git clone <repo-url>
 cd vcnexus-erp
 cp secrets/.env.example secrets/.env   # fill in real values
-docker compose up -d
-docker compose exec app php bin/db-bootstrap.php   # first-time only
-docker compose exec app php bin/db-migrate.php
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm install
-npm run dev
+docker compose --profile dev up --build # first time
+docker compose --profile dev up # after building the project for the first time...
+docker compose exec php php bin/nexus.php   # first-time only
+docker compose exec php composer install && composer dump-autoload -o
 ```
 
 ## Project Structure
 
-```text
+```tree
 src/
 ├── Modules/         # Business logic — Sales, Inventory, Finance, Users, Authentication, etc.
 ├── Shared/           # Cross-cutting: attributes, base classes, the DI container, HTTP layer

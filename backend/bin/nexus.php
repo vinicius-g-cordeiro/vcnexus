@@ -30,7 +30,7 @@ $allowedOptions = [
 $options = [];
 
 // check if any arguments were provided
-if (count($arguments) === 1) {
+if (count($arguments) === 1 || empty($arguments)) {
     $options['init'] = $allowedOptions['init'];
 }
 

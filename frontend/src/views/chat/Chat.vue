@@ -1,7 +1,6 @@
 <script setup>
 import {
     computed,
-    defineEmits,
     nextTick,
     onBeforeUnmount,
     onMounted,

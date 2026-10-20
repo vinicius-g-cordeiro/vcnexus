@@ -17,7 +17,6 @@ initDarkMode()
 const pinia = createPinia()
 
 import '@/styles/app.css'
-import 'bootstrap/dist/js/bootstrap.min.js'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
 createApp(App).use(pinia).use(i18n).use(router).mount('#application')
