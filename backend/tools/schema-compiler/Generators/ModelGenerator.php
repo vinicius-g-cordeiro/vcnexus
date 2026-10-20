@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tools\SchemaCompiler\Generators;
 
+use DateTime;
 use App\Schemas\AbstractSchema;
 use App\Shared\Schema\Attributes\Column;
 
@@ -24,18 +25,19 @@ final class ModelGenerator {
 		$properties = array_map(fn($col) => $this->renderProperty($col), $columns);
 		$propertiesFromArray = array_map(fn($col) => $this->renderPropertyFromArray($col), $columns);
 
-		$year = new \DateTime('now')->format('Y');
+		$year = new DateTime('now');
+        $year = $year->format('Y');
 		$projectVersion = getenv('APP_VERSION');
 		return <<<PHP
         <?php
         /**
          * GENERATED from {$schemaClass} — do not edit directly. Edit the schema and recompile.
-         * @brief 
+         * @brief
          * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
          * @version {$projectVersion}
          * @copyright Copyright (c) {$year} - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
          */
-        
+
         declare(strict_types=1);
 
         namespace {$namespace};
