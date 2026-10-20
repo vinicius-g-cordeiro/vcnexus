@@ -12,20 +12,39 @@ declare(strict_types=1);
 
 namespace App\Modules\References\Repositories;
 
-use App\Infrastructure\Database\Hydrator;
-use App\Modules\References\DTOs\{CountryRequestContext,CountryResponseContext, StateRequestContext, StateResponseContext, CityRequestContext, CityResponseContext, MaritalStatusResponseContext};
-use App\Modules\References\Models\{BusinessType, CompletionStatus, ContactCategories, ContactTypes, Disability, EducationalLevel, EducationalType, Ethnicity, Gender, LegalBasis, Nationality, Religion, SexualOrientation, SubscriptionStatus, SubscriptionType};
-use App\Shared\Domain\BaseRepository;
+use ADOConnection;
 use App\Shared\Http\Request;
+use App\Shared\Domain\BaseRepository;
+use App\Infrastructure\Database\Hydrator;
+use App\Modules\References\Models\Gender;
+use App\Modules\References\Models\Religion;
+use App\Modules\References\Models\Ethnicity;
+use App\Modules\References\Models\Disability;
+use App\Modules\References\Models\LegalBasis;
+use App\Modules\References\Models\Nationality;
+use App\Modules\References\Models\BusinessType;
+use App\Modules\References\Models\ContactTypes;
+use App\Modules\References\Models\EducationalType;
+use App\Modules\References\DTOs\CityRequestContext;
+use App\Modules\References\Models\CompletionStatus;
+use App\Modules\References\Models\EducationalLevel;
+use App\Modules\References\Models\SubscriptionType;
+use App\Modules\References\DTOs\CityResponseContext;
+use App\Modules\References\DTOs\StateRequestContext;
+use App\Modules\References\Models\ContactCategories;
+use App\Modules\References\Models\SexualOrientation;
+use App\Modules\References\DTOs\StateResponseContext;
+use App\Modules\References\Models\SubscriptionStatus;
+use App\Modules\References\DTOs\CountryRequestContext;
+use App\Modules\References\DTOs\CountryResponseContext;
+use App\Modules\References\DTOs\MaritalStatusResponseContext;
 
-final class ReferencesRepository extends BaseRepository
-{
-    public function __construct( \ADOConnection $db, ?string $tenant_id, ?string $user_id, ?array $roles, private Request $request) {
+final class ReferencesRepository extends BaseRepository {
+    public function __construct(ADOConnection $db, ?string $tenant_id, ?string $user_id, ?array $roles, private Request $request) {
         parent::__construct($db, $tenant_id, $user_id, $roles);
     }
 
-    protected function table(): string
-    {
+    protected function table(): string {
         return 'roles';
     }
 
@@ -34,7 +53,7 @@ final class ReferencesRepository extends BaseRepository
      * @param CountryRequestContext $parameters - Request parameters
      * @return array<CountryResponseContext>
      */
-    public function getCountries(CountryRequestContext $parameters) : ?array {
+    public function getCountries(CountryRequestContext $parameters): ?array {
         $query = <<<SQL
             SELECT c.name, c.id, c.uuid, c.iso_alpha2, c.iso_alpha3, c.geonames_id
             FROM countries c
@@ -44,7 +63,7 @@ final class ReferencesRepository extends BaseRepository
         $params = [];
 
         // Verify if we are not using the super admin user, if not we will filter by tenant
-        if(in_array("1", $this->roles) === false) {
+        if (in_array("1", $this->roles) === false) {
             $query .= ' AND c.tenant_id = ?';
             $params[] = $this->tenant_id;
         }
@@ -66,7 +85,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getStates(StateRequestContext $parameters) : ?array {
+    public function getStates(StateRequestContext $parameters): ?array {
         $query = <<<SQL
             SELECT s.name, s.id, s.uuid, s.iso_alpha2, s.iso_alpha3, s.geonames_id, s.country_id
             FROM states s
@@ -92,7 +111,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getCities(CityRequestContext $parameters) : ?array {
+    public function getCities(CityRequestContext $parameters): ?array {
         $query = <<<SQL
             SELECT c.name, c.id, c.uuid, c.iso_alpha2, c.iso_alpha3, c.geonames_id, c.state_id
             FROM cities c
@@ -118,7 +137,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getMaritalStatuses() : ?array {
+    public function getMaritalStatuses(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name
             FROM marital_statuses
@@ -135,7 +154,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getGenders() : ?array {
+    public function getGenders(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name
             FROM genders
@@ -152,7 +171,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getReligions() : ?array {
+    public function getReligions(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name
             FROM religions
@@ -169,7 +188,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getEducationalLevels() : ?array {
+    public function getEducationalLevels(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name, educational_type_id
             FROM educational_levels
@@ -186,7 +205,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getEducationalTypes() : ?array {
+    public function getEducationalTypes(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name
             FROM educational_types
@@ -203,7 +222,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getCompletionStatuses(?string $type) : ?array {
+    public function getCompletionStatuses(?string $type): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name, type
             FROM completion_statuses
@@ -225,7 +244,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getEthnicities() : ?array {
+    public function getEthnicities(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name
             FROM ethnicity
@@ -242,7 +261,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getSexualOrientations() : ?array {
+    public function getSexualOrientations(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name
             FROM sexual_orientations
@@ -259,7 +278,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getDisabilities() : ?array {
+    public function getDisabilities(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name
             FROM disabilities
@@ -276,7 +295,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getNationalities() : ?array {
+    public function getNationalities(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name
             FROM nationality
@@ -293,7 +312,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getContactCategories() : ?array {
+    public function getContactCategories(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name
             FROM contact_categories
@@ -310,7 +329,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getContactTypes() : ?array {
+    public function getContactTypes(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name
             FROM contact_types
@@ -327,7 +346,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getSubscriptionPlans() : ?array {
+    public function getSubscriptionPlans(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name, active
             FROM subscription_types
@@ -344,7 +363,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getSubscriptionStatuses() : ?array {
+    public function getSubscriptionStatuses(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name, active
             FROM subscription_statuses
@@ -361,7 +380,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getLegalBasis() : ? array {
+    public function getLegalBasis(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name, active
             FROM legal_basis
@@ -378,7 +397,7 @@ final class ReferencesRepository extends BaseRepository
         return $result;
     }
 
-    public function getTenantTypes() : ? array {
+    public function getTenantTypes(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name, active
             FROM business_types

@@ -18,6 +18,11 @@ composer.phar
 composer.lock.bak
 *.cache
 
+# ----- VSCode settings and extensions  ----
+.pxtoremrc.json
+.editorconfig
+
+
 # Generated schema-compiler output (regenerate via tools/schema-compiler, don't hand-edit)
 # Uncomment if generated Models/Migrations should NOT be committed:
 # src/Modules/**/Models/*.generated.php

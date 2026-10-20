@@ -1,4 +1,4 @@
-FROM php:8.4-cli-alpine AS base
+FROM php:8.5-cli-alpine AS base
 
 RUN apk add --no-cache \
     postgresql-dev \
@@ -36,7 +36,7 @@ RUN docker-php-ext-configure gd \
     exif \
     pcntl \
     bcmath \
-    soap 
+    soap
 
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --install-dir=/usr/local/bin \
@@ -48,7 +48,7 @@ FROM base AS runtime
 
 RUN pecl install redis \
     && docker-php-ext-enable redis;
-    
+
 WORKDIR /var/www
 
 COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
@@ -60,6 +60,6 @@ COPY ./backend/composer.json ./backend/composer.lock ./
 
 RUN composer install --no-dev --no-interaction --optimize-autoloader --no-scripts
 
-COPY ./backend . 
+COPY ./backend .
 
 CMD ["php", "bin/queue-worker.php"]

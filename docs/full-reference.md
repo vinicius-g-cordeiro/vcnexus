@@ -13,7 +13,7 @@ Status: **not started — this document is the blueprint for the initial setup.*
 | Layer | Choice |
 |---|---|
 | Runtime | Docker (multi-container) |
-| Backend | PHP 8.4, pure PHP — **no framework** |
+| Backend | PHP 8.5, pure PHP — **no framework** |
 | Database | PostgreSQL (with Row-Level Security for tenant isolation) |
 | DB Access | ADOdb |
 | Cache / Sessions / Queues | Redis |
@@ -32,7 +32,7 @@ flowchart TB
     CLIENT["Web Browser"]
 
     CLIENT --> NGINX["Nginx"]
-    NGINX --> APP["VCNexus PHP Application (PHP 8.4)"]
+    NGINX --> APP["VCNexus PHP Application (PHP 8.5)"]
 
     APP --> MODULES["Business Modules"]
     APP --> SHARED["Shared Application Services"]
@@ -59,7 +59,7 @@ Browser
 Nginx
    │
    ▼
-PHP 8.4 Application (pure PHP)
+PHP 8.5 Application (pure PHP)
    │
    ├── Business Modules
    ├── Shared Services
@@ -2000,7 +2000,7 @@ Future scope: NF-e, NFS-e, NFC-e, XML, Tax Configuration, Fiscal Rules, SEFAZ in
 
 ### Phase 1 — Platform
 ```text
-Docker environment (Nginx, PHP-FPM 8.4, PostgreSQL, Redis)
+Docker environment (Nginx, PHP-FPM 8.5, PostgreSQL, Redis)
 Hand-rolled router + front controller
 Multi-tenancy (RLS setup)
 Authentication
@@ -2076,7 +2076,7 @@ VCNexus can stay a monolith for a long time. If a module ever needs to become it
 
 Nothing exists yet. Suggested first steps:
 
-1. **Scaffold Docker.** `docker-compose.yml` with services for `nginx`, `php` (8.4-fpm image + ADOdb via Composer), `postgres`, `redis`.
+1. **Scaffold Docker.** `docker-compose.yml` with services for `nginx`, `php` (8.5-fpm image + ADOdb via Composer), `postgres`, `redis`.
 2. **Bootstrap the PHP entry point.** A single `public/index.php` front controller, a minimal router in `Bootstrap/Routing/`, and a PSR-4 autoloader via Composer (no framework — just autoloading and a router).
 3. **Set up ADOdb.** Connection factory in `Infrastructure/Database/`, wired to read tenant context per-request.
 4. **Enable PostgreSQL RLS early** — retrofitting tenant isolation later is much more painful than building tables with `tenant_id` + policies from day one.

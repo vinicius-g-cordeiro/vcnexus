@@ -12,51 +12,42 @@ declare(strict_types=1);
 
 namespace App\Modules\References\Services;
 
-use ADOConnection;
 use Redis;
-
-use App\Infrastructure\Redis\RedisConnectionFactory;
-use App\Modules\References\DTOs\{
-    CountryRequestContext,
-    StateRequestContext,
-    CityRequestContext
-};
-use App\Modules\References\Repositories\ReferencesRepository;
+use ADOConnection;
 use App\Shared\Domain\BaseService;
+use App\Modules\References\DTOs\CityRequestContext;
+use App\Infrastructure\Redis\RedisConnectionFactory;
+use App\Modules\References\DTOs\StateRequestContext;
+use App\Modules\References\DTOs\CountryRequestContext;
+use App\Modules\References\Repositories\ReferencesRepository;
 
-final class ReferencesService extends BaseService
-{
+final class ReferencesService extends BaseService {
     private Redis $redisConnection;
 
-    public function __construct(ADOConnection $db, ?string $tenant_id, ?string $user_id, ?array $roles, private ReferencesRepository $referenceRepository, private RedisConnectionFactory $redisConnectionFactory)
-    {
+    public function __construct(ADOConnection $db, ?string $tenant_id, ?string $user_id, ?array $roles, private ReferencesRepository $referenceRepository, private RedisConnectionFactory $redisConnectionFactory) {
         parent::__construct($db, $tenant_id, $user_id, $roles);
 
         $this->redisConnection = $this->redisConnectionFactory->create();
     }
 
-    private function countriesCacheKey(): string
-    {
+    private function countriesCacheKey(): string {
         return 'countries';
     }
 
-    private function statesCacheKey(string|int $countryId): string
-    {
+    private function statesCacheKey(string|int $countryId): string {
         return "countries:{$countryId}:states";
     }
 
-    private function citiesCacheKey(string|int $countryId, string|int|null $stateId): string
-    {
+    private function citiesCacheKey(string|int $countryId, string|int|null $stateId): string {
         return "countries:{$countryId}:{$stateId}:cities";
     }
 
-    private function getCached(string $key): ?array
-    {
-        if (!$this->redisConnection->exists('references:'.$key)) {
+    private function getCached(string $key): ?array {
+        if (!$this->redisConnection->exists('references:' . $key)) {
             return null;
         }
 
-        $value = $this->redisConnection->get('references:'.$key);
+        $value = $this->redisConnection->get('references:' . $key);
 
         if ($value === false || $value === null) {
             return null;
@@ -65,16 +56,14 @@ final class ReferencesService extends BaseService
         return json_decode($value, true);
     }
 
-    private function setCached(string $key, array $value): void
-    {
+    private function setCached(string $key, array $value): void {
         $this->redisConnection->set(
-            'references:'.$key,
+            'references:' . $key,
             json_encode($value, JSON_THROW_ON_ERROR)
         );
     }
 
-    public function getCountries(CountryRequestContext $parameters): ?array
-    {
+    public function getCountries(CountryRequestContext $parameters): ?array {
         $key = $this->countriesCacheKey();
 
         $cached = $this->getCached($key);
@@ -94,8 +83,7 @@ final class ReferencesService extends BaseService
         return [];
     }
 
-    public function getStates(StateRequestContext $parameters): ?array
-    {
+    public function getStates(StateRequestContext $parameters): ?array {
         $key = $this->statesCacheKey($parameters->country_id);
 
         $cached = $this->getCached($key);
@@ -115,8 +103,7 @@ final class ReferencesService extends BaseService
         return [];
     }
 
-    public function getCities(CityRequestContext $parameters): ?array
-    {
+    public function getCities(CityRequestContext $parameters): ?array {
         $key = $this->citiesCacheKey($parameters->country_id, $parameters->state_id);
 
         $cached = $this->getCached($key);
@@ -136,8 +123,7 @@ final class ReferencesService extends BaseService
         return [];
     }
 
-    public function getMaritalStatuses(): ?array
-    {
+    public function getMaritalStatuses(): ?array {
         $key = 'marital_statuses';
 
         $cached = $this->getCached($key);
@@ -157,8 +143,7 @@ final class ReferencesService extends BaseService
         return [];
     }
 
-    public function getGenders(): ?array
-    {
+    public function getGenders(): ?array {
         $key = 'genders';
 
         $cached = $this->getCached($key);
@@ -176,8 +161,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getEducationalLevels(): ?array
-    {
+    public function getEducationalLevels(): ?array {
         $key = 'educational_levels';
 
         $cached = $this->getCached($key);
@@ -195,8 +179,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getEducationalTypes(): ?array
-    {
+    public function getEducationalTypes(): ?array {
         $key = 'educational_types';
 
         $cached = $this->getCached($key);
@@ -214,8 +197,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getCompletionStatuses(?string $type): ?array
-    {
+    public function getCompletionStatuses(?string $type): ?array {
         $key = 'completion_statuses';
 
         $cached = $this->getCached($key);
@@ -235,8 +217,7 @@ final class ReferencesService extends BaseService
         return [];
     }
 
-    public function getReligions(): ?array
-    {
+    public function getReligions(): ?array {
         $key = 'religions';
 
         $cached = $this->getCached($key);
@@ -254,8 +235,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getEthnicities(): ?array
-    {
+    public function getEthnicities(): ?array {
         $key = 'ethnicities';
 
         $cached = $this->getCached($key);
@@ -273,8 +253,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getNationalities(): ?array
-    {
+    public function getNationalities(): ?array {
         $key = 'nationalities';
 
         $cached = $this->getCached($key);
@@ -292,8 +271,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getContactCategories(): ?array
-    {
+    public function getContactCategories(): ?array {
         $key = 'contact_categories';
 
         $cached = $this->getCached($key);
@@ -311,8 +289,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getContactTypes(): ?array
-    {
+    public function getContactTypes(): ?array {
         $key = 'contact_types';
 
         $cached = $this->getCached($key);
@@ -330,8 +307,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getSexualOrientations(): ?array
-    {
+    public function getSexualOrientations(): ?array {
         $key = 'sexual_orientations';
 
         $cached = $this->getCached($key);
@@ -349,8 +325,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getDisabilities(): ?array
-    {
+    public function getDisabilities(): ?array {
         $key = 'disabilities';
 
         $cached = $this->getCached($key);
@@ -368,8 +343,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getSubscriptionPlans(): ?array
-    {
+    public function getSubscriptionPlans(): ?array {
         $key = 'subscription_types';
 
         $cached = $this->getCached($key);
@@ -387,8 +361,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getSubscriptionStatuses(): ?array
-    {
+    public function getSubscriptionStatuses(): ?array {
         $key = 'subscription_statuses';
 
         $cached = $this->getCached($key);
@@ -406,7 +379,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getLegalBasis() : ?array {
+    public function getLegalBasis(): ?array {
         $key = 'legal_basis';
 
         $cached = $this->getCached($key);
@@ -424,7 +397,7 @@ final class ReferencesService extends BaseService
         }
     }
 
-    public function getTenantTypes() : ?array {
+    public function getTenantTypes(): ?array {
         $key = 'tenant_types';
 
         $cached = $this->getCached($key);

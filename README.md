@@ -7,7 +7,7 @@ VCNexus is a multi-tenant ERP built as a **modular monolith** — one PHP applic
 | Layer | Choice |
 |---|---|
 | Runtime | Docker |
-| Backend | PHP 8.4 — pure PHP, no framework |
+| Backend | PHP 8.5 — pure PHP, no framework |
 | Database | PostgreSQL, with Row-Level Security for tenant isolation |
 | DB Access | ADOdb, pooled through pgDog |
 | Cache / Sessions / Queues | Redis |

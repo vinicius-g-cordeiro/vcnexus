@@ -81,7 +81,7 @@ flowchart TB
 | Layer | Choice | Why |
 |---|---|---|
 | Runtime | Docker (multi-container) | Isolates services, matches production topology in dev |
-| Backend | PHP 8.4, no framework | Full control over the request lifecycle; framework conventions (routing, DI, middleware) built explicitly and kept small — see [Backend Conventions](02-backend-conventions.md) |
+| Backend | PHP 8.5, no framework | Full control over the request lifecycle; framework conventions (routing, DI, middleware) built explicitly and kept small — see [Backend Conventions](02-backend-conventions.md) |
 | Database | PostgreSQL + Row-Level Security | Tenant isolation enforced at the database layer, not only in application code — see [Multi-Tenancy](03-multi-tenancy.md) |
 | DB Access | ADOdb, pooled via pgDog | ADOdb for a stable, framework-agnostic DB abstraction; pgDog for connection pooling under load |
 | Cache / Sessions / Queues | Redis | Sessions, `PermissionCache`, job queue, and WebSocket pub/sub all share one service |

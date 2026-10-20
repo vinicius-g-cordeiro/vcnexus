@@ -13,21 +13,20 @@ declare(strict_types=1);
 namespace Tools\SchemaCompiler\Generators;
 
 use App\Schemas\AbstractSchema;
+use App\Shared\Schema\Attributes\Column;
 
-final class ModelGenerator
-{
-    /** @param \App\Shared\Schema\Attributes\Column[] $columns */
-    public function generate(string $schemaClass, AbstractSchema $schema, array $columns): string
-    {
-        $modelClass = $this->deriveModelClass($schemaClass);
-        [$namespace, $className] = $this->splitClass($modelClass);
+final class ModelGenerator {
+	/** @param Column[] $columns */
+	public function generate(string $schemaClass, AbstractSchema $schema, array $columns): string {
+		$modelClass = $this->deriveModelClass($schemaClass);
+		[$namespace, $className] = $this->splitClass($modelClass);
 
-        $properties = array_map(fn($col) => $this->renderProperty($col), $columns);
-        $propertiesFromArray = array_map(fn($col) => $this->renderPropertyFromArray($col), $columns);
+		$properties = array_map(fn($col) => $this->renderProperty($col), $columns);
+		$propertiesFromArray = array_map(fn($col) => $this->renderPropertyFromArray($col), $columns);
 
-        $year = new \DateTime()->format('Y');
-        $projectVersion = getenv('APP_VERSION');
-        return <<<PHP
+		$year = new \DateTime('now')->format('Y');
+		$projectVersion = getenv('APP_VERSION');
+		return <<<PHP
         <?php
         /**
          * GENERATED from {$schemaClass} — do not edit directly. Edit the schema and recompile.
@@ -61,124 +60,115 @@ final class ModelGenerator
             }
         }
         PHP;
-    }
+	}
 
-    private function renderProperty($column): string
-    {
-        $type = $this->sqlToPhpType($column->type);
-        $type = $column->nullable ? "?{$type}" : $type;
-        $column->name = str_replace(['"', "'"], '', $column->name);
-        
-        // For the model the primary keys should be considered nullable, in order to use the model without specifing the keys, for example when inserting a new record on the database
-        if(in_array($column->name,['uuid', 'active']) || ($column->name === 'id' && $type === 'int')) {
-            $type = "?{$type}";
-        }
-        return "public {$type} \${$column->name}";
-    }
+	private function renderProperty($column): string {
+		$type = $this->sqlToPhpType($column->type);
+		$type = $column->nullable ? "?{$type}" : $type;
+		$column->name = str_replace(['"', "'"], '', $column->name);
 
-    public function renderPropertyFromArray($column): string
-    {
-        $type = $this->sqlToPhpType($column->type);
-        $type = $column->nullable ? "?{$type}" : $type;
+		// For the model the primary keys should be considered nullable, in order to use the model without specifing the keys, for example when inserting a new record on the database
+		if (in_array($column->name, ['uuid', 'active']) || ($column->name === 'id' && $type === 'int')) {
+			$type = "?{$type}";
+		}
+		return "public {$type} \${$column->name}";
+	}
 
-        // Remove the double or single quotes from the column name, in case it's reserved word
-        $column->name = str_replace(['"', "'"], '', $column->name);
-        
-        if(in_array($type, ['int', '?int'])) {
-            return "\$newObject->{$column->name} = isset(\$data['{$column->name}']) ? (int) \$data['{$column->name}'] : null";
-        }
+	public function renderPropertyFromArray($column): string {
+		$type = $this->sqlToPhpType($column->type);
+		$type = $column->nullable ? "?{$type}" : $type;
 
-        if(in_array($type, ['array', '?array'])) {
-            return "\$newObject->{$column->name} = isset(\$data['{$column->name}']) ? (array) \$data['{$column->name}'] : null";
-        }
+		// Remove the double or single quotes from the column name, in case it's reserved word
+		$column->name = str_replace(['"', "'"], '', $column->name);
 
-        return "\$newObject->{$column->name} = isset(\$data['{$column->name}']) ? \$data['{$column->name}'] : null";
-    }
+		if (in_array($type, ['int', '?int'])) {
+			return "\$newObject->{$column->name} = isset(\$data['{$column->name}']) ? (int) \$data['{$column->name}'] : null";
+		}
 
-    public function deriveModelClass(string $schemaClass): string
-    {
-        // Authentication\UserSchema  →  Authentication\Models\User
-        $withoutSchemaSuffix = preg_replace('/Schema$/', '', $schemaClass);
-        $modelClass = str_replace('App\\Schemas\\', 'App\\Modules\\', $withoutSchemaSuffix);
+		if (in_array($type, ['array', '?array'])) {
+			return "\$newObject->{$column->name} = isset(\$data['{$column->name}']) ? (array) \$data['{$column->name}'] : null";
+		}
 
-        // Insert "Models\" right before the class name
-        $parts = explode('\\', $modelClass);
-        $className = array_pop($parts);
-        $parts[] = 'Models';
-        $parts[] = $className;
+		return "\$newObject->{$column->name} = isset(\$data['{$column->name}']) ? \$data['{$column->name}'] : null";
+	}
 
-        return implode('\\', $parts);
-    }
+	public function deriveModelClass(string $schemaClass): string {
+		// Authentication\UserSchema  →  Authentication\Models\User
+		$withoutSchemaSuffix = preg_replace('/Schema$/', '', $schemaClass);
+		$modelClass = str_replace('App\\Schemas\\', 'App\\Modules\\', $withoutSchemaSuffix);
 
-    private function splitClass(string $fqcn): array
-    {
-        $parts = explode('\\', $fqcn);
-        $className = array_pop($parts);
-        $namespace = implode('\\', $parts);
+		// Insert "Models\" right before the class name
+		$parts = explode('\\', $modelClass);
+		$className = array_pop($parts);
+		$parts[] = 'Models';
+		$parts[] = $className;
 
-        return [$namespace, $className];
-    }
+		return implode('\\', $parts);
+	}
 
-    /**
-     * Maps a SQL/schema-level type to the PHP scalar type used in the generated Model's constructor.
-     */
-    private function sqlToPhpType(string $sqlType): string
-    {
-        return match ($sqlType) {
-            'varchar', 'text', 'char', 'uuid', 'timestamp', 'timestamptz', 'date' => 'string',
-            'smallint', 'integer', 'bigint' => 'int',
-            'numeric', 'decimal', 'float', 'double' => 'float',
-            'boolean' => 'bool',
-            'jsonb', 'json' => 'array',
-            default => 'string',
-        };
-    }
+	private function splitClass(string $fqcn): array {
+		$parts = explode('\\', $fqcn);
+		$className = array_pop($parts);
+		$namespace = implode('\\', $parts);
 
-    /**
-     * PascalCase / snake_case column name → camelCase PHP property name.
-     * e.g. 'token_expires_at' → 'tokenExpiresAt'
-     */
-    private function toCamelCase(string $snakeCaseName): string
-    {
-        $parts = explode('_', $snakeCaseName);
-        $first = array_shift($parts);
-        $rest = array_map('ucfirst', $parts);
+		return [$namespace, $className];
+	}
 
-        return $first . implode('', $rest);
-    }
+	/**
+	 * Maps a SQL/schema-level type to the PHP scalar type used in the generated Model's constructor.
+	 */
+	private function sqlToPhpType(string $sqlType): string {
+		return match ($sqlType) {
+			'varchar', 'text', 'char', 'uuid', 'timestamp', 'timestamptz', 'date' => 'string',
+			'smallint', 'integer', 'bigint' => 'int',
+			'numeric', 'decimal', 'float', 'double' => 'float',
+			'boolean' => 'bool',
+			'jsonb', 'json' => 'array',
+			default => 'string',
+		};
+	}
 
-    /**
-     * Converts an absolute file-system path back to a fully-qualified class name,
-     * assuming a PSR-4 mapping of App\ → src/.
-     */
-    public function classFromPath(string $path): string
-    {
-        $relative = str_replace(['src/', '.php'], '', $path);
-        return 'App\\' . str_replace('/', '\\', $relative);
-    }
+	/**
+	 * PascalCase / snake_case column name → camelCase PHP property name.
+	 * e.g. 'token_expires_at' → 'tokenExpiresAt'
+	 */
+	private function toCamelCase(string $snakeCaseName): string {
+		$parts = explode('_', $snakeCaseName);
+		$first = array_shift($parts);
+		$rest = array_map('ucfirst', $parts);
 
-    /**
-     * Converts a fully-qualified class name to its expected file path under src/,
-     * creating parent directories if they don't exist yet (first compile of a new module).
-     */
-    public function pathFromClass(string $fqcn): string
-    {
-        $path = 'src/' . str_replace(['App\\', '\\'], ['', '/'], $fqcn) . '.php';
+		return $first . implode('', $rest);
+	}
 
-        $dir = dirname($path);
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, recursive: true);
-        }
+	/**
+	 * Converts an absolute file-system path back to a fully-qualified class name,
+	 * assuming a PSR-4 mapping of App\ → src/.
+	 */
+	public function classFromPath(string $path): string {
+		$relative = str_replace(['src/', '.php'], '', $path);
+		return 'App\\' . str_replace('/', '\\', $relative);
+	}
 
-        return $path;
-    }
+	/**
+	 * Converts a fully-qualified class name to its expected file path under src/,
+	 * creating parent directories if they don't exist yet (first compile of a new module).
+	 */
+	public function pathFromClass(string $fqcn): string {
+		$path = 'src/' . str_replace(['App\\', '\\'], ['', '/'], $fqcn) . '.php';
 
-    /**
-     * Small formatting helper — joins generated property lines with the given separator,
-     * indenting each continuation line to match the constructor's opening parenthesis.
-     */
-    private function join(array $lines, string $separator): string
-    {
-        return implode($separator, $lines);
-    }
+		$dir = dirname($path);
+		if (!is_dir($dir)) {
+			mkdir($dir, 0755, recursive: true);
+		}
+
+		return $path;
+	}
+
+	/**
+	 * Small formatting helper — joins generated property lines with the given separator,
+	 * indenting each continuation line to match the constructor's opening parenthesis.
+	 */
+	private function join(array $lines, string $separator): string {
+		return implode($separator, $lines);
+	}
 }
