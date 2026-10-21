@@ -1530,17 +1530,19 @@ VALUES (
 INSERT INTO business (
               tenant_id,
               trade_name,
-              type,
               tax_id,
               fantasy_name,
-              active
+              active,
+              legal_entity_type_id,
+              type_id
        )
 VALUES (
               v_tenant_id,
               'VCNexus (MEI)',
-              1,
               '000.000.000/0001-01',
               'VCNexus',
+              1,
+              1,
               1
        )
 RETURNING id INTO v_business_id;
@@ -3436,18 +3438,20 @@ RETURNING id INTO v_tenant_id;
 INSERT INTO business (
               tenant_id,
               trade_name,
-              type,
               tax_id,
               fantasy_name,
-              active
+              active,
+              legal_entity_type_id,
+              type_id
        )
 VALUES (
               v_tenant_id,
               'Puro Sabor (MEI)',
-              1,
               '62.728.369/0001-72',
               'Puro Sabor',
-              1
+              1,
+              1,
+              7
        ) ON CONFLICT DO NOTHING
 RETURNING id INTO v_business_id;
 INSERT INTO business_brandings (
@@ -3490,18 +3494,20 @@ RETURNING id INTO v_tenant_id;
 INSERT INTO business (
               tenant_id,
               trade_name,
-              type,
               tax_id,
               fantasy_name,
-              active
+              active,
+              legal_entity_type_id,
+              type_id
        )
 VALUES (
               v_tenant_id,
               'VJ Soluções (MEI)',
-              1,
               '17.017.023/0001-72',
               'VJ Soluções',
-              1
+              1,
+              2,
+              5
        ) ON CONFLICT DO NOTHING
 RETURNING id INTO v_business_id;
 INSERT INTO business_brandings (
@@ -3545,18 +3551,20 @@ RETURNING id INTO v_tenant_id;
 INSERT INTO business (
               tenant_id,
               trade_name,
-              type,
               tax_id,
               fantasy_name,
-              active
+              active,
+              legal_entity_type_id,
+              type_id
        )
 VALUES (
               v_tenant_id,
               'Cerrado G. Studios (SA)',
-              1,
               '09.014.012/0001-15',
               'Cerrado G. Studios',
-              1
+              1,
+              1,
+              5
        ) ON CONFLICT DO NOTHING
 RETURNING id INTO v_business_id;
 INSERT INTO business_brandings (

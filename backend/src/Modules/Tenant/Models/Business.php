@@ -22,7 +22,7 @@ final class Business extends BaseModel
     public string $fantasy_name;
     public ?int $legal_entity_type_id;
     public string $tax_id;
-    public ?int $type;
+    public ?int $type_id;
     public ?string $state_registration;
     public ?string $municipal_registration;
     public ?string $description;
@@ -45,7 +45,7 @@ final class Business extends BaseModel
         $newObject->fantasy_name = isset($data['fantasy_name']) ? $data['fantasy_name'] : null;
         $newObject->legal_entity_type_id = isset($data['legal_entity_type_id']) ? (int) $data['legal_entity_type_id'] : null;
         $newObject->tax_id = isset($data['tax_id']) ? $data['tax_id'] : null;
-        $newObject->type = isset($data['type']) ? (int) $data['type'] : null;
+        $newObject->type_id = isset($data['type_id']) ? (int) $data['type_id'] : null;
         $newObject->state_registration = isset($data['state_registration']) ? $data['state_registration'] : null;
         $newObject->municipal_registration = isset($data['municipal_registration']) ? $data['municipal_registration'] : null;
         $newObject->description = isset($data['description']) ? $data['description'] : null;

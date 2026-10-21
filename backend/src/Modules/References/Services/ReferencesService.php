@@ -57,9 +57,10 @@ final class ReferencesService extends BaseService {
     }
 
     private function setCached(string $key, array $value): void {
-        $this->redisConnection->set(
+        $this->redisConnection->setex(
             'references:' . $key,
-            json_encode($value, JSON_THROW_ON_ERROR)
+            json_encode($value, JSON_THROW_ON_ERROR),
+            random_int(pow(10, 5-1), pow(10, 5)-1)
         );
     }
 

@@ -9,6 +9,22 @@ const tenantService = {
         const response = await api.query(`/tenants/${uuid}`, { withCredentials: true })
         return response.data
     },
+    async fetchOrganization(uuid) {
+        const response = await api.query(`/tenants/${uuid}/organization`, { withCredentials: true })
+        return response.data
+    },
+    async fetchBrandings(uuid) {
+        const response = await api.query(`/tenants/${uuid}/brandings`, { withCredentials: true })
+        return response.data
+    },
+    async fetchAddresses(uuid) {
+        const response = await api.query(`/tenants/${uuid}/addresses`, { withCredentials: true })
+        return response.data
+    },
+    async fetchContacts(uuid) {
+        const response = await api.query(`/tenants/${uuid}/contacts`, { withCredentials: true })
+        return response.data
+    },
     async fetchAllTenants(paginate = false) {
         const response = await api.get('/tenants/', { params: { paginate }, withCredentials: true })
         return response.data

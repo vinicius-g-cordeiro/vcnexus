@@ -40,10 +40,10 @@ final class BusinessSchema extends AbstractSchema
     #[Column(type: 'varchar', length: 30)]
     public string $tax_id;
 
-    #[Column(type: 'smallint', length: 1)]
+    #[Column(type: 'bigint')]
     #[Nullable(nullable: true)]
     #[Comment('1: MEI(Micro Empreendedor Individual), 2: SLU(Sociedade Limitada Unipessoal), 3: EI(Empresa Individual), 4: LTDA(Sociedade Limitada), 5: SS(Sociedade Simples), 6: SA(Sociedade Anônima), etc..')]
-    public string $type;
+    public ?int $type_id;
 
     #[Column(type: 'varchar', length: 30)]
     #[Nullable(nullable: true)]
@@ -60,6 +60,5 @@ final class BusinessSchema extends AbstractSchema
     #[Column(type: 'varchar', length: 100)]
     #[Nullable(nullable: true)]
     public string $website;
-
 
 }

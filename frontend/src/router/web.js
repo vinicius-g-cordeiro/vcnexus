@@ -129,10 +129,12 @@ const routes = [
           {
             path: "/tenants/:uuid",
             name: "tenants.edit",
-            component: () => import("@/views/tenants/Tenants.vue"),
+            component: () => import("@/views/tenants/Form.vue"),
             meta: {
-
-            }
+              breadcrumbs: [],
+              actions: [],
+              title: "Edit Tenant",
+            },
           }
         ]
       },

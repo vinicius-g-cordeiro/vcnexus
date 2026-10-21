@@ -48,7 +48,7 @@ import Input from '@/components/inputs/Input.vue'
 import Select from '@/components/inputs/Select.vue'
 
 const props = defineProps({
-    contacts: { type: Array, default: () => [] },
+    contacts: { type: [Array,Object], default: () => [] },
     mode: { type: String, default: 'edit' },
 })
 

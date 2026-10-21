@@ -31,10 +31,8 @@
 
                 <Input v-model="form.app_name" type="text" label="Name" name="app_name" id="app_name" class="w-full" />
 
-                <Select v-model="form.type" label="Type" name="type" id="type" :options="typeOptions" placeholder="Select" required />
-                
                 <Input v-model="form.website" type="text" label="Website" name="website" id="website" class="w-full" />
-                
+
                 <Input v-model="form.primary_color" type="color" label="Primary Color" name="primary_color" id="primary_color" class="w-full" />
 
                 <Input v-model="form.secondary_color" type="color" label="Secondary Color" name="secondary_color" id="secondary_color" class="w-full" />
@@ -59,7 +57,7 @@ import Input from '@/components/inputs/Input.vue'
 import Select from '@/components/inputs/Select.vue'
 
 const props = defineProps({
-    branding: { type: Array, default: () => [] },
+    branding: { type: [Array, Object], default: () => [] },
     mode: { type: String, default: 'edit' },
 })
 
@@ -76,8 +74,7 @@ const form = reactive({
     background_color: '#ffffff',
     font_style: 'nunito',
     button_style: '',
-    logo: null,
-    type: null
+    logo: null
 })
 
 
@@ -88,11 +85,22 @@ const logo = ref(null)
 onMounted(async () => {
     await referencesStore.fetchSubscriptionPlans()
     await referencesStore.fetchSubscriptionStatuses()
-    await referencesStore.fetchTenantTypes()
+
 })
 
-const typeOptions = computed(()=> referencesStore.tenant_types.map(t => ({ label: t.label, value: t.id })))
+function seedFromFields(val) {
+    form.app_name = val?.app_name ?? ''
+    form.primary_color = val?.primary_color ?? null
+    form.secondary_color = val?.secondary_color ?? null
+    form.accent_color = val?.accent_color ?? null
+    form.text_color = val?.text_color ?? null
+    form.background_color = val?.background_color ?? null
+    form.font_style = val?.font_style ?? null
+    form.button_style = val?.button_style ?? null
+    form.logo = val?.logo ?? null
+}
 
+watch(() => props.branding, (val) => seedFromFields(val))
 
 async function handleSubmit() {
     if (props.mode !== 'edit') return

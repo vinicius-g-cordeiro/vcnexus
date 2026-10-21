@@ -15,6 +15,8 @@
 
                 <Select v-model="form.legal_entity_type_id" type="text" label="Legal Entity Type" name="legal_entity_type_id" class="w-full" :options="legalEntityTypesOptions" required placeholder="Select" />
 
+                <Select v-model="form.type_id" label="Type" name="type_id" id="type" :options="typeOptions" placeholder="Select" required />
+
                 <Input v-model="form.slug" type="text" label="Slug" name="slug" id="slug" class="w-full" />
 
                 <Input v-model="form.tax_id" type="text" label="Tax ID" name="tax_id" id="tax_id" class="w-full" />
@@ -42,14 +44,14 @@ import Input from '@/components/inputs/Input.vue'
 import Select from '@/components/inputs/Select.vue'
 
 const props = defineProps({
-    fields: { type: Array, default: () => [] },
+    fields: { type: [Array,Object], default: () => [] },
     mode: { type: String, default: 'edit' },
 })
 
 const emit = defineEmits(['update:modelValue'])
 
 const referencesStore = useReferencesStore()
-
+const typeOptions = computed(()=> referencesStore.tenant_types.map(t => ({ label: t.label, value: t.id })))
 const form = reactive({
     app_name: '',
     fantasy_name: '',
@@ -63,18 +65,36 @@ const form = reactive({
     subscription_type_id: null,
     subscription_status_id: null,
     legal_entity_type_id: null,
+    type_id: null,
 })
 
 const subscriptionPlansOptions = computed(() => referencesStore.subscription_plans.map(t => ({ label: t.label, value: t.id })))
 const subscriptionStatusesOptions = computed(() => referencesStore.subscription_statuses.map(p => ({ label: p.label, value: p.id })))
 const legalEntityTypesOptions = computed(() => referencesStore.legal_entity_types.map(legalType => ({label: legalType.label, value: legalType.id})))
 
-watch(form, (val) => emit('update:modelValue', { ...val }), { deep: true })
+function seedFromFields(val, { clearPassword } = {}) {
+    form.app_name = val?.app_name ?? ''
+    form.fantasy_name = val?.fantasy_name ?? ''
+    form.trade_name = val?.trade_name ?? null
+    form.type_id = val?.type_id ?? null
+    form.slug = val?.slug ?? null
+    form.tax_id = val?.tax_id ?? null
+    form.state_registration = val?.state_registration ?? null
+    form.municipal_registration = val?.municipal_registration ?? null
+    form.website = val?.website ?? null
+    form.description = val?.description ?? null
+    form.subscription_type_id = val?.subscription_type_id ?? null
+    form.subscription_status_id = val?.subscription_status_id ?? null
+    form.legal_entity_type_id = val?.legal_entity_type_id ?? null
+}
+
+watch(() => props.fields, (val) => seedFromFields(val))
 
 onMounted(async () => {
     await referencesStore.fetchSubscriptionPlans()
     await referencesStore.fetchSubscriptionStatuses()
     await referencesStore.fetchLegalEntityTypes()
+    await referencesStore.fetchTenantTypes()
 })
 
 

@@ -19,15 +19,16 @@ use App\Shared\Http\Response;
 use App\Shared\Http\DTOValidator;
 use App\Shared\Http\Attributes\Route;
 use App\Shared\Http\Attributes\Middleware;
-use App\Shared\Http\Attributes\Permission;
 use App\Modules\Tenant\DTOs\TenantListRequest;
 use App\Modules\Tenant\Services\TenantService;
 use App\Shared\Http\Middleware\AuthMiddleware;
 use App\Shared\Http\Controllers\BaseController;
 use App\Modules\Tenant\DTOs\TenantStoreInRequest;
+use App\Shared\Http\Middleware\TenantResolverMiddleware;
 
 #[Route(path: '/v1/tenants')]
 #[Middleware(AuthMiddleware::class)]
+#[Middleware(TenantResolverMiddleware::class)]
 final class TenantController extends BaseController
 {
     public function __construct(Request $request, Session $session, private TenantService $service, private DTOValidator $validator) {
@@ -35,12 +36,55 @@ final class TenantController extends BaseController
     }
 
     #[Route(methods: ['GET', 'QUERY'], path: '/')]
-    #[Permission(['tenants.view'])]
     public function index() : ?Response
     {
         try{
             $tenantListRequest = TenantListRequest::fromArray((array)$this->request->get());
             $tenants = $this->service->index($tenantListRequest);
+            return Response::json(data: $tenants, message: 'success')->send(200, [], true);
+        }catch(\Throwable $th){
+            throw $th;
+        }
+    }
+
+    #[Route(methods: ['GET', 'QUERY'], path: '/{uuid}/organization')]
+    public function organization(?string $uuid) : ?Response
+    {
+        try{
+            $tenants = $this->service->organization($uuid);
+            return Response::json(data: $tenants, message: 'success')->send(200, [], true);
+        }catch(\Throwable $th){
+            throw $th;
+        }
+    }
+
+    #[Route(methods: ['GET', 'QUERY'], path: '/{uuid}/brandings')]
+    public function brandings(?string $uuid) : ?Response
+    {
+        try{
+            $tenants = $this->service->brandings($uuid);
+            return Response::json(data: $tenants, message: 'success')->send(200, [], true);
+        }catch(\Throwable $th){
+            throw $th;
+        }
+    }
+
+    #[Route(methods: ['GET', 'QUERY'], path: '/{uuid}/addresses')]
+    public function addresses(?string $uuid) : ?Response
+    {
+        try{
+            $tenants = $this->service->addresses($uuid);
+            return Response::json(data: $tenants, message: 'success')->send(200, [], true);
+        }catch(\Throwable $th){
+            throw $th;
+        }
+    }
+
+    #[Route(methods: ['GET', 'QUERY'], path: '/{uuid}/contacts')]
+    public function contacts(?string $uuid) : ?Response
+    {
+        try{
+            $tenants = $this->service->contacts($uuid);
             return Response::json(data: $tenants, message: 'success')->send(200, [], true);
         }catch(\Throwable $th){
             throw $th;

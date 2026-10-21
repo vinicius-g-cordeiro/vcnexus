@@ -12,6 +12,10 @@ export const useTenantStore = defineStore("tenants", {
   state: () => ({
     tenant: null,
     tenants: null,
+    contacts: null,
+    addresses: null,
+    brandings: null,
+    organization: null,
     loading: false,
     error: null,
   }),
@@ -23,6 +27,58 @@ export const useTenantStore = defineStore("tenants", {
       try {
         const response = await tenantsService.fetchTenants();
         this.tenant = response.data;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchOrganization(uuid) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await tenantsService.fetchOrganization(uuid);
+        this.organization = response.data;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+      async fetchBrandings(uuid) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await tenantsService.fetchBrandings(uuid);
+        this.brandings = response.data;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+      async fetchAddresses(uuid) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await tenantsService.fetchAddresses(uuid);
+        this.addresses = response.data;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchContacts(uuid) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await tenantsService.fetchContacts(uuid);
+        this.contacts = response.data;
         return true;
       } catch (e) {
         this.error = e.message;

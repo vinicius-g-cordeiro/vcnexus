@@ -33,7 +33,7 @@ final class TenantService extends BaseService
     }
 
     /**
-     * 
+     *
      * @param mixed $queryParameters
      * @return TenantListResponse[]|null
      */
@@ -46,12 +46,12 @@ final class TenantService extends BaseService
     }
 
     public function store(?TenantStoreInRequest $tenantStoreRequest) : ?TenantStoreResponse {
-        
-        $tenant = $this->transactional(function() use ($tenantStoreRequest){            
+
+        $tenant = $this->transactional(function() use ($tenantStoreRequest){
             $file = Files::upload_file($tenantStoreRequest->logo, '/var/www/storage/upload/tenants/logos/');
 
             $tenantStoreReq = Tenant::fromArray($tenantStoreRequest->toArray());
-            
+
             $tenantRes = $this->tenantRepository->store($tenantStoreReq);
 
             if($tenantRes === false){
@@ -88,7 +88,7 @@ final class TenantService extends BaseService
                 }
                 throw new TransactionFailedException('Could not store business branding', 409);
             }
-            
+
             $tenantResponse = TenantStoreResponse::fromArray(['id' => $tenantRes->id, 'uuid' => $tenantRes->uuid]);
 
             return $tenantResponse;
@@ -104,4 +104,21 @@ final class TenantService extends BaseService
     public function activate(string $uuid): bool {
         return $this->tenantRepository->activate($uuid);
     }
+
+    public function organization(string $uuid): array {
+        return $this->tenantRepository->organization($uuid);
+    }
+
+    public function brandings(string $uuid): array {
+        return $this->tenantRepository->brandings($uuid);
+    }
+
+    public function addresses(string $uuid): array {
+        return $this->tenantRepository->addresses($uuid);
+    }
+
+    public function contacts(string $uuid): array {
+        return $this->tenantRepository->contacts($uuid);
+    }
+
 }
