@@ -123,7 +123,7 @@ function handleClickOutside(e) {
 }
 
 function seedSelected() {
-    selectedIds.value = (props.roles ?? []).map(r => r.id)
+    selectedIds.value = (props.roles ?? []).map(r => r.role_id)
     seeded.value = true
 }
 

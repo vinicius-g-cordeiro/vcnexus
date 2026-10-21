@@ -4,6 +4,7 @@ CREATE TABLE business (
     active smallint NOT NULL DEFAULT 1,
     trade_name varchar(255) NOT NULL,
     fantasy_name varchar(255) NOT NULL,
+    legal_entity_type_id bigint,
     tax_id varchar(30) NOT NULL,
     type smallint,
     state_registration varchar(30),

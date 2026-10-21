@@ -10,8 +10,10 @@
         <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
             <div class="gap-4 grid grid-cols-1 sm:grid-cols-2">
                 <Input v-model="form.fantasy_name" type="text" label="Fantasy Name" name="fantasy_name" id="fantasy_name" required class="w-full" />
-           
+
                 <Input v-model="form.trade_name" type="text" label="Trade Name" name="trade_name" id="trade_name" class="w-full" />
+
+                <Select v-model="form.legal_entity_type_id" type="text" label="Legal Entity Type" name="legal_entity_type_id" class="w-full" :options="legalEntityTypesOptions" required placeholder="Select" />
 
                 <Input v-model="form.slug" type="text" label="Slug" name="slug" id="slug" class="w-full" />
 
@@ -22,19 +24,14 @@
                 <Input v-model="form.municipal_registration" type="text" label="Municipal Registration" name="municipal_registration" id="municipal_registration" class="w-full" />
 
                 <Input v-model="form.domain" type="text" label="Domain" name="domain" id="domain" class="w-full" />
-           
+
                 <Input v-model="form.description" type="text" label="Description" name="description" id="description" class="w-full" />
-           
+
                 <Select v-model="form.subscription_type_id" label="Subscription Plan" name="subscription_type_id" id="subscription_type_id" :options="subscriptionPlansOptions" placeholder="Select" required />
-           
+
                 <Select v-model="form.subscription_status_id" label="Subscription Status" name="subscription_status_id" id="subscription_status_id" :options="subscriptionStatusesOptions" placeholder="Select" required />
-
-
             </div>
-
         </form>
-
-            
     </div>
 </template>
 
@@ -64,17 +61,20 @@ const form = reactive({
     website: '',
     description: '',
     subscription_type_id: null,
-    subscription_status_id: null
+    subscription_status_id: null,
+    legal_entity_type_id: null,
 })
 
 const subscriptionPlansOptions = computed(() => referencesStore.subscription_plans.map(t => ({ label: t.label, value: t.id })))
 const subscriptionStatusesOptions = computed(() => referencesStore.subscription_statuses.map(p => ({ label: p.label, value: p.id })))
+const legalEntityTypesOptions = computed(() => referencesStore.legal_entity_types.map(legalType => ({label: legalType.label, value: legalType.id})))
 
 watch(form, (val) => emit('update:modelValue', { ...val }), { deep: true })
 
 onMounted(async () => {
     await referencesStore.fetchSubscriptionPlans()
     await referencesStore.fetchSubscriptionStatuses()
+    await referencesStore.fetchLegalEntityTypes()
 })
 
 

@@ -20,6 +20,7 @@ final class Business extends BaseModel
     public ?int $active;
     public string $trade_name;
     public string $fantasy_name;
+    public ?int $legal_entity_type_id;
     public string $tax_id;
     public ?int $type;
     public ?string $state_registration;
@@ -42,6 +43,7 @@ final class Business extends BaseModel
         $newObject->active = isset($data['active']) ? (int) $data['active'] : null;
         $newObject->trade_name = isset($data['trade_name']) ? $data['trade_name'] : null;
         $newObject->fantasy_name = isset($data['fantasy_name']) ? $data['fantasy_name'] : null;
+        $newObject->legal_entity_type_id = isset($data['legal_entity_type_id']) ? (int) $data['legal_entity_type_id'] : null;
         $newObject->tax_id = isset($data['tax_id']) ? $data['tax_id'] : null;
         $newObject->type = isset($data['type']) ? (int) $data['type'] : null;
         $newObject->state_registration = isset($data['state_registration']) ? $data['state_registration'] : null;

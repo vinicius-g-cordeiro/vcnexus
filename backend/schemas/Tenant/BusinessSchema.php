@@ -13,7 +13,12 @@ declare(strict_types=1);
 namespace App\Schemas\Tenant;
 
 use App\Schemas\AbstractSchema;
-use App\Shared\Schema\Attributes\{Column, Comment, ForeignKey, Index, Nullable, TenantScoped};
+use App\Shared\Schema\Attributes\Index;
+use App\Shared\Schema\Attributes\Column;
+use App\Shared\Schema\Attributes\Comment;
+use App\Shared\Schema\Attributes\Nullable;
+use App\Shared\Schema\Attributes\ForeignKey;
+use App\Shared\Schema\Attributes\TenantScoped;
 
 #[TenantScoped(tenant_id: 'tenant_id')]
 #[Index(name: 'idx_tenant_business', unique: true, references: 'business', columns: ['tenant_id'], condition: ['active' => '1'])]
@@ -27,6 +32,10 @@ final class BusinessSchema extends AbstractSchema
 
     #[Column(type: 'varchar', length: 255)]
     public string $fantasy_name;
+
+    #[Column(type: 'bigint', default: null)]
+    #[Nullable]
+    public ?int $legal_entity_type_id;
 
     #[Column(type: 'varchar', length: 30)]
     public string $tax_id;
@@ -52,5 +61,5 @@ final class BusinessSchema extends AbstractSchema
     #[Nullable(nullable: true)]
     public string $website;
 
-    
+
 }

@@ -29,7 +29,7 @@
                 <Input v-model="form.firstname" type="text" label="First Name" name="firstname" id="firstname" required />
                 <Input v-model="form.surname" type="text" label="Surname" name="surname" id="surname" />
                 <Input v-model="form.lastname" type="text" label="Last Name" name="lastname" id="lastname" required />
-                <Input v-model="form.birthdate" type="date" label="Birth Date" name="birthdate" id="birthdate" />
+                <Input v-model="form.birthdate" type="date" minlength="13" maxlength="14" label="Birth Date" name="birthdate" id="birthdate" />
                 <Select v-model="form.locale" label="Locale" name="locale" id="locale" :options="localeOptions" placeholder="Select locale" />
             </div>
 
@@ -58,6 +58,8 @@ const emit = defineEmits(['update:modelValue'])
 
 const route = useRoute()
 const userStore = useUserStore()
+
+const storageBase = import.meta.env.VITE_API_URL
 
 const localeOptions = [
     { value: 'en-US', label: 'English (US)' },
@@ -94,22 +96,16 @@ function seedFromProfile(val) {
     form.lastname = val?.lastname ?? ''
     form.birthdate = formatDate(val?.birthdate) ?? ''
     form.locale = val?.locale ?? 'en-US'
-    avatarPreview.value = val?.avatar ?? ''
+    avatarPreview.value =  val?.avatar ? (storageBase + '/storage/users/avatars/'+ val?.avatar) : ''
     avatarFile.value = val?.avatarFile ?? null
 }
 
 if (props.mode === 'create') {
-    // seed once from whatever draft the parent already has (e.g. returning to
-    // this tab after visiting another one), then stop listening — the prop
-    // and local form stay in sync via the emit below, so re-watching the prop
-    // would just echo our own edits back and reset mid-keystroke
     seedFromProfile(props.profile)
     watch(form, (val) => {
         emit('update:modelValue', { ...val, birthdate: formatDate(val.birthdate) ?? '', avatarFile: avatarFile.value })
     }, { deep: true })
 } else {
-    // edit mode: the prop comes from the store and can legitimately change
-    // underneath us (e.g. a fresh fetch), so keep reacting to it
     watch(() => props.profile, seedFromProfile, { immediate: true })
 }
 

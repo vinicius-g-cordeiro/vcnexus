@@ -415,4 +415,22 @@ final class ReferencesService extends BaseService {
         }
     }
 
+    public function getLegalEntityTypes(): ?array {
+        $key = 'legal_entity_types';
+
+        $cached = $this->getCached($key);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $tenantTypes = $this->referenceRepository->getLegalEntityTypes();
+
+        if ($tenantTypes !== null) {
+            $this->setCached($key, $tenantTypes);
+
+            return $tenantTypes;
+        }
+    }
+
 }

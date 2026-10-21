@@ -12,14 +12,16 @@ declare(strict_types=1);
 
 namespace App\Modules\Authorization\Repositories;
 
-use App\Infrastructure\Database\Hydrator;
-use App\Modules\Authorization\DTOs\{RoleResponseContext, UserRoleResponseContext};
-use App\Shared\Domain\BaseRepository;
+use ADOConnection;
 use App\Shared\Http\Request;
+use App\Shared\Domain\BaseRepository;
+use App\Infrastructure\Database\Hydrator;
+use App\Modules\Authorization\DTOs\RoleResponseContext;
+use App\Modules\Authorization\DTOs\UserRoleResponseContext;
 
 final class RoleRepository extends BaseRepository
 {
-    public function __construct( \ADOConnection $db, ?string $tenant_id, ?string $user_id, ?array $roles, private Request $request) {
+    public function __construct( ADOConnection $db, ?string $tenant_id, ?string $user_id, ?array $roles, private Request $request) {
         parent::__construct($db, $tenant_id, $user_id, $roles);
     }
 
@@ -63,16 +65,9 @@ final class RoleRepository extends BaseRepository
 
     public function getUserRoles(string $user_id) : ?array {
         $query = <<<SQL
-            SELECT ur.role_id, ur.user_id, ur.id, r.uuid, r.name, r.description, r.tenant_id, r.active, r.created_at
-            FROM user_roles ur
-            INNER JOIN user_credentials uc ON uc.id = ur.user_id
-            INNER JOIN roles r ON r.id = ur.role_id
+            select * from public.get_user_roles(?);
         SQL;
-
-        $where = 'uc.uuid = ?';
-
-        $query .= " WHERE $where";
-
+        
         $params = [$user_id];
 
         $result = $this->scopedQuery($query, $params);

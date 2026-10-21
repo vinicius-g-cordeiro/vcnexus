@@ -18,10 +18,12 @@ final class Files {
     static function upload_file($files, $path = '/var/www/storage/upload/', $filename = 'file_', $newName = '') {
         $info = pathinfo($files['name']);
         $fileN = pathinfo($filename, PATHINFO_FILENAME);
+        
 
         if (empty($newName) ) {
             $response['file_name'] = $fileN . uniqid('',true) . time() . "." . $info['extension'];
         } else {
+            $newFilename = pathinfo($newName, PATHINFO_FILENAME);// try and remove the extension from the filename
             $response['file_name'] = $newName . "." . $info['extension'];
         }
 

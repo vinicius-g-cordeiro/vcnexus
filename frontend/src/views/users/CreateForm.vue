@@ -68,8 +68,8 @@ const authorizationStore = useAuthorizationStore()
 const sections = ref([
     { name: 'profile', label: 'Profile', icon: 'bi-person', required: true },
     { name: 'credentials', label: 'Credentials', icon: 'bi-key', required: true },
-    { name: 'permissions', label: 'Permissions', icon: 'bi-shield-check', required: false },
-    { name: 'roles', label: 'Roles', icon: 'bi-person-badge', required: false },
+    { name: 'permissions', label: 'Permissions', icon: 'bi-shield-check', required: true },
+    { name: 'roles', label: 'Roles', icon: 'bi-person-badge', required: true },
     { name: 'addresses', label: 'Addresses', icon: 'bi-geo-alt', required: false },
     { name: 'contacts', label: 'Contacts', icon: 'bi-telephone', required: false },
     { name: 'consents', label: 'Consents', icon: 'bi-file-earmark-check', required: false },
@@ -98,7 +98,7 @@ const draft = reactive({
 
 const sectionComplete = computed(() => ({
     profile: !!(draft.profile.firstname && draft.profile.lastname),
-    credentials: !!(draft.credentials.email && draft.credentials.password),
+    credentials: !!(draft.credentials.email && draft.credentials.password && draft.credentials.username),
     roles: draft.roles.length > 0,
     permissions: draft.permissions.length > 0,
 }))

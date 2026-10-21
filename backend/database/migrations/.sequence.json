@@ -42,5 +42,7 @@
     "ownable_types": 41,
     "addresses": 42,
     "legal_basis": 43,
-    "business_types": 44
+    "business_types": 44,
+    "ethnicities": 45,
+    "legal_entity_types": 46
 }

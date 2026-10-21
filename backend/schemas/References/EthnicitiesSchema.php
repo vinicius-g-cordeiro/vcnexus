@@ -10,21 +10,19 @@
 
 declare(strict_types=1);
 
-
 namespace App\Schemas\References;
 
 use App\Schemas\AbstractSchema;
-use App\Shared\Schema\Attributes\{Column, Nullable};
+use App\Shared\Schema\Attributes\Column;
+use App\Shared\Schema\Attributes\Nullable;
 
-
-final class EthnicitySchema extends AbstractSchema
+final class EthnicitiesSchema extends AbstractSchema
 {
-    public string $table = 'ethnicity';
+    public string $table = 'ethnicities';
     
     #[Column(type: 'varchar', length: 100, default: null)]
     #[Nullable(nullable: false)]
     public ?string $name;
-
 
     #[Column(type: 'varchar', length: 100, default: null)]
     #[Nullable(nullable: false)]

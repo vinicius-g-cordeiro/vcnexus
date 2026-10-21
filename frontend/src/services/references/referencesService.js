@@ -38,7 +38,7 @@ const referencesService = {
         const response = await api.query(`/references/completion-statuses/${type}/`)
         return response.data
     },
-    
+
     async fetchReligions(params) {
         const response = await api.query('/references/religions/', { params })
         return response.data
@@ -85,6 +85,10 @@ const referencesService = {
         const response = await api.query('/references/tenant-types/', { params })
         return response.data
     },
+    async fetchLegalEntityTypes(params){
+        const response = await api.query('/references/legal-entity-types/', { params })
+        return response.data
+    }
 }
 
 export default referencesService

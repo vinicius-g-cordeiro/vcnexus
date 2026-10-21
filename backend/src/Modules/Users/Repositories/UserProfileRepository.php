@@ -12,22 +12,27 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Repositories;
 
-use App\Infrastructure\Redis\RedisConnectionFactory;
-use App\Modules\Users\DTOs\UserCredentialsResponse;
-use App\Modules\Users\DTOs\UserListRequest;
-use App\Modules\Users\DTOs\UsersListResponse;
-use App\Modules\Users\Models\{UserProfile, UserConsents, UserEducation, UserSensitive};
-use App\Modules\Platform\{Addresses\Models\Addresses, Contacts\Models\Contacts};
+use Redis;
+use ADOConnection;
+use App\Shared\Http\Request;
 use App\Shared\Domain\BaseRepository;
 use App\Infrastructure\Database\Hydrator;
-use App\Shared\Http\Request;
-
+use App\Modules\Users\Models\UserProfile;
+use App\Modules\Users\Models\UserConsents;
+use App\Modules\Users\DTOs\UserListRequest;
+use App\Modules\Users\Models\UserEducation;
+use App\Modules\Users\Models\UserSensitive;
+use App\Modules\Users\DTOs\UsersListResponse;
+use App\Modules\Platform\Contacts\Models\Contacts;
+use App\Modules\Users\DTOs\UserCredentialsResponse;
+use App\Infrastructure\Redis\RedisConnectionFactory;
+use App\Modules\Platform\Addresses\Models\Addresses;
 
 final class UserProfileRepository extends BaseRepository
 {
 
-    private \Redis $redis;
-    public function __construct( \ADOConnection $db, ?string $tenant_id, ?string $user_id, ?array $roles, private Request $request, private RedisConnectionFactory $redisConnectionFactory) {
+    private Redis $redis;
+    public function __construct( ADOConnection $db, ?string $tenant_id, ?string $user_id, ?array $roles, private Request $request, private RedisConnectionFactory $redisConnectionFactory) {
         parent::__construct($db, $tenant_id, $user_id, $roles);
 
         $this->redis = $this->redisConnectionFactory->create();
@@ -38,7 +43,6 @@ final class UserProfileRepository extends BaseRepository
     {
         return 'user_profile';
     }
-
 
     /**
      * List all users
@@ -110,7 +114,6 @@ final class UserProfileRepository extends BaseRepository
         ];
     }
 
-
     public function profile(string $uuid): ?UserProfile {
 
         $select = <<<SQL
@@ -137,7 +140,7 @@ final class UserProfileRepository extends BaseRepository
 
     public function credentials(string $uuid): ?UserCredentialsResponse {
         $select = <<<SQL
-            SELECT uc.id, uc.uuid, uc.active, uc.email, uc.blocked, uc.status
+            SELECT uc.id, uc.uuid, uc.active, uc.email, uc.blocked, uc.status, tm.tenant_id, uc.username
             FROM user_credentials uc
             inner join user_profile up on uc.id = up.user_id
             inner join tenant_memberships tm on tm.user_id = uc.id
@@ -157,7 +160,6 @@ final class UserProfileRepository extends BaseRepository
 
         return $user;
     }
-
 
     /**
      * 
@@ -262,7 +264,6 @@ final class UserProfileRepository extends BaseRepository
         return Hydrator::hydrate(UserSensitive::class, $user);
     }
 
-
     public function education(string $uuid): ?array {
         $select = <<<SQL
             SELECT ue.*
@@ -292,10 +293,6 @@ final class UserProfileRepository extends BaseRepository
             WHERE owner_type_id = 1 AND owner_id IN (
                 SELECT uc.id
                 FROM user_credentials uc
-                inner join user_profile up on uc.id = up.user_id
-                inner join tenant_memberships tm on tm.user_id = uc.id
-                inner join tenants t on t.id = tm.tenant_id
-                inner join business b on b.tenant_id = t.id
                 WHERE uc.uuid = ?
                 LIMIT 1
             )
@@ -313,10 +310,6 @@ final class UserProfileRepository extends BaseRepository
             WHERE owner_type_id = 1 AND owner_id IN (
                 SELECT uc.id
                 FROM user_credentials uc
-                inner join user_profile up on uc.id = up.user_id
-                inner join tenant_memberships tm on tm.user_id = uc.id
-                inner join tenants t on t.id = tm.tenant_id
-                inner join business b on b.tenant_id = t.id
                 WHERE uc.uuid = ?
                 LIMIT 1
             )
@@ -326,5 +319,4 @@ final class UserProfileRepository extends BaseRepository
 
         return $result;
     }
-
 }

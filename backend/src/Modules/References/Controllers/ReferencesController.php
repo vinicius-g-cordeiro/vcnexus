@@ -226,4 +226,14 @@ final class ReferencesController extends BaseController {
             throw $th;
         }
     }
+
+    #[Route(path: '/legal-entity-types/', methods: ['QUERY','GET'])]
+    public function getLegalEntityTypes(): Response {
+        try {
+            $legalEntityTypes = $this->service->getLegalEntityTypes();
+            return Response::json(data: object(list: $legalEntityTypes), message:'success')->send(200, [], true);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }

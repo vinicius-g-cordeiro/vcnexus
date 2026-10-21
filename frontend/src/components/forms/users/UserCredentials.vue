@@ -72,6 +72,7 @@ function seedFromCredentials(val, { clearPassword } = {}) {
     else form.password = val?.password ?? ''
     form.last_login_at = val?.last_login_at ?? ''
     form.last_login_ip = val?.last_login_ip ?? ''
+    form.tenant_id = val?.tenant_id ?? ''
 }
 
 if (props.mode === 'create') {

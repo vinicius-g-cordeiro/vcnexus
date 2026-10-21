@@ -2049,7 +2049,7 @@ VALUES (
        ('queer', 'Queer', 'Queer'),
        ('lesbian', 'Lesbian', 'Lesbian'),
        ('others', 'Others', 'Others');
-INSERT INTO ethnicity (name, label, description)
+INSERT INTO ethnicities (name, label, description)
 VALUES (
               'asian',
               'Asian',
@@ -2135,6 +2135,41 @@ VALUES (
               'Prefer not to say',
               'The individual chooses not to disclose their demographic background.'
        );
+INSERT INTO legal_entity_types (name, label, description) VALUES
+-- BRAZIL
+('BR_MEI', 'MEI - Micro Empreendedor Individual', 'Brazil: Micro Empreendedor Individual. Simplified individual structure for small-scale entrepreneurs.'),
+('BR_SLU', 'SLU - Sociedade Limitada Unipessoal', 'Brazil: Sociedade Limitada Unipessoal. Single-member limited liability company that protects personal assets without partners.'),
+('BR_EI', 'EI - Empresa Individual', 'Brazil: Empresa Individual. Individual business model where the owner’s personal assets are legally tied to the company.'),
+('BR_LTDA', 'LTDA - Sociedade Limitada', 'Brazil: Sociedade Limitada. The most common multi-partner corporate structure where liability is restricted to share quotas.'),
+('BR_SS', 'SS - Sociedade Simples', 'Brazil: Sociedade Simples. Partnerships tailored for intellectual, scientific, or artistic professions (e.g., doctors, lawyers).'),
+('BR_SA', 'SA - Sociedade Anônima', 'Brazil: Sociedade Anônima. Corporations split by shares, used for public or large private organizations raising capital.'),
+
+-- UNITED STATES
+('US_LLC', 'LLC - Limited Liability Company', 'United States: Limited Liability Company. A hybrid structure offering asset protection with pass-through taxation rules.'),
+('US_C_CORP', 'C-Corp - C-Corporation', 'United States: C-Corporation. Standard legal corporate structure where owners and shareholders are taxed separately.'),
+('US_S_CORP', 'S-Corp - S-Corporation', 'United States: S-Corporation. A special corporate status allowing profits and losses to pass directly to shareholders’ tax returns.'),
+
+-- UNITED KINGDOM
+('GB_LTD', 'Ltd - Private Limited Company', 'United Kingdom: Private Limited Company. Privately held entity where individual shareholder liability is strictly limited to their shares.'),
+('GB_PLC', 'PLC - Public Limited Company', 'United Kingdom: Public Limited Company. Publicly traded corporation whose shares are available to the general public.'),
+
+-- GERMANY
+('DE_GMBH', 'GmbH - Gesellschaft mit beschränkter Haftung', 'Germany: Gesellschaft mit beschränkter Haftung. The standard private corporate entity offering limited personal liability.'),
+
+-- FRANCE
+('FR_SAS', 'SAS - Société par actions simplifiée', 'France: Société par ações simplificada. Simplified joint-stock setup highly favored by modern technology startups.'),
+
+-- ARGENTINA
+('AR_SRL', 'SRL - Sociedad de Responsabilidad Limitada', 'Argentina: Sociedad de Responsabilidad Limitada. Limited liability company where capital is split into quotas among partners.'),
+('AR_SA', 'S.A. - Sociedad Anónima', 'Argentina: Sociedad Anónima. Traditional corporation structure where capital is represented by tradable shares.'),
+('AR_SAS', 'SAS - Sociedad por Acciones Simplificadas', 'Argentina: Sociedad por Acciones Simplificadas. A modern, digitized, and highly simplified corporation format.'),
+
+-- CANADA
+('CA_SOLE_PROP', 'Sole Proprietorship', 'Canada: Unincorporated business structure managed by a single individual with direct personal liability.'),
+('CA_CORP', 'Corporation', 'Canada: Incorporated legal entity distinct from its shareholders, providing robust asset protection.'),
+('CA_PARTNERSHIP', 'Partnership', 'Canada: Business structure where two or more parties share legal ownership, operational profits, and financial liabilities.');
+
+
 INSERT INTO nationality (name, label, description)
 VALUES (
               'afghanistan',

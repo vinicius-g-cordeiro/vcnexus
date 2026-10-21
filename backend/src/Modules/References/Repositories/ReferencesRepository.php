@@ -18,13 +18,14 @@ use App\Shared\Domain\BaseRepository;
 use App\Infrastructure\Database\Hydrator;
 use App\Modules\References\Models\Gender;
 use App\Modules\References\Models\Religion;
-use App\Modules\References\Models\Ethnicity;
 use App\Modules\References\Models\Disability;
 use App\Modules\References\Models\LegalBasis;
+use App\Modules\References\Models\Ethnicities;
 use App\Modules\References\Models\Nationality;
 use App\Modules\References\Models\BusinessType;
 use App\Modules\References\Models\ContactTypes;
 use App\Modules\References\Models\EducationalType;
+use App\Modules\References\Models\LegalEntityType;
 use App\Modules\References\DTOs\CityRequestContext;
 use App\Modules\References\Models\CompletionStatus;
 use App\Modules\References\Models\EducationalLevel;
@@ -247,7 +248,7 @@ final class ReferencesRepository extends BaseRepository {
     public function getEthnicities(): ?array {
         $query = <<<SQL
             SELECT id, uuid, label, description, name
-            FROM ethnicity
+            FROM ethnicities
             WHERE active = 1
         SQL;
 
@@ -257,7 +258,7 @@ final class ReferencesRepository extends BaseRepository {
             return [];
         }
 
-        $result = Hydrator::hydrateMany(Ethnicity::class, $result);
+        $result = Hydrator::hydrateMany(Ethnicities::class, $result);
         return $result;
     }
 
@@ -411,6 +412,23 @@ final class ReferencesRepository extends BaseRepository {
         }
 
         $result = Hydrator::hydrateMany(BusinessType::class, $result);
+        return $result;
+    }
+
+    public function getLegalEntityTypes(): ?array {
+        $query = <<<SQL
+            SELECT id, uuid, label, description, name, active
+            FROM legal_entity_types
+            WHERE active = 1
+        SQL;
+
+        $result = $this->scopedQuery($query);
+
+        if (empty($result) || $result === false) {
+            return [];
+        }
+
+        $result = Hydrator::hydrateMany(LegalEntityType::class, $result);
         return $result;
     }
 }

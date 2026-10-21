@@ -63,12 +63,12 @@ const props = defineProps({
         default: false
     },
     maxlength: {
-        type: Number,
+        type: String,
         default: null,
         required: false
     },
     minlength: {
-        type: Number,
+        type: String,
         default: null,
         required: false
     }
@@ -181,7 +181,7 @@ const updatePasswordMeter = () => {
         <div class="relative" v-if="type !== 'textarea'">
             <input @keypress="type === 'password' && showPassword ? updatePasswordMeter() : null" class="bg-zinc-100 dark:bg-zinc-800 p-1 border border-olive-wood-500 dark:border-zinc-600 focus:outline-olive-wood-500 w-full text-xs" ref="input"
                 :type="showPassword ? (isPasswordVisible ? 'text' : 'password') : type" :placeholder="placeholder" :disabled="disabled" :readonly="readonly" :autocomplete="autocomplete" :autofocus="autofocus" :required="required" :name="name" :id="id" :class="classes" :value="modelValue"
-                @input="updateValue" :maxlength="maxlength" :minlength="minlength" @focus="type === 'password' && showPassword ? updatePasswordMeter() : null" />
+                @input="updateValue" :max="maxlength" :min="minlength" :maxlength="maxlength" :minlength="minlength" @focus="type === 'password' && showPassword ? updatePasswordMeter() : null" />
             <template v-if="showPassword">
                 <button type="button" @click="togglePasswordVisibility" class="top-1/2 right-2 absolute text-zinc-600 dark:text-zinc-400 -translate-y-1/2 cursor-pointer transform">
                     <i v-if="isPasswordVisible" class="bi bi-eye-slash-fill"></i>

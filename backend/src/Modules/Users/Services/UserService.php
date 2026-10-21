@@ -12,26 +12,37 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Services;
 
-use App\Modules\Authentication\Models\UserCredentials;
-use App\Modules\Authorization\Models\UserPermission;
-use App\Modules\Platform\Addresses\Models\Addresses;
+use ADOConnection;
+use App\Shared\Http\Request;
+use App\Shared\Http\Session;
+use App\Shared\Helpers\Files;
+use App\Shared\Domain\BaseService;
+use App\Modules\Users\Models\UserProfile;
+use App\Modules\Users\Models\UserConsents;
+use App\Modules\Users\DTOs\UserListRequest;
+use App\Modules\Users\Models\UserEducation;
+use App\Modules\Users\Models\UserSensitive;
+use App\Modules\Users\DTOs\UserStoreRequest;
+use App\Modules\Users\DTOs\UsersListResponse;
+use App\Modules\Users\DTOs\UserStoreResponse;
+use App\Modules\Authorization\Models\UserRole;
 use App\Modules\Platform\Contacts\Models\Contacts;
 use App\Modules\Users\DTOs\UserCredentialsResponse;
-use App\Modules\Users\Models\{UserProfile, UserConsents, UserEducation, UserSensitive};
-use App\Modules\Authorization\Models\{TenantMembership, UserRole};
-use App\Modules\Authorization\Repositories\{UserRolesRepository, UserPermissionsRepository};
-use App\Modules\Authentication\Repositories\AuthenticationRepository;
-use App\Modules\Users\DTOs\{UserListRequest, UsersListResponse};
-use App\Modules\Users\Repositories\{UserProfileConsentsRepository, UserProfileRepository, UserTenantMembershipRepository};
-use App\Shared\Domain\BaseService;
-use App\Shared\Helpers\Files;
-use App\Shared\Http\{Session, Request};
-use App\Modules\Users\DTOs\{UserStoreRequest, UserStoreResponse};
+use App\Modules\Authorization\Models\UserPermission;
+use App\Modules\Platform\Addresses\Models\Addresses;
+use App\Modules\Authentication\Models\UserCredentials;
+use App\Modules\Authorization\Models\TenantMembership;
+use App\Modules\Users\Repositories\UserProfileRepository;
 use App\Shared\Domain\Exceptions\TransactionFailedException;
+use App\Modules\Authorization\Repositories\UserRolesRepository;
+use App\Modules\Users\Repositories\UserProfileConsentsRepository;
+use App\Modules\Users\Repositories\UserTenantMembershipRepository;
+use App\Modules\Authentication\Repositories\AuthenticationRepository;
+use App\Modules\Authorization\Repositories\UserPermissionsRepository;
 
 final class UserService extends BaseService
 {
-    public function __construct(\ADOConnection $db, string $tenant_id, ?string $user_id, ?array $roles, private Request $request, private Session $session, private AuthenticationRepository $authenticationRepository, private UserProfileRepository $userProfileRepository, private UserProfileConsentsRepository $userProfileConsentsRepository, private UserTenantMembershipRepository $userTenantMembershipRepository, private UserRolesRepository $userRolesRepository, private UserPermissionsRepository $userPermissionsRepository ) {
+    public function __construct(ADOConnection $db, string $tenant_id, ?string $user_id, ?array $roles, private Request $request, private Session $session, private AuthenticationRepository $authenticationRepository, private UserProfileRepository $userProfileRepository, private UserProfileConsentsRepository $userProfileConsentsRepository, private UserTenantMembershipRepository $userTenantMembershipRepository, private UserRolesRepository $userRolesRepository, private UserPermissionsRepository $userPermissionsRepository ) {
         parent::__construct($db, $tenant_id, $user_id, $roles);
     }
 
@@ -54,12 +65,12 @@ final class UserService extends BaseService
             }
 
             $fileUtils = new Files();
-            $avatarResponse = $fileUtils->upload_files_to_folder(['.jpg', '.png', '.jpeg'], '/var/www/storage/upload/users/avatars/', '/storage/upload/users/avatars/', 'avatar', $userCredentials->uuid);
+            $avatarResponse = Files::upload_file($userStoreRequest->avatar, '/var/www/storage/upload/users/avatars/');
             $userProfileStoreRequest = UserProfile::fromArray(['user_id' => $userCredentials->id, ...$userStoreRequest->toArray(), 'avatar' => $avatarResponse['avatar0']['filename'] ?? null]);
             $user = $this->userProfileRepository->store($userProfileStoreRequest);
             if ($user === false) {
                 if($avatarResponse['avatar0']['error'] !== ''){
-                    $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                    Files::delete_file($avatarResponse['avatar0']['full_path']);
                 }
                 throw new TransactionFailedException('Could not store user profile');
             }
@@ -76,7 +87,7 @@ final class UserService extends BaseService
 
             if ($userTenantMember === false) {
                 if($avatarResponse['avatar0']['error'] !== ''){
-                    $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                    Files::delete_file($avatarResponse['avatar0']['full_path']);
                 }
                 throw new TransactionFailedException('Could not store user tenant membership', 409);
             }
@@ -89,7 +100,7 @@ final class UserService extends BaseService
                 if ($savedRole === false) {
                     error_log(sprintf("%s - Could not store user role, role_id: %s, user_id: %s", __METHOD__, $value, $userCredentials->id));
                     if($avatarResponse['avatar0']['error'] !== ''){
-                        $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                        Files::delete_file($avatarResponse['avatar0']['full_path']);
                     }
                     throw new TransactionFailedException('Could not store user role', 409);
                 }
@@ -103,7 +114,7 @@ final class UserService extends BaseService
                 if ($savedPermission === false) {
                     error_log(sprintf("%s - Could not store user permission, permission_id: %s, user_id: %s", __METHOD__, $value, $userCredentials->id));
                     if($avatarResponse['avatar0']['error'] !== ''){
-                        $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                        Files::delete_file($avatarResponse['avatar0']['full_path']);
                     }
                     throw new TransactionFailedException('Could not store user permission', 409);
                 }
@@ -118,7 +129,7 @@ final class UserService extends BaseService
                     if ($savedAddress === false) {
                         error_log(sprintf("%s - Could not store user address, address_id: %s, user_id: %s", __METHOD__, $value, $userCredentials->id));
                         if($avatarResponse['avatar0']['error'] !== ''){
-                            $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                            Files::delete_file($avatarResponse['avatar0']['full_path']);
                         }
                         throw new TransactionFailedException('Could not store user address', 409);
                     }
@@ -134,7 +145,7 @@ final class UserService extends BaseService
                     $savedPhone = $this->userProfileRepository->store($userProfilePhoneStoreRequest, ['id', 'uuid'], 'contacts');
                     if ($savedPhone === false) {
                         if($avatarResponse['avatar0']['error'] !== ''){
-                            $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                            Files::delete_file($avatarResponse['avatar0']['full_path']);
                         }
                         throw new TransactionFailedException('Could not store user phone', 409);
                     }
@@ -149,7 +160,7 @@ final class UserService extends BaseService
                     $savedEmail = $this->userProfileRepository->store($userProfileEmailStoreRequest, ['id', 'uuid'], 'contacts');
                     if ($savedEmail === false) {
                         if($avatarResponse['avatar0']['error'] !== ''){
-                            $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                            Files::delete_file($avatarResponse['avatar0']['full_path']);
                         }
                         throw new TransactionFailedException('Could not store user email', 409);
                     }
@@ -165,7 +176,7 @@ final class UserService extends BaseService
                     $savedEducation = $this->userProfileRepository->store($userProfileEducationStoreRequest, ['id', 'uuid'], 'user_education');
                     if ($savedEducation === false) {
                         if($avatarResponse['avatar0']['error'] !== ''){
-                            $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                            Files::delete_file($avatarResponse['avatar0']['full_path']);
                         }
                         throw new TransactionFailedException('Could not store user education', 409);
                     }
@@ -181,7 +192,7 @@ final class UserService extends BaseService
                     $savedConsent = $this->userProfileRepository->store($userProfileConsentStoreRequest, ['id', 'uuid'], 'user_consents');
                     if ($savedConsent === false) {
                         if($avatarResponse['avatar0']['error'] !== ''){
-                            $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                            Files::delete_file($avatarResponse['avatar0']['full_path']);
                         }
                         throw new TransactionFailedException('Could not store user consent', 409);
                     }
@@ -193,7 +204,7 @@ final class UserService extends BaseService
             $savedSensitive = $this->userProfileRepository->store($userProfileSensitiveStoreRequest, ['id', 'uuid'], 'user_sensitive');
             if ($savedSensitive === false) {
                 if($avatarResponse['avatar0']['error'] !== ''){
-                    $fileUtils->delete_file($avatarResponse['avatar0']['full_path']);
+                    Files::delete_file($avatarResponse['avatar0']['full_path']);
                 }
                 throw new TransactionFailedException('Could not store user sensitive information', 409);
             }
@@ -335,6 +346,5 @@ final class UserService extends BaseService
         $user = $this->userProfileRepository->contacts($uuid);
         return $user;
     }
-
 
 }

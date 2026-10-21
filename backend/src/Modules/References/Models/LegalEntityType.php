@@ -1,6 +1,6 @@
 <?php
 /**
- * GENERATED from App\Schemas\References\EthnicitySchema — do not edit directly. Edit the schema and recompile.
+ * GENERATED from App\Schemas\References\LegalEntityTypeSchema — do not edit directly. Edit the schema and recompile.
  * @brief
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
@@ -13,7 +13,7 @@ namespace App\Modules\References\Models;
 
 use App\Shared\Schema\BaseModel;
 
-final class Ethnicity extends BaseModel
+final class LegalEntityType extends BaseModel
 {
     public ?int $id;
     public ?string $uuid;
