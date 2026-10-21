@@ -15,7 +15,6 @@ VALUES ('user_credentials'),
        ('suppliers'),
        ('deliveries'),
        ('orders') ON CONFLICT DO NOTHING;
-
 INSERT INTO subscription_types (name, label, description)
 VALUES('free', 'Free', 'Free plan'),
        ('trial', 'Trial', 'Trial plan'),
@@ -24,14 +23,23 @@ VALUES('free', 'Free', 'Free plan'),
        ('gold', 'Gold', 'Gold plan'),
        ('platinum', 'Platinum', 'Platinum plan'),
        ('diamond', 'Diamond', 'Diamond plan') ON CONFLICT DO NOTHING;
-
 INSERT INTO legal_basis (name, label, description)
-VALUES ('consent', 'Consent', 'Legal consented by the user'),
-('legal_obligation', 'Legal Obligation', 'Legal obligation'),
-('legitimate_interest', 'Legitimate Interest', 'Legitimate interest'),
-('contract', 'Contract', 'Contract')
-ON CONFLICT DO NOTHING;
-
+VALUES (
+              'consent',
+              'Consent',
+              'Legal consented by the user'
+       ),
+       (
+              'legal_obligation',
+              'Legal Obligation',
+              'Legal obligation'
+       ),
+       (
+              'legitimate_interest',
+              'Legitimate Interest',
+              'Legitimate interest'
+       ),
+       ('contract', 'Contract', 'Contract') ON CONFLICT DO NOTHING;
 INSERT INTO subscription_statuses (name, label, description)
 VALUES('active', 'Active', 'Active subscription'),
        (
@@ -116,21 +124,21 @@ VALUES (
               'Logistics',
               'Logistics with access to: deliveries',
               1,
-              1
+              2
        ),
        (
               1,
               'Accountant',
               'Accountant with access to: payments, receipts',
               1,
-              1
+              2
        ),
        (
               1,
               'Cashier',
               'Cashier with access to: payments, receipts',
               1,
-              1
+              2
        ) ON CONFLICT DO NOTHING;
 INSERT INTO permissions (
               name,
@@ -1544,7 +1552,8 @@ INSERT INTO business_brandings (
               text_color,
               background_color,
               font_style,
-              button_style
+              button_style,
+              logo
        )
 VALUES (
               v_business_id,
@@ -1554,7 +1563,8 @@ VALUES (
               '#000000',
               '#FFFFFF',
               'normal',
-              'normal'
+              'normal',
+              '6ad7c33fec46b2.682380831792525119.png'
        );
 INSERT INTO user_credentials (email, username, password, active, created_by)
 VALUES (
@@ -1581,7 +1591,6 @@ VALUES (
               '1999-04-23',
               'pt-BR'
        );
-
 INSERT INTO user_consents (user_id, purpose, legal_basis_id, granted_at)
 VALUES (
               v_user_id,
@@ -1589,15 +1598,34 @@ VALUES (
               4,
               NOW()
        );
-
 INSERT INTO business_types (name, label, description)
 VALUES ('real_estate', 'Real Estate', 'Real Estate'),
-('union', 'Union', 'Union'),
-('education', 'Education', 'Education'),
-('medical_clinic', 'Medical Clinic', 'Medical Clinic'),
-('others', 'Others', 'Others')
-ON CONFLICT DO NOTHING;
-
+       ('union', 'Union', 'Union'),
+       ('education', 'Education', 'Education'),
+       (
+              'medical_clinic',
+              'Medical Clinic',
+              'Medical Clinic'
+       ),
+       (
+              'technological',
+              'Technological',
+              'Technological'
+       ),
+       ('beauty', 'Healthy & Beauty', 'Healthy & Beauty'),
+       (
+              'food',
+              'Food & Restaurants',
+              'Food & Restaurants'
+       ),
+       ('sports', 'Sports & Fitness', 'Sports & Fitness'),
+       ('commerce', 'Commerce', 'Commerce'),
+       (
+              'tourism',
+              'Tourism & Travel',
+              'Tourism & Travel'
+       ),
+       ('others', 'Others', 'Others') ON CONFLICT DO NOTHING;
 INSERT INTO user_sensitive (
               user_id,
               socialname,
@@ -1936,11 +1964,6 @@ VALUES ('single', 'Single (never married)', 'Single'),
        ('married', 'Married (married) ', 'Married'),
        ('divorced', 'Divorced (divorced) ', 'Divorced'),
        ('widowed', 'Widowed (spouse died)', 'Widowed'),
-       (
-              'separated',
-              'Separated (separated) ',
-              'Separated'
-       ),
        (
               'stable_union',
               'Stable Union (live together before marriage)',
@@ -3466,6 +3489,65 @@ VALUES (
               'normal',
               'normal'
        ) ON CONFLICT DO NOTHING;
+
+INSERT INTO tenants (
+              domain,
+              slug,
+              active,
+              created_by,
+              subscription_type_id,
+              subscription_status_id
+       )
+VALUES (
+              'https://cerradogstudio.vcnexus.com',
+              'cerradogstudio',
+              1,
+              1,
+              7,
+              1
+       ) ON CONFLICT DO NOTHING
+RETURNING id INTO v_tenant_id;
+INSERT INTO business (
+              tenant_id,
+              trade_name,
+              type,
+              tax_id,
+              fantasy_name,
+              active
+       )
+VALUES (
+              v_tenant_id,
+              'Cerrado G. Studios (SA)',
+              1,
+              '09.014.012/0001-15',
+              'Cerrado G. Studios',
+              1
+       ) ON CONFLICT DO NOTHING
+RETURNING id INTO v_business_id;
+INSERT INTO business_brandings (
+              business_id,
+              app_name,
+              primary_color,
+              accent_color,
+              text_color,
+              background_color,
+              font_style,
+              button_style,
+              logo
+       )
+VALUES (
+              v_business_id,
+              'Cerrado G. Studios',
+              '#2c6693',
+              '#7fb44d80',
+              '#000000',
+              '#FFFFFF',
+              'normal',
+              'normal',
+              'file_6ad7fb1ad3fae3.865741851792539418.png'
+       ) ON CONFLICT DO NOTHING;
+
+
 RETURN QUERY
 SELECT v_tenant_id,
        v_business_id,
@@ -3474,3 +3556,4 @@ END;
 $$;
 SELECT *
 FROM initialize_system ();
+

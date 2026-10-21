@@ -131,8 +131,24 @@ const routes = [
             name: "tenants.edit",
             component: () => import("@/views/tenants/Tenants.vue"),
             meta: {
-              
+
             }
+          }
+        ]
+      },
+      {
+        path: "help",
+        name: "help",
+        children: [
+          {
+            path: "",
+            name: 'help.view',
+            component: () => import('@/views/help/Help.vue'),
+            meta: {
+              breadcrumbs: [],
+              actions: [],
+              title: "Help",
+            },
           }
         ]
       }

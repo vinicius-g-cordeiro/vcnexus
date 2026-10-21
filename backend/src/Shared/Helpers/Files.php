@@ -11,22 +11,24 @@ declare(strict_types=1);
 
 namespace App\Shared\Helpers;
 
-use App\Shared\Request;
+use Imagick;
 
 final class Files {
     
-    function upload_file($files, $path = '/var/www/storage/upload/', $filename = 'file_', $newName = '') {
+    static function upload_file($files, $path = '/var/www/storage/upload/', $filename = 'file_', $newName = '') {
         $info = pathinfo($files['name']);
-        if (empty($newName)) {
-            $response['file_name'] = $filename . uniqid('upload-',true) . time() . "." . $info['extension'];
+        $fileN = pathinfo($filename, PATHINFO_FILENAME);
+
+        if (empty($newName) ) {
+            $response['file_name'] = $fileN . uniqid('',true) . time() . "." . $info['extension'];
         } else {
-            $response['file_name'] = $newName;
+            $response['file_name'] = $newName . "." . $info['extension'];
         }
 
         $response['file_name'] = str_replace(' ', '-',mb_strtolower($response['file_name']));
 
         if(isset($path) && is_dir($path) == false){
-            if($this->createFolder($path) == false){
+            if(self::createFolder($path) == false){
                 throw new \Exception( 'Could not create new folder!',400);
             }
             chmod($path, 0755);
@@ -43,7 +45,7 @@ final class Files {
         return null;
     }
 
-    function createFolder($folderPath = '') {
+    static function createFolder($folderPath = '') {
         if (!empty($folderPath)) {
             if (is_dir($folderPath) == false) {
                 $response = @mkdir($folderPath, 0755, true);
@@ -57,7 +59,7 @@ final class Files {
         return is_dir($folderPath) ? true : false;
     }
 
-    function rearrange_files($files) {
+    static function rearrange_files($files) {
         $file_arr = [];
         $file_keys = array_keys($files);
         for ($i = 0; $i < count($files['name']); $i++) {
@@ -68,8 +70,8 @@ final class Files {
         return $file_arr;
     }
 
-    function upload_files($allowedExtensions = ['.jpg', '.png', '.jpeg', '.webp', '.docx', '.pdf'], $folderRoot = '/var/www/storage/upload/', $folderUrl = '/storage/upload/', $fileInputName = 'file'){
-        $files = $this->rearrange_files((object)filter_var_array($_FILES, FILTER_SANITIZE_SPECIAL_CHARS | FILTER_SANITIZE_STRING));
+    static function upload_files($allowedExtensions = ['.jpg', '.png', '.jpeg', '.webp', '.docx', '.pdf'], $folderRoot = '/var/www/storage/upload/', $folderUrl = '/storage/upload/', $fileInputName = 'file'){
+        $files = self::rearrange_files((object)filter_var_array($_FILES, FILTER_SANITIZE_SPECIAL_CHARS | FILTER_SANITIZE_STRING));
         $errors = 0;
         $result = [];
         foreach($files as $file){
@@ -102,7 +104,7 @@ final class Files {
                 continue;
             }
 
-            $response = $this->upload_file($file, $folderRoot, 'file', $filename);
+            $response = self::upload_file($file, $folderRoot, 'file', $filename);
             if(file_exists($response['fullpath']) == false){
                 $errors++;
                 $result = [];
@@ -121,7 +123,6 @@ final class Files {
         return $result;
     }
 
-
     /**
      * 
      * @param mixed $allowedExtensions
@@ -131,7 +132,7 @@ final class Files {
      * @param mixed $newFilename
      * @return array<array|array{error: string, file: array|string, filename: array|string, "full_path": string, path: mixed|array{error: string, file: mixed, filename: mixed, "full_path": string, path: mixed}>|array{error: string, extension: string, file: array|string, filename: array|mixed|string, "full_path": string, path: mixed}|array{error: string, extension: string, file: array|string, filename: mixed, "full_path": string, path: mixed}}
      */
-    function upload_files_to_folder($allowedExtensions = ['.jpg', '.png', '.jpeg', '.webp', '.docx', '.pdf'], $folderRoot = '/var/www/storage/upload/', $folderUrl = '/storage/upload/', $fileInputName = 'file', $newFilename = 'file'){
+    static function upload_files_to_folder($allowedExtensions = ['.jpg', '.png', '.jpeg', '.webp', '.docx', '.pdf'], $folderRoot = '/var/www/storage/upload/', $folderUrl = '/storage/upload/', $fileInputName = 'file', $newFilename = 'file'){
         $errors = 0;
         $result = [];
         for($i = 0; $i < count($_FILES); $i++) {
@@ -150,7 +151,6 @@ final class Files {
 
             $extensions = strtolower(strrchr($file['name'],'.'));
             $filename = str_replace($extensions, '', $file['name']);
-
 
             if(empty($extensions)){ // we do not have a valid extension so continue to the next 
                 continue;
@@ -186,7 +186,7 @@ final class Files {
                 continue;
             }
 
-            $response = $this->upload_file($file, $folderRoot, 'file', uniqid('upload-'.($newFilename ?? $filename).'-').'-'.date('dmYHis', time()).$extensions);
+            $response = self::upload_file($file, $folderRoot, 'file', uniqid('upload-'.($newFilename ?? $filename).'-').'-'.date('dmYHis', time()).$extensions);
             if(file_exists($response['fullpath']) == false){
                 $errors++;
                 $result = [
@@ -201,7 +201,7 @@ final class Files {
             }
 
             // Compress the file with GD or ImageMagick
-            if($this->compress_image($response['fullpath']) == false){
+            if(self::compress_image($response['fullpath']) == false){
                 $errors++;
                 $result = [
                     'file' => $filename,
@@ -234,7 +234,7 @@ final class Files {
         return $result;
     }
 
-    function delete_file($filepath) : bool {
+    static function delete_file($filepath) : bool {
         if(file_exists($filepath)){
             return @unlink(APP_PATH . $filepath);            
         }
@@ -242,8 +242,8 @@ final class Files {
         return false;
     }
 
-    function compress_image($filepath) : bool {
-        $image = new \Imagick($filepath);
+    static function compress_image($filepath) : bool {
+        $image = new Imagick($filepath);
         $image->stripImage();
         $image->writeImage();
         $image->clear();

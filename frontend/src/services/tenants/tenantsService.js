@@ -9,6 +9,10 @@ const tenantService = {
         const response = await api.query(`/tenants/${uuid}`, { withCredentials: true })
         return response.data
     },
+    async fetchAllTenants(paginate = false) {
+        const response = await api.get('/tenants/', { params: { paginate }, withCredentials: true })
+        return response.data
+    },
     async createTenant(tenant) {
         const response = await api.post('/tenants/', tenant, { withCredentials: true })
         return response.data

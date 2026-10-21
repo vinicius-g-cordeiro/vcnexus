@@ -1,7 +1,7 @@
 <?php
 /**
  * GENERATED from App\Schemas\References\EthnicitySchema — do not edit directly. Edit the schema and recompile.
- * @brief 
+ * @brief
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>
  * @version 1.0.0
  * @copyright Copyright (c) 2026 - Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com> <https://github.com/vinicius-g-cordeiro>

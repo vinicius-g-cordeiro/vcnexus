@@ -12,15 +12,17 @@ declare(strict_types=1);
 
 namespace App\Modules\Tenant\Repositories;
 
+use ADOConnection;
+use App\Shared\Http\Request;
 use App\Shared\Domain\BaseRepository;
 use App\Infrastructure\Database\Hydrator;
-use App\Modules\Tenant\DTOs\{TenantListRequest,TenantListResponse};
-use App\Shared\Http\Request;
+use App\Modules\Tenant\DTOs\TenantListRequest;
+use App\Modules\Tenant\DTOs\TenantListResponse;
 
 final class TenantRepository extends BaseRepository
 {
 
-    public function __construct( \ADOConnection $db, ?string $tenant_id, ?string $user_id, ?array $roles, private Request $request) {
+    public function __construct( ADOConnection $db, ?string $tenant_id, ?string $user_id, ?array $roles, private Request $request) {
         parent::__construct($db, $tenant_id, $user_id, $roles);
     }
 
@@ -85,15 +87,15 @@ final class TenantRepository extends BaseRepository
         $response = $this->scopedQuery(
             $select . $from . $where . $order,
             $params,
-            true,
+            $parameters?->paginate ?? true,
             $parameters?->per_page ?? 15,
             $parameters?->page ?? 1,
             'SELECT COUNT(*)' . $from . $where
         );
 
         return [
-            'list' => Hydrator::hydrateMany(TenantListResponse::class, $response['data']),
-            'meta' => $response['meta'],
+            'list' => Hydrator::hydrateMany(TenantListResponse::class, $response['data']??$response??[]),
+            'meta' => $response['meta']??[],
         ];
     }
 }

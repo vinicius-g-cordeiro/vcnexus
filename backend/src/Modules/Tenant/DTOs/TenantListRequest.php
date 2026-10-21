@@ -14,20 +14,23 @@ namespace App\Modules\Tenant\DTOs;
 
 use App\Shared\Domain\QueryObjectInterface;
 
-final class TenantListRequest implements QueryObjectInterface
-{
+final class TenantListRequest implements QueryObjectInterface {
 
-    public function __construct(public ?string $search, public ?int $active, public ?int $blocked, public ?string $created_at, public ?int $subscription_type_id, public ?int $subscription_status_id)
-    {
+    public function __construct(public ?string $search, public ?int $active, public ?int $blocked, public ?string $created_at, public ?int $subscription_type_id, public ?int $subscription_status_id, public ?bool $paginate = true) {
     }
 
-    public function toArray(): array
-    {
+    public function toArray(): array {
         return get_object_vars($this);
     }
 
-    public static function fromArray(array $data): self
-    {
-        return new self($data['search'] ?? null, isset($data['active']) ? (int) $data['active'] : null , isset($data['blocked']) ? (int) $data['blocked'] : null, $data['created_at'] ?? null, isset($data['subscription_type_id']) ? (int) $data['subscription_type_id'] : null, isset($data['subscription_status_id']) ? (int) $data['subscription_status_id'] : null);
+    public static function fromArray(array $data): self {
+        return new self(
+            search: $data['search'] ?? null,
+            active: isset($data['active']) ? (int) $data['active'] : null,
+            blocked: isset($data['blocked']) ? (int) $data['blocked'] : null,
+            created_at: $data['created_at'] ?? null,
+            subscription_type_id: isset($data['subscription_type_id']) ? (int) $data['subscription_type_id'] : null,
+            subscription_status_id: isset($data['subscription_status_id']) ? (int) $data['subscription_status_id'] : null,
+            paginate: isset($data['paginate']) ? (bool)$data['paginate'] : true);
     }
 }

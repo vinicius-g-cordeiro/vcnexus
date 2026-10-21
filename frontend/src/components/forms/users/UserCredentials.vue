@@ -10,7 +10,7 @@
                 <Input v-model="form.username" type="text" label="Username" name="username" id="username" required />
                 <Input v-model="form.email" type="email" label="Email" name="email" id="email" required />
                 <Input v-model="form.password" type="password" :label="mode === 'create' ? 'Password' : 'New Password'" name="password" id="password" showPassword passwordMeter :required="mode === 'create'" />
-                
+                <Select v-model="form.tenant_id" label="Tenant" name="tenant_id" id="tenant_id" :options="tenantOptions" placeholder="Select" required />
             </div>
 
             <div v-if="mode === 'edit' && form.last_login_at" class="gap-2 grid grid-cols-1 sm:grid-cols-2 mt-2 pt-4 border-zinc-200 dark:border-zinc-800 border-t text-zinc-500 dark:text-zinc-400 text-xs">
@@ -28,9 +28,11 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue'
+import { reactive, watch, computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/users/userStore'
+import { useTenantStore } from '@/stores/tenants/tenantStore'
+
 import Input from '@/components/inputs/Input.vue'
 import Select from '@/components/inputs/Select.vue'
 
@@ -43,6 +45,9 @@ const emit = defineEmits(['update:modelValue'])
 
 const route = useRoute()
 const userStore = useUserStore()
+const tenantStore = useTenantStore()
+
+const tenantOptions = ref([])
 
 
 const form = reactive({
@@ -51,6 +56,13 @@ const form = reactive({
     password: '',
     last_login_at: '',
     last_login_ip: '',
+    tenant_id: '',
+})
+
+onMounted(async () => {
+    await tenantStore.fetchAllTenants(0)
+    const tenants = tenantStore.tenants?.list ?? []
+    tenantOptions.value = tenants.map(t => ({ label: t.trade_name || t.fantasy_name, value: t.id }))
 })
 
 function seedFromCredentials(val, { clearPassword } = {}) {

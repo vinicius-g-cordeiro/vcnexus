@@ -70,13 +70,49 @@ const draft = reactive({
 
 const submitError = ref('')
 
-function handleCreate() {
-    submitError.value = ''
-    tenantStore.createTenant(draft).then(() => {
-        router.push({ name: 'tenants' })
-    }).catch(error => {
-        submitError.value = error.response.data.message
-    })
+
+function appendToFormData(formData, key, value) {
+    if (value === null || value === undefined) {
+        return
+    }
+    if (value instanceof File || value instanceof Blob) {
+        formData.append(key, value)
+        return
+    }
+    if (Array.isArray(value)) {
+        value.forEach((item, index) => appendToFormData(formData, `${key}[${index}]`, item))
+        return
+    }
+    if (typeof value === 'object') {
+        Object.entries(value).forEach(([childKey, childValue]) => {
+            if (childKey === 'logo') return
+            appendToFormData(formData, `${key}[${childKey}]`, childValue)
+        })
+        return
+    }
+    formData.append(key, value)
+}
+
+async function handleCreate() {
+    try{
+        const payload = new FormData();
+        // change the playload to be a post object
+
+        appendToFormData(payload, 'organization', draft.organization)
+        appendToFormData(payload, 'brandings', draft.brandings)
+        appendToFormData(payload, 'addresses', draft.addresses)
+        appendToFormData(payload, 'contacts', draft.contacts)
+
+        if (draft.brandings.logo) payload.append('logo', draft.brandings.logo)
+
+        const { uuid } = await tenantStore?.createTenant(payload)
+        
+        router.push({ name: 'tenants.edit', params: { uuid } })
+    }catch (err) {
+        submitError.value = err?.response?.data?.message ?? 'Failed to create tenant/organization. Please check the required fields and try again.'
+    } finally {
+        submitting.value = false
+    }
 }
 
 </script>

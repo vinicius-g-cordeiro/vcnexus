@@ -13,8 +13,6 @@ declare(strict_types=1);
 namespace App\Modules\Tenant\DTOs;
 
 use App\Shared\Domain\DataTransferObjectInterface;
-use Symfony\Component\Validator\Constraints as Assert;
-
 
 // {
 //   "fantasy_name": "Puro Sabor",
@@ -59,7 +57,7 @@ final class TenantStoreInRequest implements DataTransferObjectInterface
         public ?int $created_by,
         public ?int $type,
         public ?string $description,
-        public ?string $logo,
+        public ?array $logo,
         public ?string $app_name,
         public ?string $primary_color,
         public ?string $accent_color,

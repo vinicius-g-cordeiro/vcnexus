@@ -10,7 +10,7 @@
         <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
             <div class="gap-4 grid grid-cols-1 sm:grid-cols-2">
 
-                <div class="flex items-center gap-4 col-span-2 w-full">
+                <div class="flex items-center gap-4 w-full">
                     <div class="group relative flex justify-center items-center bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full w-20 h-20 overflow-hidden cursor-pointer shrink-0" @click="triggerFilePicker">
                         <img v-if="logoPreview" :src="logoPreview" alt="Logo" class="w-full h-full object-cover" />
                         <i v-else class="text-zinc-400 text-3xl bi bi-buildings-fill"></i>
@@ -76,14 +76,14 @@ const form = reactive({
     background_color: '#ffffff',
     font_style: 'nunito',
     button_style: '',
-    logoFile: null,
+    logo: null,
     type: null
 })
 
 
 const fileInput = ref(null)
 const logoPreview = ref('')
-const logoFile = ref(null)
+const logo = ref(null)
 
 onMounted(async () => {
     await referencesStore.fetchSubscriptionPlans()
@@ -106,16 +106,16 @@ function triggerFilePicker() {
 function handleFileChange(e) {
     const file = e.target.files?.[0]
     if (!file) return
-    logoFile.value = file
+    logo.value = file
     logoPreview.value = URL.createObjectURL(file)
-    if (props.mode === 'create') emit('update:modelValue', { ...form, logoFile: file })
+    if (props.mode === 'create') emit('update:modelValue', { ...form, logo: file })
 }
 
 function removeLogo() {
-    logoFile.value = null
+    logo.value = null
     logoPreview.value = ''
     if (fileInput.value) fileInput.value.value = ''
-    if (props.mode === 'create') emit('update:modelValue', { ...form, logoFile: null })
+    if (props.mode === 'create') emit('update:modelValue', { ...form, logo: null })
 }
 
 </script>

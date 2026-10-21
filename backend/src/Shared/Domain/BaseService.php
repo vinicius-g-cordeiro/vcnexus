@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace App\Shared\Domain;
 
+use ADOConnection;
 use App\Shared\Domain\Exceptions\TransactionFailedException;
 
 abstract class BaseService
 {
 
-    public function __construct(protected \ADOConnection $db, protected ?string $tenant_id = null, protected ?string $user_id = null, protected ?array $roles = null ) {}
+    public function __construct(protected ADOConnection $db, protected ?string $tenant_id = null, protected ?string $user_id = null, protected ?array $roles = null ) {}
 
     /**
      * 

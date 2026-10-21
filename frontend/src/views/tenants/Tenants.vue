@@ -5,6 +5,8 @@ import { useListing } from '@/composables/useListing'
 import { useReferencesStore } from '@/stores/references/referencesStore'
 import { useTenantStore } from '@/stores/tenants/tenantStore'
 
+const storageBase = import.meta.env.VITE_API_URL
+
 const referencesStore = useReferencesStore()
 const tenantsStore = useTenantStore()
 const subscriptionStatuses = computed(() => referencesStore.subscription_statuses.map(s => ({ label: s.label, value: s.id })))
@@ -187,7 +189,12 @@ function activate(uuid) {
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <div class="flex justify-center items-center bg-olive-wood-400/20 rounded-full w-9 h-9 font-semibold text-olive-wood-400 text-xs shrink-0">
-                                        {{ item.logo ? 'Logo' : initials(item.fantasy_name) }}
+                                        <template v-if="item.logo">
+                                            <img v-if="item.logo" :src="`${storageBase}/storage/tenants/logos/${item.logo}`" loading="lazy" class="rounded-full w-full h-full object-cover" :alt="item.fantasy_name+' organization logo'" :title="item.fantasy_name+' organization logo'" />
+                                        </template>
+                                        <template v-else>
+                                            <span :alt="item.fantasy_name+' organization initials'" :title="item.fantasy_name+' organization initials'" >{{ initials(item.fantasy_name) }}</span>
+                                        </template>
                                     </div>
                                     <div class="gap-2 min-w-0">
                                         <p class="font-medium truncate">{{ item.fantasy_name }}</p>

@@ -8,7 +8,7 @@
 import { defineStore } from "pinia";
 import tenantsService from "@/services/tenants/tenantsService";
 
-export const useTenantStore = defineStore("users", {
+export const useTenantStore = defineStore("tenants", {
   state: () => ({
     tenant: null,
     tenants: null,
@@ -23,6 +23,19 @@ export const useTenantStore = defineStore("users", {
       try {
         const response = await tenantsService.fetchTenants();
         this.tenant = response.data;
+        return true;
+      } catch (e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchAllTenants(paginate = false) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await tenantsService.fetchAllTenants(paginate);
+        this.tenants = response.data;
         return true;
       } catch (e) {
         this.error = e.message;

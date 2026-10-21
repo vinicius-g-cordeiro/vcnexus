@@ -12,16 +12,19 @@ declare(strict_types=1);
 
 namespace App\Modules\Tenant\Controllers;
 
-use App\Modules\Tenant\DTOs\TenantStoreInRequest;
-use App\Modules\Tenant\Services\TenantService;
-use App\Shared\Http\Attributes\Permission;
-use App\Shared\Http\Controllers\BaseController;
-use App\Shared\Http\{DTOValidator, Request, Response, Session};
-use App\Shared\Http\Attributes\{Route, Middleware};
-use App\Shared\Http\Middleware\{AuthMiddleware};
+use App\Shared\Http\Request;
+use App\Shared\Http\Session;
 use App\Shared\Helpers\Utils;
-use App\Modules\Tenant\DTOs\{TenantListRequest};
-
+use App\Shared\Http\Response;
+use App\Shared\Http\DTOValidator;
+use App\Shared\Http\Attributes\Route;
+use App\Shared\Http\Attributes\Middleware;
+use App\Shared\Http\Attributes\Permission;
+use App\Modules\Tenant\DTOs\TenantListRequest;
+use App\Modules\Tenant\Services\TenantService;
+use App\Shared\Http\Middleware\AuthMiddleware;
+use App\Shared\Http\Controllers\BaseController;
+use App\Modules\Tenant\DTOs\TenantStoreInRequest;
 
 #[Route(path: '/v1/tenants')]
 #[Middleware(AuthMiddleware::class)]
@@ -30,7 +33,6 @@ final class TenantController extends BaseController
     public function __construct(Request $request, Session $session, private TenantService $service, private DTOValidator $validator) {
         parent::__construct($request, $session);
     }
-
 
     #[Route(methods: ['GET', 'QUERY'], path: '/')]
     #[Permission(['tenants.view'])]
@@ -48,9 +50,9 @@ final class TenantController extends BaseController
     #[Route(methods: 'POST',path: '/')]
     public function store() : ?Response {
         try{
-            $post = Utils::flatten((array)$this->request->post());
-            $dto = TenantStoreInRequest::fromArray($post);
-            $this->validator->validate($dto);            
+            $post = Utils::flatten((array)$this->request->params());
+            $dto = TenantStoreInRequest::fromArray(['logo' => $this->request->files('logo'), ...$post]);
+            $this->validator->validate($dto);
             $tenant = $this->service->store($dto);
             return Response::json(data: $tenant, message: 'success')->send(201, [], true);
         }catch(\Throwable $th){

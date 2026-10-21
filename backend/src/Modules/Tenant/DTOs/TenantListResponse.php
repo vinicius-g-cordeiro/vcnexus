@@ -18,6 +18,7 @@ final class TenantListResponse implements QueryObjectInterface
 {
 
     public function __construct(
+        public ?int $id,
         public ?string $uuid,
         public ?string $fantasy_name,
         public ?string $trade_name,
@@ -45,22 +46,23 @@ final class TenantListResponse implements QueryObjectInterface
     public static function fromArray(array $data): self
     {
         return new self(
-            $data['uuid'],
-            $data['fantasy_name'],
-            $data['trade_name'],
-            $data['tax_id'],
-            $data['website'],
-            $data['domain'],
-            $data['slug'],
-            $data['state_registration'],
-            $data['municipal_registration'],
-            $data['created_at'],
-            (int) $data['active'],
-            $data['subscription_type'],
-            $data['subscription_status'],
-            (int) $data['subscription_type_id'],
-            (int) $data['subscription_status_id'],
-            $data['logo']
+            id: isset($data['id']) ? (int)$data['id'] : null,
+            uuid: $data['uuid'] ?? null,
+            fantasy_name: $data['fantasy_name'] ?? null,
+            trade_name: $data['trade_name'] ?? null,
+            tax_id: $data['tax_id'] ?? null,
+            website: $data['website'] ?? null,
+            domain: $data['domain'] ?? null,    
+            slug: $data['slug'] ?? null,
+            state_registration: $data['state_registration'] ?? null,
+            municipal_registration: $data['municipal_registration'] ?? null,
+            created_at: $data['created_at'] ?? null,
+            active: isset($data['active']) ? (int)$data['active'] : null,
+            subscription_type: $data['subscription_type'] ?? null,
+            subscription_status: $data['subscription_status'] ?? null,
+            subscription_type_id: isset($data['subscription_type_id']) ? (int)$data['subscription_type_id'] : null,
+            subscription_status_id: isset($data['subscription_status_id']) ? (int)$data['subscription_status_id'] : null,
+            logo: $data['logo'] ?? null,
         );
     }
 }

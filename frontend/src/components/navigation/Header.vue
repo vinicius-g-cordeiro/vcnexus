@@ -73,11 +73,7 @@
                                 <template #icon> <i class="bi-person bi"></i> </template>
                                 <template #label> Profile </template>
                             </DropdownItem>
-                            <DropdownItem :deactivated="false" label="Settings" href="#">
-                                <template #icon> <i class="bi-gear bi"></i> </template>
-                                <template #label> Settings </template>
-                            </DropdownItem>
-                            <DropdownItem :deactivated="false" label="Help" href="#">
+                            <DropdownItem :deactivated="false" label="Help" @click="router.push({ name: 'help' })" :to="{ name: 'help' }">
                                 <template #icon> <i class="bi-question-circle bi"></i> </template>
                                 <template #label> Help </template>
                             </DropdownItem>
