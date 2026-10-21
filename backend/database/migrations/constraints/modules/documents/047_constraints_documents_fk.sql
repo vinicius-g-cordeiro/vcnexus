@@ -1,0 +1,2 @@
+
+ALTER TABLE "documents" ADD CONSTRAINT "fk_documents_document_types"  FOREIGN KEY ("type_id") REFERENCES "document_types" ("id") ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED ;

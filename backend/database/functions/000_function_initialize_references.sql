@@ -1716,6 +1716,89 @@ VALUES (
         'Zimbabwean',
         'Nationality associated with Zimbabwe.'
     ) ON CONFLICT DO NOTHING;
+
+INSERT INTO document_types (name, label, description)
+VALUES
+    -- Personal identification
+    ('cpf', 'CPF', 'Cadastro de Pessoas Físicas used to identify an individual in Brazil.'),
+    ('rg', 'RG / Carteira de Identidade', 'Brazilian identity document issued by a competent authority.'),
+    ('cnh', 'Carteira Nacional de Habilitação', 'Brazilian national driving license.'),
+    ('passport', 'Passaporte', 'Passport used for identity verification and international travel.'),
+    ('voter_registration', 'Título de Eleitor', 'Brazilian voter registration document.'),
+    ('military_certificate', 'Certificado de Reservista', 'Military service certificate or equivalent document.'),
+    ('birth_certificate', 'Certidão de Nascimento', 'Official birth certificate.'),
+    ('marriage_certificate', 'Certidão de Casamento', 'Official marriage certificate.'),
+    ('divorce_certificate', 'Certidão de Divórcio', 'Divorce certificate or court-issued divorce documentation.'),
+    ('proof_of_address', 'Comprovante de Residência', 'Document used to verify a residential address.'),
+    ('proof_of_income', 'Comprovante de Renda', 'Document used to verify an individual’s income.'),
+    ('personal_photo', 'Foto de Identificação', 'Personal photograph used for identification or profile records.'),
+    ('disability_certificate', 'Laudo ou Certificado de Deficiência', 'Medical or official documentation of a disability, when required.'),
+    ('name_change_certificate', 'Documento de Alteração de Nome', 'Official documentation supporting a legal name change.'),
+
+    -- Employment and HR
+    ('employment_contract', 'Contrato de Trabalho', 'Employment agreement between an employer and an employee.'),
+    ('work_card', 'Carteira de Trabalho (CTPS)', 'Brazilian physical or digital employment record documentation.'),
+    ('pis_pasep', 'Comprovante PIS/PASEP', 'Document containing the worker’s PIS/PASEP registration information.'),
+    ('resume', 'Currículo', 'Professional resume submitted by a candidate or employee.'),
+    ('academic_certificate', 'Certificado de Escolaridade', 'Certificate, diploma, or other proof of educational qualifications.'),
+    ('professional_certificate', 'Certificação Profissional', 'Professional qualification, training, or certification document.'),
+    ('medical_certificate', 'Atestado Médico', 'Medical certificate submitted for an authorized HR purpose.'),
+    ('occupational_health_certificate', 'ASO', 'Atestado de Saúde Ocupacional associated with occupational health requirements.'),
+    ('termination_document', 'Documento de Rescisão', 'Employment termination, severance, or dismissal documentation.'),
+    ('payroll_document', 'Documento de Folha de Pagamento', 'Payroll-related document associated with an employee or payment period.'),
+
+    -- Company and organization registration
+    ('cnpj', 'Comprovante de CNPJ', 'Document proving a Brazilian legal entity’s CNPJ registration.'),
+    ('articles_of_association', 'Contrato Social', 'Company formation and articles of association document.'),
+    ('bylaws', 'Estatuto Social', 'Organization bylaws defining governance and operating rules.'),
+    ('business_registration', 'Registro Empresarial', 'Official business registration or registration certificate.'),
+    ('tax_registration', 'Inscrição Estadual ou Municipal', 'State or municipal tax registration documentation, when applicable.'),
+    ('operating_license', 'Alvará de Funcionamento', 'Permit authorizing an organization to operate, when required.'),
+    ('organization_representative_id', 'Documento do Representante Legal', 'Identity document of an authorized organizational representative.'),
+    ('power_of_attorney', 'Procuração', 'Document granting authority to represent an individual or organization.'),
+    ('board_election_minutes', 'Ata de Eleição e Posse', 'Minutes documenting the election and appointment of an organization’s board.'),
+    ('union_registration', 'Registro Sindical', 'Documentation related to a union’s official registration.'),
+    ('organization_tax_certificate', 'Certidão de Regularidade Fiscal', 'Tax compliance or tax clearance certificate for an organization.'),
+
+    -- Contracts and legal documents
+    ('service_contract', 'Contrato de Prestação de Serviços', 'Agreement defining the terms of a service relationship.'),
+    ('commercial_contract', 'Contrato Comercial', 'Commercial agreement between organizations or business parties.'),
+    ('rental_contract', 'Contrato de Locação', 'Lease or rental agreement for property or equipment.'),
+    ('collective_bargaining_agreement', 'Convenção ou Acordo Coletivo', 'Collective bargaining agreement or collective labor agreement.'),
+    ('contract_amendment', 'Aditivo Contratual', 'Amendment modifying an existing contract.'),
+    ('contract_termination', 'Distrato Contratual', 'Document formally terminating a contractual relationship.'),
+    ('legal_opinion', 'Parecer Jurídico', 'Legal opinion or formal legal analysis.'),
+    ('court_decision', 'Decisão Judicial', 'Court judgment, ruling, or other judicial decision.'),
+    ('court_filing', 'Petição ou Protocolo Judicial', 'Court filing, petition, or proof of submission.'),
+    ('legal_notice', 'Notificação Extrajudicial', 'Formal legal notice delivered outside judicial proceedings.'),
+
+    -- Finance and accounting
+    ('invoice', 'Nota Fiscal', 'Invoice or Brazilian fiscal document related to a transaction.'),
+    ('receipt', 'Recibo', 'Receipt confirming a payment or delivery.'),
+    ('payment_proof', 'Comprovante de Pagamento', 'Evidence of a completed payment or financial transaction.'),
+    ('bank_statement', 'Extrato Bancário', 'Bank statement used for authorized financial reconciliation.'),
+    ('bank_details', 'Comprovante de Dados Bancários', 'Document verifying bank account details for an authorized purpose.'),
+    ('expense_report', 'Relatório de Despesas', 'Document detailing expenses submitted for review or reimbursement.'),
+    ('tax_return', 'Declaração Fiscal', 'Tax return or tax declaration document.'),
+    ('debt_certificate', 'Certidão de Débitos', 'Document identifying outstanding debts or confirming their absence.'),
+
+    -- Union membership and administration
+    ('membership_application', 'Ficha de Filiação', 'Application or registration form for union membership.'),
+    ('membership_authorization', 'Autorização de Filiação', 'Authorization related to union membership, where applicable.'),
+    ('contribution_authorization', 'Autorização de Desconto', 'Authorization for an applicable payroll deduction or contribution.'),
+    ('membership_cancellation', 'Solicitação de Desfiliação', 'Request or documentation recording the cancellation of union membership.'),
+    ('member_record', 'Ficha Cadastral do Filiado', 'Member registration record or supporting documentation.'),
+    ('meeting_minutes', 'Ata de Reunião', 'Minutes documenting a meeting and its decisions.'),
+    ('assembly_minutes', 'Ata de Assembleia', 'Minutes documenting a general assembly and its resolutions.'),
+
+    -- General documents
+    ('correspondence', 'Correspondência', 'Incoming or outgoing formal correspondence.'),
+    ('declaration', 'Declaração', 'Formal declaration or statement submitted for an administrative purpose.'),
+    ('authorization', 'Autorização', 'Document granting permission for a specified action.'),
+    ('consent_form', 'Termo de Consentimento', 'Document recording consent for a specified and lawful purpose.'),
+    ('image', 'Imagem ou Fotografia', 'Image or photograph attached to a record.'),
+    ('other', 'Outros Documentos', 'Document that does not fit another available document type.');
+
 END;
 $$;
 SELECT *

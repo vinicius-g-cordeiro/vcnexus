@@ -44,5 +44,7 @@
     "legal_basis": 43,
     "business_types": 44,
     "ethnicities": 45,
-    "legal_entity_types": 46
+    "legal_entity_types": 46,
+    "documents": 47,
+    "document_types": 48
 }

@@ -88,6 +88,10 @@ const referencesService = {
     async fetchLegalEntityTypes(params){
         const response = await api.query('/references/legal-entity-types/', { params })
         return response.data
+    },
+    async fetchDocumentTypeOptions(params){
+      const response = await api.query('/references/document-types/', { params })
+      return response.data
     }
 }
 

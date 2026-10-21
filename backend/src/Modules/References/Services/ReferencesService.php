@@ -434,4 +434,22 @@ final class ReferencesService extends BaseService {
         }
     }
 
+    public function getDocumentTypes(): ?array {
+        $key = 'document_types';
+
+        $cached = $this->getCached($key);
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $tenantTypes = $this->referenceRepository->getDocumentTypes();
+
+        if ($tenantTypes !== null) {
+            $this->setCached($key, $tenantTypes);
+
+            return $tenantTypes;
+        }
+    }
+
 }

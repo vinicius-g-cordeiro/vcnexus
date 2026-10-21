@@ -236,4 +236,14 @@ final class ReferencesController extends BaseController {
             throw $th;
         }
     }
+
+    #[Route(path: '/document-types/', methods: ['QUERY','GET'])]
+    public function getDocumentTypes(): Response {
+        try {
+            $documentTypes = $this->service->getDocumentTypes();
+            return Response::json(data: object(list: $documentTypes), message:'success')->send(200, [], true);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }

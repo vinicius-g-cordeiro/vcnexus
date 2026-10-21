@@ -12,14 +12,18 @@ declare(strict_types=1);
 
 namespace App\Bootstrap;
 
+use App\Shared\Http\Request;
+use App\Shared\Http\Response;
 use App\Bootstrap\Routing\Router;
-use App\Modules\Authentication\Controllers\AuthenticationController;
-use App\Modules\Authorization\Controllers\{PermissionController, MenuController, RoleController};
 use App\Modules\Chat\Controllers\ChatController;
-use App\Modules\References\Controllers\ReferencesController;
 use App\Modules\Users\Controllers\UserController;
 use App\Modules\Tenant\Controllers\TenantController;
-use App\Shared\Http\{Request, Response};
+use App\Modules\Authorization\Controllers\MenuController;
+use App\Modules\Authorization\Controllers\RoleController;
+use App\Modules\Documents\Controllers\DocumentsController;
+use App\Modules\References\Controllers\ReferencesController;
+use App\Modules\Authorization\Controllers\PermissionController;
+use App\Modules\Authentication\Controllers\AuthenticationController;
 
 final class Application
 {
@@ -51,10 +55,10 @@ final class Application
                 MenuController::class,
                 PermissionController::class,
                 RoleController::class,
-                ReferencesController::class
+                ReferencesController::class,
+                DocumentsController::class
             ]
         );
-
 
         set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {
             if ($errno === E_DEPRECATED || $errno === E_USER_DEPRECATED) {

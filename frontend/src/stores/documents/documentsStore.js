@@ -30,6 +30,20 @@ export const useDocumentsStore = defineStore("documents", {
       } finally {
         this.loading = false;
       }
+    },
+    async createDocument(form)
+    {
+      this.loading = true
+      this.error = null
+      try{
+        const response = await documentsService.createDocument(form);
+        this.documents = response.data;
+        return true;
+      }catch(error){
+        this.error = error.message;
+      } finally {
+        this.loading = false;
+      }
     }
   },
 });

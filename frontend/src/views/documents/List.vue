@@ -68,10 +68,6 @@ function getStatus(status) {
 
 
 onMounted(async () => {
-    fields = [
-        { name: 'search', label: 'Search', type: 'text', placeholder: 'Search by Tax Identification, Trade Name, or Fantasy Name ', classes: 'lg:col-span-2' },
-        { name: 'active', label: 'Status', type: 'select', options: [{ value: '1', label: 'Active' }, { value: '0', label: 'Inactive' }] },
-    ]
 })
 
 

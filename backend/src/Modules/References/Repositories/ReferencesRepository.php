@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Modules\References\Repositories;
 
 use ADOConnection;
+use App\Modules\References\Models\DocumentType;
 use App\Shared\Http\Request;
 use App\Shared\Domain\BaseRepository;
 use App\Infrastructure\Database\Hydrator;
@@ -431,4 +432,23 @@ final class ReferencesRepository extends BaseRepository {
         $result = Hydrator::hydrateMany(LegalEntityType::class, $result);
         return $result;
     }
+
+
+    public function getDocumentTypes(): ?array {
+        $query = <<<SQL
+            SELECT id, uuid, label, description, name, active
+            FROM document_types
+            WHERE active = 1
+        SQL;
+
+        $result = $this->scopedQuery($query);
+
+        if (empty($result) || $result === false) {
+            return [];
+        }
+
+        $result = Hydrator::hydrateMany(DocumentType::class, $result);
+        return $result;
+    }
+
 }
