@@ -31,7 +31,7 @@ use App\Infrastructure\Database\RLS\{RoleContext, TenantContext, UserContext};
 use App\Bootstrap\Routing\Exceptions\{RouteNotFoundException, MethodNotAllowedException};
 
 final class Router {
-   
+
     /**
      * @var array<int, array{
      *     methods: string[],
@@ -74,13 +74,14 @@ final class Router {
             return $connectionProvider->get($tenant_id, $user_id, $roles);
         }, false);
 
+        $this->container->bind(\Redis::class, fn() => $connectionProvider->getRedis());
         $this->container->bind('tenant_id', fn() => (string)$request->attribute('tenant_id'));
         $this->container->bind('user_id', fn() => (string)$request->attribute('user_id'));
         $this->container->bind('roles', fn() => $request->attribute('roles'));
-        
+
         $this->container->bind(Session::class, fn() => new Session());
         $this->container->bind(Request::class, $request);
-        
+
     }
 
     /**
@@ -180,7 +181,7 @@ final class Router {
     }
 
     function listRoutes() : array {
-        return array_map(static fn (array $route) : string => implode('|', $route['methods']) . ' ' . $route['path'] . ' -> ' . $route['controller'] . '::' . $route['action'] . ' () ' 
+        return array_map(static fn (array $route) : string => implode('|', $route['methods']) . ' ' . $route['path'] . ' -> ' . $route['controller'] . '::' . $route['action'] . ' () '
         . ($route['rateLimit'] !== null ? ('Rate Limit: ' . ($route['rateLimit']->maxAttempts ?? '') . '/'. ($route['rateLimit']->decaySeconds ?? '') . 's') : '')
         . ($route['permissions'] !== null ? 'Permissions: ' . ($route['permissions'] ?? '')  : ''),
          $this->routes);
@@ -194,7 +195,7 @@ function runPipeline(array $route, Request $request) : mixed {
         $rateLimitMiddleware = new RateLimitMiddleware($this->rateLimiter, $route['rateLimit']->maxAttempts, $route['rateLimit']->decaySeconds);
         $pipeline = static fn(Request $request) : mixed => $rateLimitMiddleware->handle($request, $pipeline);
     }
-    
+
 
     foreach($route['middlewareClasses'] as $class) {
         $middlewareClasses[] = $class instanceof ReflectionAttribute
@@ -252,7 +253,7 @@ function runPipeline(array $route, Request $request) : mixed {
         }
 
         $type = $parameters[0]->getType();
-        
+
         return $type instanceof ReflectionNamedType && $type->getName() === Request::class;
     }
 
@@ -272,7 +273,7 @@ function runPipeline(array $route, Request $request) : mixed {
     */
     private function compilePattern(string $path) : array {
         $paramNames = [];
- 
+
         $pattern = preg_replace_callback(
             '#\{(\w+)\}#',
             static function (array $matches) use (&$paramNames): string {
@@ -281,14 +282,14 @@ function runPipeline(array $route, Request $request) : mixed {
             },
             $path
         );
- 
+
         return ['#^' . $pattern . '$#', $paramNames];
 
     }
 
     private function joinPaths(string $base, string $path) : string {
         $joined = trim(trim($base, '/') . '/' . trim($path, '/'), '/');
- 
+
         return '/' . $joined;
 
     }

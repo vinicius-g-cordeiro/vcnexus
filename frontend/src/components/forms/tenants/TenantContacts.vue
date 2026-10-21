@@ -64,7 +64,9 @@ const typeOptions = computed(() => referencesStore.contact_types?.map(t => ({ la
 const form = reactive({ list: [] })
 
 if (props.mode === 'create') {
-    form.list = (props.contacts ?? []).map(c => ({ ...c, person: c.person ?? '', primary_contact: !!c.primary_contact }))
+    if(props.contacts.length > 0){
+        form.list = (props.contacts ?? []).map(c => ({ ...c, person: c.person ?? '', primary_contact: !!c.primary_contact }))
+    }
     watch(form, (val) => emit('update:modelValue', val.list), { deep: true })
 } else {
     watch(() => props.contacts, (val) => {

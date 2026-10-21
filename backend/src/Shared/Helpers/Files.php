@@ -1,6 +1,6 @@
-<?php 
-/** 
-* @brief 
+<?php
+/**
+* @brief
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com><https://github.com/vinicius-g-cordeiro>
  * @version 1.0
  * @date 2026/08/29
@@ -14,20 +14,19 @@ namespace App\Shared\Helpers;
 use Imagick;
 
 final class Files {
-    
+
     static function upload_file($files, $path = '/var/www/storage/upload/', $filename = 'file_', $newName = '') {
         $info = pathinfo($files['name']);
         $fileN = pathinfo($filename, PATHINFO_FILENAME);
-        
 
         if (empty($newName) ) {
-            $response['file_name'] = $fileN . uniqid('',true) . time() . "." . $info['extension'];
+            $response['filename'] = $fileN . uniqid('',true) . time() . "." . $info['extension'];
         } else {
             $newFilename = pathinfo($newName, PATHINFO_FILENAME);// try and remove the extension from the filename
-            $response['file_name'] = $newName . "." . $info['extension'];
+            $response['filename'] = $newName . "." . $info['extension'];
         }
 
-        $response['file_name'] = str_replace(' ', '-',mb_strtolower($response['file_name']));
+        $response['filename'] = str_replace(' ', '-',mb_strtolower($response['filename']));
 
         if(isset($path) && is_dir($path) == false){
             if(self::createFolder($path) == false){
@@ -36,10 +35,10 @@ final class Files {
             chmod($path, 0755);
         }
 
-        $movedFile = move_uploaded_file($files['tmp_name'], $path . $response['file_name']);
+        $movedFile = move_uploaded_file($files['tmp_name'], $path . $response['filename']);
         if($movedFile == true){
-            $response['fullpath'] = $path . $response['file_name'];
-            $response['file'] = $response['file_name'];
+            $response['fullpath'] = $path . $response['filename'];
+            $response['file'] = $response['filename'];
             chmod($response['fullpath'], 0755);
             return $response;
         }
@@ -86,7 +85,7 @@ final class Files {
             $extensions = strtolower(strrchr($file['name'],'.'));
             $filename = str_replace($extensions, '', $file['name']);
 
-            if(empty($extensions)){ // we do not have a valid extension so continue to the next 
+            if(empty($extensions)){ // we do not have a valid extension so continue to the next
                 continue;
             }
 
@@ -126,7 +125,7 @@ final class Files {
     }
 
     /**
-     * 
+     *
      * @param mixed $allowedExtensions
      * @param mixed $folderRoot
      * @param mixed $folderUrl
@@ -154,7 +153,7 @@ final class Files {
             $extensions = strtolower(strrchr($file['name'],'.'));
             $filename = str_replace($extensions, '', $file['name']);
 
-            if(empty($extensions)){ // we do not have a valid extension so continue to the next 
+            if(empty($extensions)){ // we do not have a valid extension so continue to the next
                 continue;
             }
 
@@ -238,7 +237,7 @@ final class Files {
 
     static function delete_file($filepath) : bool {
         if(file_exists($filepath)){
-            return @unlink(APP_PATH . $filepath);            
+            return @unlink(APP_PATH . $filepath);
         }
 
         return false;

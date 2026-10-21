@@ -1,6 +1,6 @@
-<?php 
-/** 
-* @brief 
+<?php
+/**
+* @brief
  * @author Vinicius Goncalves Cordeiro <vinicordeirogo@gmail.com><https://github.com/vinicius-g-cordeiro>
  * @version 1.0
  * @date 2026/08/29
@@ -11,17 +11,21 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Database;
 
+use Redis;
+use ADOConnection;
+use App\Infrastructure\Database\RLS\RoleContext;
+use App\Infrastructure\Database\RLS\UserContext;
 use App\Infrastructure\Database\ConnectionFactory;
-use App\Infrastructure\Database\RLS\{RoleContext, TenantContext, UserContext};
+use App\Infrastructure\Database\RLS\TenantContext;
 use App\Infrastructure\Redis\RedisConnectionFactory;
 
 final class ConnectionProvider {
-    private ?\ADOConnection $connection = null;
-    private ?\Redis $redis = null;
+    private ?ADOConnection $connection = null;
+    private ?Redis $redis = null;
 
     public function __construct(private ConnectionFactory $factory, private TenantContext $tenantContext, private RoleContext $roleContext, private UserContext $userContext, private RedisConnectionFactory $redisFactory) {}
 
-    public function get(?string $tenant_id = null, ?string $user_id = null, ?array $roles = null): \ADOConnection {
+    public function get(?string $tenant_id = null, ?string $user_id = null, ?array $roles = null): ADOConnection {
         if (isset($this->connection) === false) {
             $this->connection = $this->factory->create();
         }
@@ -45,7 +49,7 @@ final class ConnectionProvider {
         return $this->connection;
     }
 
-    public function getUnscoped(): \ADOConnection {
+    public function getUnscoped(): ADOConnection {
         if (isset($this->connection) === false) {
             $this->connection = $this->factory->create();
         }
@@ -55,6 +59,13 @@ final class ConnectionProvider {
         }
 
         return $this->connection;
+    }
+
+    public function getRedis() : ?Redis {
+        if (isset($this->redis) === false) {
+            $this->redis = $this->redisFactory->create();
+        }
+        return $this->redis;
     }
 }
 

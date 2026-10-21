@@ -22,6 +22,7 @@ use App\Modules\Users\Models\UserConsents;
 use App\Modules\Users\DTOs\UserListRequest;
 use App\Modules\Users\Models\UserEducation;
 use App\Modules\Users\Models\UserSensitive;
+use App\Modules\Users\DTOS\UserFullResponse;
 use App\Modules\Users\DTOs\UsersListResponse;
 use App\Modules\Platform\Contacts\Models\Contacts;
 use App\Modules\Users\DTOs\UserCredentialsResponse;
@@ -53,7 +54,7 @@ final class UserProfileRepository extends BaseRepository
     public function list(?UserListRequest $parameters): ?array {
 
         $select = 'SELECT uc.email, up.*,uc.uuid, uc.id, uc.created_at, uc.active, uc.blocked, uc.status as online_status, (select array_agg(upe.slug)
-            from user_permissions up2 
+            from user_permissions up2
             inner join permissions upe on up2.permission_id = upe.id
             where up2.user_id = uc.id) "permissions",
             (select array_agg(r.name) from user_roles ur inner join roles r on ur.role_id = r.id where ur.user_id = uc.id ) "roles",
@@ -117,7 +118,7 @@ final class UserProfileRepository extends BaseRepository
     public function profile(string $uuid): ?UserProfile {
 
         $select = <<<SQL
-            SELECT up.* 
+            SELECT up.*
             FROM user_credentials uc
             inner join user_profile up on uc.id = up.user_id
             inner join tenant_memberships tm on tm.user_id = uc.id
@@ -128,7 +129,7 @@ final class UserProfileRepository extends BaseRepository
         $where = ' WHERE uc.uuid = ?';
 
         $user = $this->scopedQuery($select . $where, [$uuid], false)[0] ?? null;
-    
+
         if (!$user) {
             return null;
         }
@@ -151,7 +152,7 @@ final class UserProfileRepository extends BaseRepository
         $where = ' WHERE uc.uuid = ?';
 
         $user = $this->scopedQuery($select . $where, [$uuid], false)[0] ?? null;
-    
+
         if (!$user) {
             return null;
         }
@@ -162,14 +163,14 @@ final class UserProfileRepository extends BaseRepository
     }
 
     /**
-     * 
+     *
      * @param string $uuid
      * @return array<Addresses>|null
      */
     public function addresses(string $uuid): ?array {
         $select = <<<SQL
             select ua.*
-            FROM addresses ua 
+            FROM addresses ua
             inner join user_credentials uc on uc.id = ua.owner_id AND ua.owner_type_id = 1
             inner join user_profile up on uc.id = up.user_id
             inner join tenant_memberships tm on tm.user_id = uc.id
@@ -180,7 +181,7 @@ final class UserProfileRepository extends BaseRepository
         $where = ' WHERE uc.uuid = ?';
 
         $user = $this->scopedQuery($select . $where, [$uuid], false) ?? null;
-    
+
         if (!$user) {
             return null;
         }
@@ -189,14 +190,14 @@ final class UserProfileRepository extends BaseRepository
     }
 
     /**
-     * 
+     *
      * @param string $uuid
      * @return Contacts[]|null
      */
     public function contacts(string $uuid): ?array {
         $select = <<<SQL
             select ucon.*
-            FROM contacts ucon 
+            FROM contacts ucon
             inner join user_credentials uc on uc.id = ucon.owner_id and ucon.owner_type_id = 1
             inner join user_profile up on uc.id = up.user_id
             inner join tenant_memberships tm on tm.user_id = uc.id
@@ -207,7 +208,7 @@ final class UserProfileRepository extends BaseRepository
         $where = ' WHERE uc.uuid = ?';
 
         $user = $this->scopedQuery($select . $where, [$uuid], false) ?? null;
-    
+
         if (!$user) {
             return null;
         }
@@ -216,14 +217,14 @@ final class UserProfileRepository extends BaseRepository
     }
 
     /**
-     * 
+     *
      * @param string $uuid
      * @return UserConsents[]|null
      */
     public function consents(string $uuid): ?array {
         $select = <<<SQL
             select ucon.*
-            FROM user_consents ucon 
+            FROM user_consents ucon
             inner join user_credentials uc on uc.id = ucon.user_id
             inner join user_profile up on uc.id = up.user_id
             inner join tenant_memberships tm on tm.user_id = uc.id
@@ -234,7 +235,7 @@ final class UserProfileRepository extends BaseRepository
         $where = ' WHERE uc.uuid = ?';
 
         $user = $this->scopedQuery($select . $where, [$uuid], false) ?? null;
-    
+
         if (!$user) {
             return null;
         }
@@ -245,7 +246,7 @@ final class UserProfileRepository extends BaseRepository
     public function sensitive(string $uuid): ?UserSensitive {
         $select = <<<SQL
             select us.*
-            FROM user_sensitive us 
+            FROM user_sensitive us
             inner join user_credentials uc on uc.id = us.user_id
             inner join user_profile up on uc.id = up.user_id
             inner join tenant_memberships tm on tm.user_id = uc.id
@@ -256,7 +257,7 @@ final class UserProfileRepository extends BaseRepository
         $where = ' WHERE uc.uuid = ?';
 
         $user = $this->scopedQuery($select . $where, [$uuid], false)[0] ?? null;
-    
+
         if (!$user) {
             return null;
         }
@@ -267,7 +268,7 @@ final class UserProfileRepository extends BaseRepository
     public function education(string $uuid): ?array {
         $select = <<<SQL
             SELECT ue.*
-            FROM user_education ue 
+            FROM user_education ue
             inner join user_credentials uc on uc.id = ue.user_id
             inner join user_profile up on uc.id = up.user_id
             inner join tenant_memberships tm on tm.user_id = uc.id
@@ -278,7 +279,7 @@ final class UserProfileRepository extends BaseRepository
         $where = ' WHERE uc.uuid = ?';
 
         $user = $this->scopedQuery($select . $where, [$uuid], false) ?? null;
-    
+
         if (!$user) {
             return null;
         }
@@ -318,5 +319,42 @@ final class UserProfileRepository extends BaseRepository
         $result = $this->scopedQuery($sql, [$uuid]);
 
         return $result;
+    }
+
+    /**
+     * @param string|null $uuid
+     * @return UserFullResponse[]|null
+     */
+    public function findFullEntity(?string $uuid): ?array {
+        $select = <<<SQL
+            SELECT uc.email, up.*,uc.uuid, uc.id, uc.created_at, uc.active, uc.blocked, uc.status as online_status, (select array_agg(upe.slug)
+            from user_permissions up2
+            inner join permissions upe on up2.permission_id = upe.id
+            where up2.user_id = uc.id) "permissions",
+            (select array_agg(r.name) from user_roles ur inner join roles r on ur.role_id = r.id where ur.user_id = uc.id ) "roles",
+            (select array_agg(uc2.value) from contacts uc2 where uc2.type_id = 1 AND uc2.owner_type_id = 1 and uc2.owner_id = uc.id) "emails",
+            (select array_agg(uc2.value) from contacts uc2 where uc2.type_id = 2 AND uc2.owner_type_id = 1 and uc2.owner_id = uc.id) "phones",
+            (select array_agg(ua.address) from addresses ua where ua.owner_type_id = 1 and ua.owner_id = uc.id) "addresses",
+            b.fantasy_name as organization_name
+        SQL;
+
+        $from = <<<SQL
+            FROM user_credentials uc
+            inner join user_profile up on uc.id = up.user_id
+            inner join tenant_memberships tm on tm.user_id = uc.id
+            inner join tenants t on t.id = tm.tenant_id
+            inner join business b on b.tenant_id = t.id
+
+            SQL;
+
+        $where = 'WHERE uc.uuid = ?';
+        $params = [$uuid];
+
+        $user = $this->scopedQuery($select . $from . $where, $params, false) ?? null;
+        if (!$user) {
+            return null;
+        }
+
+        return Hydrator::hydrateMany(UserFullResponse::class, $user);
     }
 }

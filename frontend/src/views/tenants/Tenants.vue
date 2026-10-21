@@ -160,11 +160,17 @@ function activate(uuid) {
 <template>
     <section class="flex flex-col gap-4 p-4 sm:p-6">
         <header class="flex justify-between items-center">
-            <div>
+            <div class="flex flex-row justify-between w-full">
                 <h1 class="font-bold text-2xl sm:text-3xl tracking-tight">
                     <span class="text-olive-wood-400">Tenants</span>
+                    <p class="text-zinc-500 dark:text-zinc-400 text-sm">{{ meta.total }} total</p>
                 </h1>
-                <p class="text-zinc-500 dark:text-zinc-400 text-sm">{{ meta.total }} total</p>
+                <ul class="flex justify-between items-end">
+                    <router-link :to="{ name: 'tenants.create' }" class="bg-olive-wood-500 hover:bg-olive-wood-600 px-4 py-2 rounded-md font-medium text-white text-xs transition">
+                        <i class="bi bi-building-add"></i>
+                        New Tenant
+                    </router-link>
+                </ul>
             </div>
         </header>
 

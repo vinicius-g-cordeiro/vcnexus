@@ -76,7 +76,7 @@ final class TenantService extends BaseService
                 throw new TransactionFailedException('Could not store business', 409);
             }
 
-            $businessBrandingRequest = BusinessBranding::fromArray(['business_id' => $businessRes->id, ...$tenantStoreRequest->toArray(), 'logo'=> $file['file_name']]);
+            $businessBrandingRequest = BusinessBranding::fromArray(['business_id' => $businessRes->id, ...$tenantStoreRequest->toArray(), 'logo'=> $file['filename']]);
 
             $businessBrandingRes = $this->businessRepository->store($businessBrandingRequest, ['id', 'uuid'], 'business_brandings');
 
